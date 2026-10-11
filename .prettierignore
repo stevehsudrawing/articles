@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Build output and generated types
+dist/
+.astro/
+
+# Generated lockfile: owned by the package manager, never by the formatter.
+pnpm-lock.yaml
+
+# Prettier has no Python parser; Python is formatted with black instead.
+*.py

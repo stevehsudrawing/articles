@@ -1,0 +1,25 @@
+# EditorConfig - https://editorconfig.org
+#
+# Policy: UTF-8 without a BOM, LF line endings and 2-space indentation. The
+# line endings are also owned by .gitattributes; this file covers the editor
+# side. There is no CRLF exception, because the repository holds no .cmd, .bat
+# or .ps1 file.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Python is indented with 4 spaces: black hardcodes the width and offers no
+# option to change it.
+[*.py]
+indent_size = 4
+
+# Two trailing spaces mean a hard line break in Markdown.
+[*.md]
+trim_trailing_whitespace = false

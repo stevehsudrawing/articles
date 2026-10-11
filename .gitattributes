@@ -1,0 +1,5 @@
+# Line-ending policy: LF in the repository and in every working tree, so no
+# clone or CI checkout depends on core.autocrlf. Every file is covered, and
+# there is no CRLF exception, because the repository holds no .cmd, .bat or
+# .ps1 file.
+* text=auto eol=lf
