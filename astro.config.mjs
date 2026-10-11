@@ -17,9 +17,9 @@ export default defineConfig({
     },
   },
   markdown: {
-    // Prism rather than the default Shiki: Shiki writes a fixed theme's colours
+    // Prism rather than the default Shiki: Shiki writes a fixed theme's colors
     // into the markup as a style attribute, which no stylesheet can override,
-    // while Prism emits classes and leaves every colour to
+    // while Prism emits classes and leaves every color to
     // `src/styles/syntax.css`.
     syntaxHighlight: "prism",
   },

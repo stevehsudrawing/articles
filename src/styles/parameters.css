@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Parameters - cross-cutting values that are not colours
+   Parameters - cross-cutting values that are not colors
 
    A value lives here once its consumers exist; the rest arrive with the
    component that needs them.
