@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Base - element defaults and the Bootstrap overwrites
+   ========================================================================== */
+
+/* --- Typography deltas ---
+   The whole of our typographic opinion. `overflow-wrap` and not `word-break`:
+   Chromium treats the latter as `overflow-wrap: anywhere`, which collapses a
+   content-sized box's min-content width to a single character. */
+
+* {
+  overflow-wrap: break-word;
+  text-autospace: normal;
+  font-optical-sizing: auto;
+}
+
+/* Anchors land below the header instead of behind it. */
+html {
+  scroll-padding-top: var(--shar-header-height);
+}
+
+/* --- Square corners ---
+   All seven of Bootstrap's radius tokens resolve to zero. `.rounded-circle`
+   survives, because it is a literal `50%` rather than a token. */
+
+:root {
+  --bs-border-radius: 0;
+  --bs-border-radius-sm: 0;
+  --bs-border-radius-lg: 0;
+  --bs-border-radius-xl: 0;
+  --bs-border-radius-xxl: 0;
+  --bs-border-radius-2xl: 0;
+  --bs-border-radius-pill: 0;
+}
+
+/* --- Focus ---
+   An outline rather than a shadow. Bootstrap's `.btn:focus-visible` sets
+   `outline: 0` and a box-shadow ring, and it is the more specific selector, so
+   it is listed here too. */
+
+:focus-visible,
+.btn:focus-visible {
+  outline: var(--shar-focus-ring-width) solid var(--bs-focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* --- Code spans ---
+   A chip, as on the main site. `word-break: break-all` is scoped to inline
+   code and must never be promoted to `*`. Bootstrap's `pre code` rule keeps a
+   fenced block from being hard-wrapped: it is the more specific selector. */
+
+code {
+  font-size: 0.9em;
+  padding: 0.05em 0.1em;
+  word-break: break-all;
+  color: inherit;
+  background-color: var(--bs-tertiary-bg);
+  outline: 1px solid rgba(var(--bs-body-color-rgb), 0.2);
+}
+
+/* --- Buttons ---
+   Flat surfaces: Bootstrap's decorative button shadows are removed. */
+
+.btn {
+  --bs-btn-box-shadow: none;
+  --bs-btn-focus-box-shadow: none;
+}
+
+/* The token bridge reaches Bootstrap's utilities but not its components: a
+   component carries compiled values in its own variables, so the accent is
+   restated here. `.btn` and `.btn-primary` share a specificity, and this file
+   loads after Bootstrap. */
+
+.btn-primary {
+  --bs-btn-color: var(--shar-primary-contrast);
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-color: var(--shar-primary-contrast);
+  --bs-btn-hover-bg: var(--shar-primary-hover);
+  --bs-btn-hover-border-color: var(--shar-primary-hover);
+  --bs-btn-active-color: var(--shar-primary-contrast);
+  --bs-btn-active-bg: var(--shar-primary-active);
+  --bs-btn-active-border-color: var(--shar-primary-active);
+  --bs-btn-active-shadow: none;
+  --bs-btn-disabled-color: var(--shar-primary-contrast);
+  --bs-btn-disabled-bg: var(--bs-primary);
+  --bs-btn-disabled-border-color: var(--bs-primary);
+}

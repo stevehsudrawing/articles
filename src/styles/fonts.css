@@ -1,0 +1,87 @@
+@import "@fontsource-variable/inter/opsz.css";
+@import "@fontsource-variable/inter/opsz-italic.css";
+@import "@fontsource-variable/roboto-mono/wght.css";
+
+/* ==========================================================================
+   Fonts - the stack fragments and the Bootstrap injection
+
+   Latin text rides on the two self-hosted webfonts imported above; CJK is
+   never downloaded and always resolves to the reader's system fonts, picked
+   per language.
+   ========================================================================== */
+
+:root {
+  --shar-font-emoji:
+    "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  --shar-font-sans-serif-en: "Inter Variable";
+  --shar-font-monospace-en: "Roboto Mono Variable";
+
+  --shar-font-sans-serif-ja:
+    "更紗ゴシック J", "Sarasa Gothic J", "ヒラギノ角ゴシック",
+    "Hiragino Kaku Gothic Pro", "Hiragino Sans", "Noto Sans JP",
+    "Noto Sans CJK JP", "Noto Sans CJK", "源ノ角ゴシック", "Source Han Sans",
+    "Meiryo UI", "メイリオ", "Meiryo";
+  --shar-font-sans-serif-zh-Hans:
+    "更纱黑体 SC", "Sarasa Gothic SC", "苹方-简", "PingFang SC", "苹方",
+    "PingFang", "冬青黑体简体中文", "Hiragino Sans GB", "Noto Sans SC",
+    "Noto Sans CJK SC", "思源黑体", "Source Han Sans SC", "Microsoft YaHei UI",
+    "微软雅黑", "Microsoft YaHei";
+  --shar-font-sans-serif-zh-Hant:
+    "更紗黑體 TC", "Sarasa Gothic TC", "蘋方-繁", "PingFang TC", "蘋方",
+    "PingFang", "Noto Sans TC", "Noto Sans CJK TC", "思源黑體",
+    "Source Han Sans TC", "Microsoft JhengHei UI", "微軟正黑體",
+    "Microsoft JhengHei";
+
+  --shar-font-sans-serif-system:
+    -apple-system, ui-sans-serif, system-ui, sans-serif;
+  --shar-font-monospace-system: ui-monospace, monospace;
+}
+
+/* ==========================================================================
+   The injection
+
+   The stacks reach Bootstrap through its own custom properties, never through
+   per-element `font-family` rules. The overrides must target the ROOT element:
+   Bootstrap resolves `--bs-body-font-family` from `--bs-font-sans-serif` and
+   its `code, kbd, pre, samp` rule reads `--bs-font-monospace`, both on the root
+   element, so a descendant selector (`html[lang="…"] :root`) would never
+   re-substitute.
+   ========================================================================== */
+
+/* Default: the Latin stack with the Japanese fallbacks behind it. */
+:root {
+  --bs-font-sans-serif:
+    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-ja),
+    var(--shar-font-sans-serif-system), var(--shar-font-emoji);
+  --bs-font-monospace:
+    var(--shar-font-monospace-en), var(--shar-font-sans-serif-ja),
+    var(--shar-font-monospace-system), var(--shar-font-sans-serif-en),
+    var(--shar-font-sans-serif-system), var(--shar-font-emoji);
+}
+
+/* Chinese (Simplified) */
+:root[lang="zh-Hans"] {
+  --bs-font-sans-serif:
+    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-zh-Hans),
+    var(--shar-font-sans-serif-ja), var(--shar-font-sans-serif-system),
+    var(--shar-font-emoji);
+  --bs-font-monospace:
+    var(--shar-font-monospace-en), var(--shar-font-sans-serif-zh-Hans),
+    var(--shar-font-sans-serif-ja), var(--shar-font-monospace-system),
+    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
+    var(--shar-font-emoji);
+}
+
+/* Chinese (Traditional) */
+:root[lang="zh-Hant"] {
+  --bs-font-sans-serif:
+    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-zh-Hant),
+    var(--shar-font-sans-serif-ja), var(--shar-font-sans-serif-system),
+    var(--shar-font-emoji);
+  --bs-font-monospace:
+    var(--shar-font-monospace-en), var(--shar-font-sans-serif-zh-Hant),
+    var(--shar-font-sans-serif-ja), var(--shar-font-monospace-system),
+    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
+    var(--shar-font-emoji);
+}

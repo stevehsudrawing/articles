@@ -1,0 +1,53 @@
+---
+// The import order is the cascade: Bootstrap first, then our four sheets, and
+// `base.css` last because its rules restate Bootstrap's component variables at
+// the same specificity, where "later" is what decides.
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/theme.css";
+import "../styles/parameters.css";
+import "../styles/fonts.css";
+import "../styles/base.css";
+import { getLocale, type Locale } from "../i18n/locales";
+
+interface Props {
+  /** The locale whose language and BCP-47 tag the document carries. */
+  locale: Locale;
+  /** The document title, already composed by the page. */
+  title: string;
+  /** Whether the page should stay out of search results. */
+  noindex?: boolean;
+}
+
+const { locale, title, noindex = false } = Astro.props;
+const entry = getLocale(locale);
+---
+
+<!doctype html>
+<html lang={entry.tag}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {noindex && <meta name="robots" content="noindex" />}
+    <script is:inline>
+      // The theme has to be a concrete value before the first paint: Bootstrap
+      // ships no automatic dark mode, so `auto` is resolved here and a system
+      // change is followed while the page is open.
+      (() => {
+        const stored = localStorage.getItem("theme");
+        const choice =
+          stored === "light" || stored === "dark" ? stored : "auto";
+        const system = matchMedia("(prefers-color-scheme: dark)");
+        const apply = () => {
+          document.documentElement.dataset.bsTheme =
+            choice === "auto" ? (system.matches ? "dark" : "light") : choice;
+        };
+        apply();
+        if (choice === "auto") system.addEventListener("change", apply);
+      })();
+    </script>
+  </head>
+  <body class="d-flex flex-column min-vh-100">
+    <slot />
+  </body>
+</html>

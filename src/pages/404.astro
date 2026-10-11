@@ -1,27 +1,19 @@
 ---
-import { defaultLocale, getLocale } from "../i18n/locales";
+import Base from "../layouts/Base.astro";
+import { defaultLocale } from "../i18n/locales";
 import messages from "../i18n/messages/zh-hans.json";
 
 const title = `${messages["text-hero-title-404"]} - ${messages["text-site-name"]}`;
 ---
 
-<!doctype html>
-<html lang={getLocale(defaultLocale).tag}>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="robots" content="noindex" />
-  </head>
-  <body class="d-flex flex-column min-vh-100">
-    <main class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center p-3">
-      <h1 class="h3">{messages["text-hero-title-404"]}</h1>
-      <div class="px-3 pb-2">
-        <p class="mb-1">{messages["text-hero-description-404"]}</p>
-      </div>
-      <a class="btn btn-primary" href={import.meta.env.BASE_URL}>
-        {messages["text-action-home"]}
-      </a>
-    </main>
-  </body>
-</html>
+<Base locale={defaultLocale} title={title} noindex>
+  <main class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center p-3">
+    <h1 class="h3">{messages["text-hero-title-404"]}</h1>
+    <div class="px-3 pb-2">
+      <p class="mb-1">{messages["text-hero-description-404"]}</p>
+    </div>
+    <a class="btn btn-primary" href={import.meta.env.BASE_URL}>
+      {messages["text-action-home"]}
+    </a>
+  </main>
+</Base>

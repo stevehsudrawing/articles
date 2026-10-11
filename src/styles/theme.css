@@ -1,0 +1,84 @@
+/* ==========================================================================
+   Colours - the accent scale and the bridge onto Bootstrap
+
+   One accent hue, expanded into nine steps. The steps are recorded in the
+   project roadmap; this file is where they become `--shar-*` tokens, and from
+   here every component refers to a token rather than to a hex value.
+   ========================================================================== */
+
+:root {
+  --shar-primary-100: #e1f5db;
+  --shar-primary-200: #b6e3a9;
+  --shar-primary-300: #87d170;
+  --shar-primary-400: #49bf00;
+  --shar-primary-500: #3da300;
+  --shar-primary-600: #318700;
+  --shar-primary-700: #266c00;
+  --shar-primary-800: #21520e;
+  --shar-primary-900: #1c3813;
+
+  /* RGB twins, for the `rgba(var(--shar-primary-…-rgb), <alpha>)` form that
+     CSS cannot compute from a hex at the call site. */
+  --shar-primary-100-rgb: 225, 245, 219;
+  --shar-primary-200-rgb: 182, 227, 169;
+  --shar-primary-300-rgb: 135, 209, 112;
+  --shar-primary-400-rgb: 73, 191, 0;
+  --shar-primary-500-rgb: 61, 163, 0;
+  --shar-primary-600-rgb: 49, 135, 0;
+  --shar-primary-700-rgb: 38, 108, 0;
+  --shar-primary-800-rgb: 33, 82, 14;
+  --shar-primary-900-rgb: 28, 56, 19;
+}
+
+/* ==========================================================================
+   Roles and the Bootstrap bridge
+
+   The light values sit on `:root` as well as on `[data-bs-theme="light"]`: a
+   page whose theme script never ran carries no attribute at all, and it must
+   still be the light theme.
+
+   The steps follow the contrast rule, not the main site's numbering: its
+   accent is a blue whose `-500` is legible as text, ours is a green whose
+   `-500` is 3.26:1 on white, so light-theme text starts at `-600` (4.57:1).
+   ========================================================================== */
+
+:root,
+[data-bs-theme="light"] {
+  /* The text colour on a filled accent: the light steps are dark, so a fill
+     takes white text. */
+  --shar-primary-contrast: #fff;
+
+  /* The filled states, mirrored around the theme's own step. */
+  --shar-primary-hover: var(--shar-primary-700);
+  --shar-primary-active: var(--shar-primary-800);
+
+  --bs-primary: var(--shar-primary-600);
+  --bs-primary-rgb: var(--shar-primary-600-rgb);
+  --bs-link-color: var(--shar-primary-600);
+  --bs-link-color-rgb: var(--shar-primary-600-rgb);
+  --bs-link-hover-color: var(--shar-primary-700);
+  --bs-link-hover-color-rgb: var(--shar-primary-700-rgb);
+  --bs-primary-text-emphasis: var(--shar-primary-800);
+  --bs-primary-bg-subtle: var(--shar-primary-100);
+  --bs-primary-border-subtle: var(--shar-primary-200);
+  --bs-focus-ring-color: var(--shar-primary-600);
+}
+
+[data-bs-theme="dark"] {
+  /* The dark steps are light, so a fill takes black text. */
+  --shar-primary-contrast: #000;
+
+  --shar-primary-hover: var(--shar-primary-300);
+  --shar-primary-active: var(--shar-primary-200);
+
+  --bs-primary: var(--shar-primary-400);
+  --bs-primary-rgb: var(--shar-primary-400-rgb);
+  --bs-link-color: var(--shar-primary-400);
+  --bs-link-color-rgb: var(--shar-primary-400-rgb);
+  --bs-link-hover-color: var(--shar-primary-300);
+  --bs-link-hover-color-rgb: var(--shar-primary-300-rgb);
+  --bs-primary-text-emphasis: var(--shar-primary-300);
+  --bs-primary-bg-subtle: var(--shar-primary-900);
+  --bs-primary-border-subtle: var(--shar-primary-800);
+  --bs-focus-ring-color: var(--shar-primary-400);
+}

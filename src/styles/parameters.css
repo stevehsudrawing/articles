@@ -1,0 +1,15 @@
+/* ==========================================================================
+   Parameters - cross-cutting values that are not colours
+
+   A value lives here once its consumers exist; the rest arrive with the
+   component that needs them.
+   ========================================================================== */
+
+:root {
+  /* The header's own height. The header, the sticky sidebar's offset and
+     `scroll-padding-top` all read it, so the three cannot drift apart. */
+  --shar-header-height: 64px;
+
+  /* The focus ring is a hard outline, never a shadow. */
+  --shar-focus-ring-width: 2px;
+}
