@@ -1,0 +1,67 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { defaultLocale, getLocale, locales } from "../i18n/locales";
+import messages from "../i18n/messages/zh-hans.json";
+
+const links = locales.map((locale) => ({
+  ...locale,
+  href: getRelativeLocaleUrl(locale.identity),
+}));
+---
+
+<!doctype html>
+<html lang={getLocale(defaultLocale).tag}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{messages["text-site-name"]}</title>
+    <meta name="robots" content="noindex" />
+    <style is:global>
+      :root {
+        color-scheme: light dark;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-family: system-ui, sans-serif;
+      }
+
+      ul {
+        display: flex;
+        gap: 1.5rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+    </style>
+    <script>
+      import { resolveLocale } from "../i18n/lang";
+
+      // The only decision this page makes: which link below to follow.
+      const locale = resolveLocale(localStorage.getItem("lang"), [
+        ...navigator.languages,
+      ]);
+      const link = document.querySelector<HTMLAnchorElement>(
+        `[data-locale="${locale}"]`,
+      );
+      if (link) location.replace(link.href);
+    </script>
+  </head>
+  <body>
+    <ul>
+      {links.map((link) => (
+        <li>
+          <a href={link.href} lang={link.tag} data-locale={link.identity}>
+            {link.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </body>
+</html>
