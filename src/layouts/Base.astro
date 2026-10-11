@@ -1,12 +1,15 @@
 ---
-// The import order is the cascade: Bootstrap first, then our four sheets, and
-// `base.css` last because its rules restate Bootstrap's component variables at
-// the same specificity, where "later" is what decides.
+// The import order is the cascade: Bootstrap first, then our sheets, with
+// `base.css` last of the four that mirror the main site because its rules
+// restate Bootstrap's component variables at the same specificity, and
+// `syntax.css` after it because its selectors have to outrank the others on the
+// same element.
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/theme.css";
 import "../styles/parameters.css";
 import "../styles/fonts.css";
 import "../styles/base.css";
+import "../styles/syntax.css";
 import { getLocale, type Locale } from "../i18n/locales";
 
 interface Props {

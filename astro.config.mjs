@@ -16,4 +16,11 @@ export default defineConfig({
       redirectToDefaultLocale: false,
     },
   },
+  markdown: {
+    // Prism rather than the default Shiki: Shiki writes a fixed theme's colours
+    // into the markup as a style attribute, which no stylesheet can override,
+    // while Prism emits classes and leaves every colour to
+    // `src/styles/syntax.css`.
+    syntaxHighlight: "prism",
+  },
 });

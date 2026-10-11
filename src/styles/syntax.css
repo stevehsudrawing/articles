@@ -1,0 +1,210 @@
+/**
+ * Syntax highlighting for fenced code blocks.
+ *
+ * Adapted from the One Light and One Dark themes of the prism-themes project
+ * (MIT, Copyright (c) 2015 PrismJS), which are themselves based on Atom's One
+ * Light and One Dark syntax themes.
+ *
+ * The changes are deliberate. Every color is a --shar-syntax-* token defined in
+ * theme.css for both themes, so the palette has one home and this sheet holds no
+ * color of its own; the surface and the selection are tokens too. font-family,
+ * border-radius, the block's margin and the dark theme's text-shadow are
+ * dropped, because the font stacks, the square corners, Bootstrap's spacing and
+ * the flat surfaces are ours. The inline variant, the legacy vendor prefixes and
+ * the stylesheets of the code-toolbar, line-highlight, line-numbers,
+ * diff-highlight, show-invisibles and previewer plugins are gone, since none of
+ * them is installed. One rule the originals color with a hue of its own -
+ * JavaScript template-string interpolation punctuation - is mapped onto the tag
+ * role instead of adding an eleventh token, and several role values are shifted
+ * in lightness in theme.css to keep every role at 4.5:1 on this surface
+ * (`selection` is a background, so it stays close to the surface instead).
+ */
+
+/* The base block: what a fenced block looks like before any token is colored. */
+
+code[class*="language-"],
+pre[class*="language-"] {
+  background: var(--shar-syntax-surface);
+  color: var(--shar-syntax-text);
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.5;
+  tab-size: 2;
+  hyphens: none;
+}
+
+code[class*="language-"]::selection,
+code[class*="language-"] *::selection,
+pre[class*="language-"] *::selection {
+  background: var(--shar-syntax-selection);
+  color: inherit;
+}
+
+pre[class*="language-"] {
+  padding: 1em;
+  overflow: auto;
+}
+
+/* The roles a token resolves to. */
+
+.token.comment,
+.token.prolog,
+.token.cdata {
+  color: var(--shar-syntax-comment);
+}
+
+.token.doctype,
+.token.punctuation,
+.token.entity {
+  color: var(--shar-syntax-text);
+}
+
+.token.attr-name,
+.token.class-name,
+.token.boolean,
+.token.constant,
+.token.number,
+.token.atrule {
+  color: var(--shar-syntax-constant);
+}
+
+.token.keyword {
+  color: var(--shar-syntax-keyword);
+}
+
+.token.property,
+.token.tag,
+.token.symbol,
+.token.deleted,
+.token.important {
+  color: var(--shar-syntax-tag);
+}
+
+.token.variable,
+.token.operator,
+.token.function {
+  color: var(--shar-syntax-function);
+}
+
+.token.url {
+  color: var(--shar-syntax-url);
+}
+
+.token.bold {
+  font-weight: bold;
+}
+
+.token.comment,
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+.token.namespace {
+  opacity: 0.8;
+}
+
+/* Language-specific corrections, kept so each grammar reads as intended. */
+
+.token.selector,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted,
+.token.regex,
+.token.attr-value,
+.token.attr-value > .token.punctuation {
+  color: var(--shar-syntax-string);
+}
+
+.token.attr-value > .token.punctuation.attr-equals,
+.token.special-attr > .token.attr-value > .token.value.css {
+  color: var(--shar-syntax-text);
+}
+
+.language-css .token.selector {
+  color: var(--shar-syntax-tag);
+}
+
+.language-css .token.property {
+  color: var(--shar-syntax-text);
+}
+
+.language-css .token.function,
+.language-css .token.url > .token.function {
+  color: var(--shar-syntax-url);
+}
+
+.language-css .token.url > .token.string.url {
+  color: var(--shar-syntax-string);
+}
+
+.language-css .token.important,
+.language-css .token.atrule .token.rule {
+  color: var(--shar-syntax-keyword);
+}
+
+.language-javascript .token.operator {
+  color: var(--shar-syntax-keyword);
+}
+
+.language-javascript
+  .token.template-string
+  > .token.interpolation
+  > .token.interpolation-punctuation.punctuation {
+  color: var(--shar-syntax-tag);
+}
+
+.language-json .token.operator {
+  color: var(--shar-syntax-text);
+}
+
+.language-json .token.null.keyword {
+  color: var(--shar-syntax-constant);
+}
+
+.language-markdown .token.url,
+.language-markdown .token.url > .token.operator,
+.language-markdown .token.url-reference.url > .token.string {
+  color: var(--shar-syntax-text);
+}
+
+.language-markdown .token.url > .token.content {
+  color: var(--shar-syntax-function);
+}
+
+.language-markdown .token.url > .token.url,
+.language-markdown .token.url-reference.url {
+  color: var(--shar-syntax-url);
+}
+
+.language-markdown .token.blockquote.punctuation,
+.language-markdown .token.hr.punctuation {
+  color: var(--shar-syntax-comment);
+  font-style: italic;
+}
+
+.language-markdown .token.code-snippet {
+  color: var(--shar-syntax-string);
+}
+
+.language-markdown .token.bold .token.content {
+  color: var(--shar-syntax-constant);
+}
+
+.language-markdown .token.italic .token.content {
+  color: var(--shar-syntax-keyword);
+}
+
+.language-markdown .token.strike .token.content,
+.language-markdown .token.strike .token.punctuation,
+.language-markdown .token.list.punctuation,
+.language-markdown .token.title.important > .token.punctuation {
+  color: var(--shar-syntax-tag);
+}

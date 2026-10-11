@@ -57,6 +57,17 @@ code {
   outline: 1px solid rgba(var(--bs-body-color-rgb), 0.2);
 }
 
+/* A fenced block is not a chip. Bootstrap's `pre code` resets only `font-size`,
+   `color` and `word-break`, so the chip's box would otherwise land inside the
+   block. The extra type matches Bootstrap's specificity, and the block's own
+   surface and colors come from `syntax.css`. */
+
+pre code {
+  padding: 0;
+  background-color: transparent;
+  outline: none;
+}
+
 /* --- Buttons ---
    Flat surfaces: Bootstrap's decorative button shadows are removed. */
 

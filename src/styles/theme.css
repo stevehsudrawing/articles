@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Colours - the accent scale and the bridge onto Bootstrap
+   Colors - the accent scale and the bridge onto Bootstrap
 
    One accent hue, expanded into nine steps. The steps are recorded in the
    project roadmap; this file is where they become `--shar-*` tokens, and from
@@ -44,7 +44,7 @@
 
 :root,
 [data-bs-theme="light"] {
-  /* The text colour on a filled accent: the light steps are dark, so a fill
+  /* The text color on a filled accent: the light steps are dark, so a fill
      takes white text. */
   --shar-primary-contrast: #fff;
 
@@ -62,6 +62,23 @@
   --bs-primary-bg-subtle: var(--shar-primary-100);
   --bs-primary-border-subtle: var(--shar-primary-200);
   --bs-focus-ring-color: var(--shar-primary-600);
+
+  /* The syntax palette: the one place the site uses more than one hue, because
+     color carries meaning in a code block - a keyword and a string have to
+     differ. The hues are One Light's and the surface is Bootstrap's, so every
+     role was measured against that surface and the six that fell below 4.5:1
+     were moved to the nearest lightness that meets it. `selection` is a
+     background, so it is deliberately close to the surface instead. */
+  --shar-syntax-surface: var(--bs-tertiary-bg);
+  --shar-syntax-selection: hsl(230, 1%, 90%);
+  --shar-syntax-comment: hsl(230, 4%, 46%);
+  --shar-syntax-text: hsl(230, 8%, 24%);
+  --shar-syntax-string: hsl(119, 34%, 37%);
+  --shar-syntax-constant: hsl(35, 99%, 33%);
+  --shar-syntax-tag: hsl(5, 74%, 49%);
+  --shar-syntax-function: hsl(221, 87%, 55%);
+  --shar-syntax-keyword: hsl(301, 63%, 40%);
+  --shar-syntax-url: hsl(198, 99%, 34%);
 }
 
 [data-bs-theme="dark"] {
@@ -81,4 +98,18 @@
   --bs-primary-bg-subtle: var(--shar-primary-900);
   --bs-primary-border-subtle: var(--shar-primary-800);
   --bs-focus-ring-color: var(--shar-primary-400);
+
+  /* The same ten roles, from the One Dark theme, with two of them lifted in
+     lightness for the same 4.5:1 reason. Only the values differ, so
+     `syntax.css` maps its selectors to these ten names once for both themes. */
+  --shar-syntax-surface: var(--bs-tertiary-bg);
+  --shar-syntax-selection: hsl(220, 13%, 28%);
+  --shar-syntax-comment: hsl(220, 10%, 61%);
+  --shar-syntax-text: hsl(220, 14%, 71%);
+  --shar-syntax-string: hsl(95, 38%, 62%);
+  --shar-syntax-constant: hsl(29, 54%, 61%);
+  --shar-syntax-tag: hsl(355, 65%, 68%);
+  --shar-syntax-function: hsl(207, 82%, 66%);
+  --shar-syntax-keyword: hsl(286, 60%, 67%);
+  --shar-syntax-url: hsl(187, 47%, 55%);
 }

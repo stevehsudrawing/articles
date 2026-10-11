@@ -18,6 +18,7 @@
     ]
   },
   "dependencies": {
+    "@astrojs/prism": "^4.0.2",
     "astro": "^7.3.8",
     "bootstrap": "^5.3.8"
   },
