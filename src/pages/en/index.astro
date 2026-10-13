@@ -1,5 +1,36 @@
 ---
-import LocaleSkeleton from "../../components/LocaleSkeleton.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import ArticleCard from "../../components/ArticleCard.astro";
+import Page from "../../layouts/Page.astro";
+import { published } from "../../articles";
+import { t } from "../../i18n/messages";
+import { locales, type Locale } from "../../i18n/locales";
+
+const locale: Locale = "en";
+
+// The home is a showcase, not the first page of the list: six articles at most
+// and no pagination, so its URL never moves when an article is published.
+// Its hero cover, `public/images/index-cover.png`, arrives with the site assets
+// in commit 9; until then the home renders the same text-only hero the list
+// page does, rather than pointing at a file that does not exist.
+const SHOWCASE = 6;
+
+const articles = (await published(locale)).slice(0, SHOWCASE);
+
+const alternates = locales.map((other) => ({
+  tag: other.tag,
+  href: getRelativeLocaleUrl(other.identity, ""),
+}));
 ---
 
-<LocaleSkeleton locale="en" />
+<Page
+  locale={locale}
+  page="home"
+  heroTitle={t(locale, "text-hero-title-home")}
+  heroDescription={t(locale, "text-hero-description-home")}
+  alternates={alternates}
+>
+  {articles.map((article) => (
+    <ArticleCard locale={locale} article={article} />
+  ))}
+</Page>

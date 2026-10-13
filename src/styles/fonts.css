@@ -85,3 +85,10 @@
     var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
     var(--shar-font-emoji);
 }
+
+/* ==========================================================================
+   Font Feature Settings Utils
+   ========================================================================== */
+.font-tnum {
+  font-feature-settings: "tnum" 1;
+}

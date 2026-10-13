@@ -1,0 +1,44 @@
+{
+  "text-site-copyright": "Copyright © %1 %2",
+  "text-site-name": "Steve Hsu (什五)'s Articles",
+
+  "text-nav-first-page": "First page",
+  "text-nav-home": "Home",
+  "text-nav-last-page": "Last page",
+  "text-nav-license": "License",
+  "text-nav-list": "Articles",
+  "text-nav-main-site": "Main site",
+  "text-nav-next-page": "Next page",
+  "text-nav-pagination": "Pagination",
+  "text-nav-previous-page": "Previous page",
+  "text-nav-tags": "Tags",
+  "text-nav-toc": "On this page",
+
+  "text-action-close": "Close",
+  "text-action-home": "Go to the home page",
+  "text-action-language": "Language",
+  "text-action-menu": "Menu",
+  "text-action-settings": "Settings",
+  "text-action-theme-auto": "Auto",
+  "text-action-theme-dark": "Dark",
+  "text-action-theme-light": "Light",
+  "text-action-theme": "Theme",
+
+  "text-hero-title-home": "Steve Hsu (什五)'s Articles",
+  "text-hero-description-home": "Essays · Stories · Drawing · Design · Skills",
+  "text-hero-title-list": "Articles",
+  "text-hero-description-list": "Every article, newest first, %1 to a page.",
+  "text-hero-title-404": "HTTP 404",
+  "text-hero-description-404": "This page does not exist. Check the address and try again.",
+
+  "text-label-author": "Author",
+  "text-label-license": "License",
+  "text-label-publish": "Published on",
+  "text-label-update": "Updated on",
+
+  "text-tag-design": "Design",
+  "text-tag-seed-article": "Seed article",
+
+  "text-title-paged": "%1 (page %2)",
+  "text-count-pages": "%1 pages"
+}

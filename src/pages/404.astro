@@ -1,19 +1,24 @@
 ---
 import Base from "../layouts/Base.astro";
+import { t } from "../i18n/messages";
 import { defaultLocale } from "../i18n/locales";
-import messages from "../i18n/messages/zh-hans.json";
 
-const title = `${messages["text-hero-title-404"]} - ${messages["text-site-name"]}`;
+// The page renders in the default locale - the same answer the site gives
+// everywhere else that a translation is missing - and its one control points at
+// the bare root, so the gate decides which home the reader reaches. It carries
+// no language switcher: its URL is not locale-specific, so three locale links
+// would be three guesses.
+const locale = defaultLocale;
 ---
 
-<Base locale={defaultLocale} title={title} noindex>
-  <main class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center p-3">
-    <h1 class="h3">{messages["text-hero-title-404"]}</h1>
+<Base locale={locale} noindex>
+  <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center py-5">
+    <h1 class="h3">{t(locale, "text-hero-title-404")}</h1>
     <div class="px-3 pb-2">
-      <p class="mb-1">{messages["text-hero-description-404"]}</p>
+      <p class="mb-1">{t(locale, "text-hero-description-404")}</p>
     </div>
     <a class="btn btn-primary" href={import.meta.env.BASE_URL}>
-      {messages["text-action-home"]}
+      {t(locale, "text-action-home")}
     </a>
-  </main>
+  </div>
 </Base>

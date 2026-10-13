@@ -1,0 +1,118 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+import PageHero from "../components/PageHero.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import { LICENSES, type LicenseId } from "../content.config";
+import type { Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
+import Base from "./Base.astro";
+
+/** What `render()` hands back, whose `Content` and `headings` are both used. */
+type Rendered = Awaited<ReturnType<typeof render>>;
+
+interface Props {
+  /** The locale whose copy the page is written in. */
+  locale: Locale;
+  /** The article, as the collection hands it over. */
+  article: CollectionEntry<Locale>;
+  /** The rendered body and its headings. */
+  rendered: Rendered;
+  /** The tag pages this article's tags link to, in the current locale. */
+  tagHref: (tag: string) => string;
+  /** The locales that hold a real copy of this article, for `hreflang`. */
+  alternates: { tag: string; href: string }[];
+}
+
+// The row is the layout: the article takes eight columns and the table of
+// contents four, so the article's measure is narrower on wide screens than the
+// container - the intended consequence of having a sidebar, not an accident.
+// The four columns are also the hero cover's column (see `PageHero.astro`): one
+// third of the container is the right rail, and the cover above the fold lines
+// up with the contents below it.
+const { locale, article, rendered, tagHref, alternates } = Astro.props;
+const { Content, headings } = rendered;
+const cover = article.data.cover;
+const license = LICENSES[article.data.license as LicenseId];
+const licenseUrl = article.data.licenseUrl ?? license.url;
+const author = article.data.author;
+const updated = article.data.updated;
+---
+
+<Base
+  locale={locale}
+  title={article.data.title}
+  path={`${article.id}/`}
+  alternates={alternates}
+>
+  <PageHero
+    title={article.data.title}
+    description={article.data.description}
+    light={cover?.light.src}
+    dark={cover?.dark?.src}
+  />
+  <div class="container pb-4">
+    <div class="row g-5">
+      <div class="col-12 col-xl-4 order-xl-last">
+        <TableOfContents locale={locale} headings={headings} />
+      </div>
+      <div class="article-wrapper col-12 col-xl-8">
+        <article class="article-body">
+          <Content />
+        </article>
+        <footer class="border-top pt-3 mt-4">
+          {article.data.tags && (
+            <ul class="list-inline mb-2">
+              {article.data.tags.map((tag) => (
+                <li class="list-inline-item">
+                  <a
+                    class="badge text-bg-secondary text-decoration-none"
+                    href={tagHref(tag)}
+                  >
+                    {t(locale, `text-tag-${tag}`)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          <ul class="text-body-secondary mb-0 small list-unstyled">
+            <li>
+              <span>{t(locale, "text-label-author")}: </span>
+              <span class="font-tnum">
+                {author ?? t(locale, "text-site-author")}
+              </span>
+            </li>
+            <li>
+              <span>{t(locale, "text-label-publish")}: </span>
+              <span class="font-tnum">{article.data.date}</span>
+            </li>
+            {updated && (
+              <li>
+                <span>{t(locale, "text-label-update")}: </span>
+                <span class="font-tnum">{updated}</span>
+              </li>
+            )}
+            <li>
+              <span>{t(locale, "text-label-license")}: </span>
+              {licenseUrl ? (
+                <a href={licenseUrl} rel="license noopener" target="_blank">
+                  {license.label}
+                </a>
+              ) : (
+                license.label
+              )}
+            </li>
+          </ul>
+        </footer>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style is:inline>
+  @media (max-width: 1199.98px) {
+    .article-wrapper {
+      margin-top: 1rem;
+    }
+  }
+</style>

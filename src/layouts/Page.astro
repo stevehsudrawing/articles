@@ -1,0 +1,66 @@
+---
+import PageHero from "../components/PageHero.astro";
+import type { Locale } from "../i18n/locales";
+import Base from "./Base.astro";
+
+interface Props {
+  /** The locale whose copy the page is written in. */
+  locale: Locale;
+  /** Which of the header's items this page is. */
+  page: "home" | "list" | "tags";
+  /** The hero's heading, which is also the page's `h1`. */
+  heroTitle: string;
+  /** The hero's introduction. */
+  heroDescription: string;
+  /**
+   * The page's own name for the document title. Omitted on the home page,
+   * where the title is the site's name and nothing else.
+   */
+  title?: string;
+  /** The list's page number, folded into the document title. */
+  pageNumber?: number;
+  /** The cover's URL, for the page kinds that have one. */
+  light?: string;
+  dark?: string;
+  /** The page's path inside its locale, for the language switcher. */
+  path?: string;
+  /** The translations this page really has, for `hreflang`. */
+  alternates?: { tag: string; href: string }[];
+}
+
+// The page kinds share one hero and one container; only the home has a cover,
+// and a page without one renders the same block with the text alone.
+const {
+  locale,
+  page,
+  heroTitle,
+  heroDescription,
+  title,
+  pageNumber,
+  light,
+  dark,
+  path = "",
+  alternates,
+} = Astro.props;
+---
+
+<Base
+  locale={locale}
+  page={page}
+  title={title}
+  pageNumber={pageNumber}
+  path={path}
+  alternates={alternates}
+>
+  <PageHero
+    title={heroTitle}
+    description={heroDescription}
+    light={light}
+    dark={dark}
+  />
+  <div class="container pb-4">
+    <div class="row g-0">
+      <slot />
+    </div>
+  </div>
+</Base>

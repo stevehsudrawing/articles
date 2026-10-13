@@ -140,9 +140,19 @@ describe("articleSchema", () => {
   });
 
   it("rejects a license outside the vocabulary", () => {
-    expect(LICENSES).toContain("All-Rights-Reserved");
+    expect(Object.keys(LICENSES)).toContain("All-Rights-Reserved");
     expect(schema.safeParse({ ...frontmatter, license: "MIT" }).success).toBe(
       false,
+    );
+  });
+
+  it("gives every license a label, and a URL except the reserved one", () => {
+    for (const [id, license] of Object.entries(LICENSES)) {
+      expect(license.label, id).not.toBe("");
+    }
+    expect(LICENSES["All-Rights-Reserved"].url).toBeUndefined();
+    expect(LICENSES["CC-BY-4.0"].url).toBe(
+      "https://creativecommons.org/licenses/by/4.0/",
     );
   });
 

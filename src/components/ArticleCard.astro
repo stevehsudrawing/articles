@@ -1,0 +1,96 @@
+---
+import { articleUrl, type Article } from "../articles";
+import type { Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** The locale whose URLs the card links to. */
+  locale: Locale;
+  /** The article to show. */
+  article: Article;
+}
+
+// The card links to the current locale and lets the redirect happen: the rule
+// that decides which URLs a locale lacks then keeps one home.
+const { locale, article } = Astro.props;
+const href = articleUrl(locale, article.id);
+const cover = article.data.cover?.light;
+const date = article.data.date;
+const updated = article.data.updated;
+const author = article.data.author;
+---
+
+<div class="col-md-6 col-xl-4">
+  <article class="card h-100">
+    {cover && (
+      <img
+        class="card-img-top article-card-cover"
+        src={cover.src}
+        width={cover.width}
+        height={cover.height}
+        alt=""
+        loading="lazy"
+      />
+    )}
+    <div class="card-body">
+      <h2 class="card-title h5">
+        <a href={href}>{article.data.title}</a>
+      </h2>
+      <p class="card-text text-body-secondary mb-0">
+        {article.data.description}
+      </p>
+      <p class="card-text text-body-secondary mt-1 mb-0 small font-tnum d-flex gap-2 flex-wrap">
+        <span>
+          {updated ? (
+            <>
+              <span class="card-icon">
+                <Icon name="update" />
+              </span>
+              <span>{updated}</span>
+            </>
+          ) : (
+            <>
+              <span class="card-icon">
+                <Icon name="calendarToday" />
+              </span>
+              <span>{date}</span>
+            </>
+          )}
+        </span>
+        {author && author !== t(locale, "text-site-author") && (
+          <span>
+            <span class="card-icon">
+              <Icon name="person" />
+            </span>
+            <span>{author}</span>
+          </span>
+        )}
+      </p>
+    </div>
+  </article>
+</div>
+
+<style>
+  /* The list thumbnails crop to 4:3, which discards 15% from each side - the
+     same rule the hero follows, so an author keeps content inside the central
+     70% of the width. */
+  .article-card-cover {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  /* A glyph is a `1em` box sitting on the text's baseline, so an inline one
+     leaves a descender's worth of gap under it: `inline-flex` blockifies it and
+     takes the gap away, and `-0.125em` drops the box onto the digits' optical
+     baseline - the same correction `SiteHeader.vue` makes for its own glyphs.
+     The margin is the only space before the value: measured in the 14px card
+     text, the glyph is 14x14, its box bottom sits 1.58px below the digits',
+     and the gap to the first digit is 1.75px, which is the margin alone - the
+     whitespace between the two spans does not survive the template compiler. */
+  .card-icon {
+    display: inline-flex;
+    vertical-align: -0.125em;
+    margin-right: 0.125em;
+  }
+</style>

@@ -1,21 +1,45 @@
-import { defineCollection } from "astro:content";
 import type { SchemaContext } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { defineCollection } from "astro:content";
 import { localeIdentities, type Locale } from "./i18n/locales";
 
 /**
- * The license vocabulary: the only values `license` accepts. A new value is
- * added here first, and every document that lists the licenses follows in the
- * same commit.
+ * The license vocabulary: the only values `license` accepts, each with the
+ * label a page shows and the URL it points at. A new value is added here first,
+ * and every document that lists the licenses follows in the same commit.
+ *
+ * `All-Rights-Reserved` has no URL, because there is nothing to link to when
+ * reuse is not granted; the article page renders its label as plain text.
  */
-export const LICENSES = [
-  "CC-BY-4.0",
-  "CC-BY-SA-4.0",
-  "CC-BY-NC-SA-4.0",
-  "CC-BY-NC-ND-4.0",
-  "All-Rights-Reserved",
-] as const;
+export const LICENSES = {
+  "CC-BY-4.0": {
+    label: "Creative Commons Attribution 4.0",
+    url: "https://creativecommons.org/licenses/by/4.0/",
+  },
+  "CC-BY-SA-4.0": {
+    label: "Creative Commons Attribution-ShareAlike 4.0",
+    url: "https://creativecommons.org/licenses/by-sa/4.0/",
+  },
+  "CC-BY-NC-SA-4.0": {
+    label: "Creative Commons Attribution-NonCommercial-ShareAlike 4.0",
+    url: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  },
+  "CC-BY-NC-ND-4.0": {
+    label: "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0",
+    url: "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  },
+  "All-Rights-Reserved": {
+    label: "All rights reserved. No reuse without permission.",
+    url: undefined,
+  },
+} as const;
+
+/** One value of the vocabulary. */
+export type LicenseId = keyof typeof LICENSES;
+
+/** The ids, in table order, for the schema's enum. */
+const LICENSE_IDS = Object.keys(LICENSES) as [LicenseId, ...LicenseId[]];
 
 /** `YYYY-MM-DD`, the only shape a frontmatter date may take. */
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -126,7 +150,7 @@ export function articleSchema(locale: Locale) {
             "An article needs a description: it is the lede and the card's text.",
           ),
         date: z.string().regex(DATE, QUOTED_DATE),
-        license: z.enum(LICENSES, "Use one of the license values."),
+        license: z.enum(LICENSE_IDS, "Use one of the license values."),
         author: z.string().min(1).optional(),
         updated: z.string().regex(DATE, QUOTED_DATE).optional(),
         tags: z

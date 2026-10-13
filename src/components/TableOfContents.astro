@@ -1,0 +1,65 @@
+---
+import type { Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
+import { tableOfContents, type Heading } from "../markdown";
+
+interface Props {
+  /** The locale whose copy names the landmark. */
+  locale: Locale;
+  /** The `headings` array the renderer handed back. */
+  headings: Heading[];
+}
+
+// One markup for both layouts: it is the row's first child in source order, so
+// it sits above the article on narrow screens with no help, and at `xl`
+// Bootstrap's order utilities move it beside the article. Rendering two
+// navigation blocks and hiding one would duplicate every link.
+const { locale, headings } = Astro.props;
+const entries = tableOfContents(headings);
+---
+
+{entries.length > 0 && (
+  <nav class="table-of-contents" aria-labelledby="toc-label">
+    <h2 class="h6 text-uppercase text-body-secondary" id="toc-label">
+      {t(locale, "text-nav-toc")}
+    </h2>
+    <ul class="list-unstyled mb-0">
+      {entries.map((heading) => (
+        <li class:list={["toc-item", `toc-depth-${heading.depth}`]}>
+          <a href={`#${heading.slug}`}>{heading.text}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<style>
+  /* Fully expanded and static on narrow screens: nothing is hidden behind a
+     toggle, so every section stays reachable without JavaScript. */
+  .table-of-contents {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .toc-item {
+    margin-bottom: 0.25rem;
+  }
+
+  /* An `h3` entry is indented under the `h2` it belongs to. */
+  .toc-depth-3 {
+    padding-left: 1rem;
+  }
+
+  /* Sticky through CSS alone, offset by the header height so it never slides
+     under the header. The list is at most as tall as the viewport. */
+  @media (min-width: 1200px) {
+    .table-of-contents {
+      position: sticky;
+      top: calc(var(--shar-header-height) + 1rem);
+      max-height: calc(100vh - var(--shar-header-height) - 2rem);
+      overflow-y: auto;
+      margin-top: 1rem;
+      margin-bottom: 0;
+    }
+  }
+</style>

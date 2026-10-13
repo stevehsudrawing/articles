@@ -1,0 +1,100 @@
+---
+import type { Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** The locale whose copy labels the links. */
+  locale: Locale;
+  /** Astro's pagination object for the current page. */
+  page: {
+    url: {
+      current?: string;
+      prev?: string;
+      next?: string;
+      first?: string;
+      last?: string;
+    };
+    currentPage: number;
+    lastPage: number;
+  };
+}
+
+// Every control is an anchor to a page that exists, so the strip works without
+// JavaScript and a crawler can follow it. `prev`, `next`, `first` and `last`
+// are `undefined` exactly when they would lead where the reader already is, so
+// no dead control is ever rendered.
+const { locale, page } = Astro.props;
+const { url, currentPage, lastPage } = page;
+
+/** How many numbered pages the window shows at most. */
+const WINDOW = 5;
+
+const windowStart = Math.max(
+  1,
+  Math.min(currentPage - 2, lastPage - WINDOW + 1),
+);
+const windowEnd = Math.min(lastPage, windowStart + WINDOW - 1);
+const numbers = Array.from(
+  { length: windowEnd - windowStart + 1 },
+  (_, index) => windowStart + index,
+);
+
+const pageUrl = (number: number) =>
+  (url.current ?? "").replace(/\/\d+\/$/, `/${number}/`);
+---
+
+{lastPage > 1 && (
+  <nav aria-label={t(locale, "text-nav-pagination")}>
+    <p class="text-body-secondary mb-2">
+      {t(locale, "text-count-pages", String(lastPage))}
+    </p>
+    <ul class="pagination">
+      {url.first && (
+        <li class="page-item">
+          <a class="page-link" href={url.first}>
+            {t(locale, "text-nav-first-page")}
+          </a>
+        </li>
+      )}
+      <li class:list={["page-item", !url.prev && "disabled"]}>
+        <a
+          class="page-link"
+          href={url.prev ?? url.current}
+          aria-label={t(locale, "text-nav-previous-page")}
+          aria-disabled={!url.prev}
+        >
+          <Icon name="chevronLeft" />
+        </a>
+      </li>
+      {numbers.map((number) => (
+        <li class:list={["page-item", number === currentPage && "active"]}>
+          <a
+            class="page-link"
+            href={pageUrl(number)}
+            aria-current={number === currentPage ? "page" : undefined}
+          >
+            {number}
+          </a>
+        </li>
+      ))}
+      <li class:list={["page-item", !url.next && "disabled"]}>
+        <a
+          class="page-link"
+          href={url.next ?? url.current}
+          aria-label={t(locale, "text-nav-next-page")}
+          aria-disabled={!url.next}
+        >
+          <Icon name="chevronRight" />
+        </a>
+      </li>
+      {url.last && (
+        <li class="page-item">
+          <a class="page-link" href={url.last}>
+            {t(locale, "text-nav-last-page")}
+          </a>
+        </li>
+      )}
+    </ul>
+  </nav>
+)}

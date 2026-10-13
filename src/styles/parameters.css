@@ -10,6 +10,21 @@
      `scroll-padding-top` all read it, so the three cannot drift apart. */
   --shar-header-height: 64px;
 
+  /* The header's layer, the one value that has to sit above the page and below
+     nothing that matters. */
+  --shar-z-header: 1030;
+
   /* The focus ring is a hard outline, never a shadow. */
   --shar-focus-ring-width: 2px;
+
+  /* Blur radii */
+  --shlh-blur-sm: 0.5rem;
+  --shlh-blur-md: 1rem;
+
+  /* Opacities */
+  --shlh-surface-opacity: 0.8;
+
+  /* Durations */
+  --shlh-duration-fast: 0.1s;
+  --shlh-duration-base: 0.2s;
 }

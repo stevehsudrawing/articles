@@ -1,6 +1,45 @@
 {
+  "text-site-author": "Steve Hsu (什五)",
+  "text-site-copyright": "版权所有 © %1 %2",
   "text-site-name": "Steve Hsu (什五) 的文章",
+
+  "text-nav-first-page": "第一页",
+  "text-nav-home": "首页",
+  "text-nav-last-page": "末页",
+  "text-nav-license": "许可协议",
+  "text-nav-list": "文章",
+  "text-nav-main-site": "返回主站",
+  "text-nav-next-page": "下一页",
+  "text-nav-pagination": "分页",
+  "text-nav-previous-page": "上一页",
+  "text-nav-tags": "标签",
+  "text-nav-toc": "本页目录",
+
+  "text-action-close": "关闭",
+  "text-action-home": "前往首页",
+  "text-action-language": "语言",
+  "text-action-menu": "菜单",
+  "text-action-settings": "设置",
+  "text-action-theme-auto": "自动",
+  "text-action-theme-dark": "深色",
+  "text-action-theme-light": "浅色",
+  "text-action-theme": "主题",
+
+  "text-hero-title-home": "Steve Hsu (什五) 的文章",
+  "text-hero-description-home": "随想 · 故事 · 绘画 · 设计 · 技巧",
+  "text-hero-title-list": "文章",
+  "text-hero-description-list": "按时间倒序排列的全部文章，每页 %1 篇。",
   "text-hero-title-404": "HTTP 404",
   "text-hero-description-404": "找不到这个页面，请检查网址是否输入正确。",
-  "text-action-home": "前往首页"
+
+  "text-label-author": "作者",
+  "text-label-license": "许可协议",
+  "text-label-publish": "发表于",
+  "text-label-update": "更新于",
+
+  "text-tag-design": "设计",
+  "text-tag-seed-article": "种子文章",
+
+  "text-count-pages": "共 %1 页",
+  "text-title-paged": "%1（第 %2 页）"
 }

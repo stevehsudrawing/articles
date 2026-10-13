@@ -1,0 +1,44 @@
+{
+  "text-site-copyright": "著作權所有 © %1 %2",
+  "text-site-name": "Steve Hsu (什五) 的文章",
+
+  "text-nav-first-page": "第一頁",
+  "text-nav-home": "首頁",
+  "text-nav-last-page": "末頁",
+  "text-nav-license": "授權條款",
+  "text-nav-list": "文章",
+  "text-nav-main-site": "返回主站",
+  "text-nav-next-page": "下一頁",
+  "text-nav-pagination": "分頁",
+  "text-nav-previous-page": "上一頁",
+  "text-nav-tags": "標籤",
+  "text-nav-toc": "本頁目錄",
+
+  "text-action-close": "關閉",
+  "text-action-home": "前往首頁",
+  "text-action-language": "語言",
+  "text-action-menu": "選單",
+  "text-action-settings": "設定",
+  "text-action-theme-auto": "自動",
+  "text-action-theme-dark": "深色",
+  "text-action-theme-light": "淺色",
+  "text-action-theme": "主題",
+
+  "text-hero-title-home": "Steve Hsu (什五) 的文章",
+  "text-hero-description-home": "隨想 · 故事 · 繪畫 · 設計 · 技巧",
+  "text-hero-title-list": "文章",
+  "text-hero-description-list": "依時間倒序排列的所有文章，每頁 %1 篇。",
+  "text-hero-title-404": "HTTP 404",
+  "text-hero-description-404": "找不到這個頁面，請檢查網址是否輸入正確。",
+
+  "text-label-author": "作者",
+  "text-label-license": "授權條款",
+  "text-label-publish": "發表於",
+  "text-label-update": "更新於",
+
+  "text-tag-design": "設計",
+  "text-tag-seed-article": "種子文章",
+
+  "text-title-paged": "%1（第 %2 頁）",
+  "text-count-pages": "共 %1 頁"
+}

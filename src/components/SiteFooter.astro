@@ -1,0 +1,76 @@
+---
+import { t } from "../i18n/messages";
+import { locales, type Locale } from "../i18n/locales";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** The locale this page is written in. */
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const year = new Date().getFullYear();
+
+// The one control that writes the shared `lang`: following it is an explicit
+// act, and the main site reads that key. Visiting this site never writes it.
+const mainSite = "https://stevehsudrawing.github.io/";
+const language = locales.find((entry) => entry.identity === locale)!.tag;
+---
+
+<footer class="bg-body-tertiary py-4 mt-2 small">
+  <div class="container">
+    <div class="text-body-secondary d-flex flex-wrap gap-3">
+      <p class="mb-0 flex-grow-1">
+        {t(
+          locale,
+          "text-site-copyright",
+          String(year),
+          t(locale, "text-site-author"),
+        )}
+      </p>
+      <p class="mb-0">
+        <a
+          href="https://github.com/stevehsudrawing/articles/blob/main/LICENSE.md"
+          target="_blank"
+        >
+          {t(locale, "text-nav-license")}
+          <span class="footer-indicator">
+            <Icon name="arrowOutward" />
+          </span>
+        </a>
+      </p>
+      <p class="mb-0">
+        <a href={mainSite} data-main-site data-lang={language}>
+          {t(locale, "text-nav-main-site")}
+          <span class="footer-indicator">
+            <Icon name="arrowOutward" />
+          </span>
+        </a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script is:inline>
+  // The link above works without this: only the storage write is lost, which is
+  // why the handler is three lines here rather than a second island.
+  document
+    .querySelector("[data-main-site]")
+    ?.addEventListener("click", (event) => {
+      localStorage.setItem("lang", event.currentTarget.dataset.lang);
+    });
+</script>
+
+<style>
+  /* The two links that leave the site carry the outward arrow, small and at the
+     text's top-right corner, which is the main site's own indicator rule. The
+     size is a font size because a glyph is an `em` box: the wrapper is what
+     owns it, so nothing here reaches into the icon. (`Icon.astro` renders the
+     SVG through `set:html`, so it carries no scope attribute and a scoped rule
+     cannot name it - the wrapper is the element that can be named.) */
+  .footer-indicator {
+    font-size: 0.6rem;
+    line-height: 1;
+    vertical-align: top;
+  }
+</style>

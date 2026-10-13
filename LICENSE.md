@@ -27,12 +27,13 @@ documentation in this repository, except for the material excluded in
   it, served from `public/licenses/`. Every other dependency is a build-time
   tool whose code never reaches the published site.
 
-| Work                                                     | Use                                                                                                     | License                   | Copyright                                          |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------------------------------- |
-| [Bootstrap](public/licenses/bootstrap-LICENSE.txt)       | The compiled CSS: Reboot, the grid and the utilities                                                    | MIT                       | Copyright (c) 2011-2025 The Bootstrap Authors      |
-| [Inter](public/licenses/inter-LICENSE.txt)               | The Latin webfonts for prose, and the `@font-face` rules that serve them                                | SIL Open Font License 1.1 | Copyright (c) 2016 The Inter Project Authors       |
-| [Roboto Mono](public/licenses/roboto-mono-LICENSE.txt)   | The Latin webfonts for code, and the `@font-face` rules that serve them                                 | SIL Open Font License 1.1 | Copyright (c) 2015 The Roboto Mono Project Authors |
-| [prism-themes](public/licenses/prism-themes-LICENSE.txt) | The fenced-code syntax theme in `src/styles/syntax.css`, adapted from its One Light and One Dark themes | MIT                       | Copyright (c) 2015 PrismJS                         |
+| Work                                                             | Use                                                                                                               | License                   | Copyright                                          |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------------------------------- |
+| [Bootstrap](public/licenses/bootstrap-LICENSE.txt)               | The compiled CSS: Reboot, the grid and the utilities                                                              | MIT                       | Copyright (c) 2011-2025 The Bootstrap Authors      |
+| [Inter](public/licenses/inter-LICENSE.txt)                       | The Latin webfonts for prose, and the `@font-face` rules that serve them                                          | SIL Open Font License 1.1 | Copyright (c) 2016 The Inter Project Authors       |
+| [Roboto Mono](public/licenses/roboto-mono-LICENSE.txt)           | The Latin webfonts for code, and the `@font-face` rules that serve them                                           | SIL Open Font License 1.1 | Copyright (c) 2015 The Roboto Mono Project Authors |
+| [Prism](public/licenses/prism-themes-LICENSE.txt)                | The fenced-code syntax theme in `src/styles/syntax.css`, adapted from prism-themes' One Light and One Dark themes | MIT                       | Copyright (c) 2015 PrismJS                         |
+| [Material Symbols](public/licenses/material-symbols-LICENSE.txt) | The icon SVGs in `src/assets/icons/`, extracted from the Sharp font as glyph outlines                             | Apache License 2.0        | Copyright Google LLC                               |
 
 ## 3. Permitted Use
 

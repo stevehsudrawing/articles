@@ -1,0 +1,20 @@
+---
+import { ICONS, type IconName } from "../icons";
+
+interface Props {
+  /** Which glyph to inline. */
+  name: IconName;
+}
+
+// A glyph inlined into `currentColor`, so it takes the color of the text it
+// sits in. The extraction tool writes `fill="currentColor"` and a `1em` box, so
+// the size follows the surrounding font size and a consumer that wants another
+// size sets `font-size` on an element it owns - or overrides the box in CSS,
+// which outranks the attribute. Nothing here sizes the glyph: one size for
+// every call site would be a second mechanism beside the `em`. The consumer
+// cannot name this element in a scoped rule either, because `set:html` output
+// carries no scope attribute.
+const { name } = Astro.props;
+---
+
+<Fragment set:html={ICONS[name]} />

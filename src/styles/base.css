@@ -32,6 +32,30 @@ html {
   --bs-border-radius-pill: 0;
 }
 
+/* --- Selection --- */
+
+*::selection {
+  background: var(--bs-primary);
+  color: var(--shar-primary-contrast);
+}
+
+/* --- Cards --- */
+
+.card {
+  border: none;
+  margin: calc(var(--bs-card-border-width) / 2);
+  outline: var(--bs-card-border-width) solid var(--bs-card-border-color);
+  transition:
+    background-color var(--shlh-duration-fast) ease-in-out,
+    outline var(--shlh-duration-fast) ease-in-out;
+}
+
+.card:hover {
+  background-color: rgba(var(--bs-secondary-rgb), 0.05);
+  z-index: 1005;
+  outline: calc(var(--bs-card-border-width) * 2) solid var(--bs-secondary);
+}
+
 /* --- Focus ---
    An outline rather than a shadow. Bootstrap's `.btn:focus-visible` sets
    `outline: 0` and a box-shadow ring, and it is the more specific selector, so
@@ -41,6 +65,53 @@ html {
 .btn:focus-visible {
   outline: var(--shar-focus-ring-width) solid var(--bs-focus-ring-color);
   outline-offset: 2px;
+}
+
+/* --- Task list checkboxes ---
+   GFM emits a bare `<input type="checkbox" disabled>`, and the renderer's own
+   step gives it Bootstrap's `form-check-input` (see `src/markdown.ts`). Two of
+   Bootstrap's own values are restated here, because both are compiled literals
+   that neither the token bridge nor the zeroed radius tokens can reach:
+   `.form-check-input:checked` fills with `#0d6efd`, and
+   `.form-check-input[type="checkbox"]` rounds with `.25em`. */
+
+.form-check-input:checked {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.form-check-input[type="checkbox"] {
+  border-radius: 0;
+}
+
+/* The check mark is a white stroke baked into Bootstrap's data URL, and the
+   dark theme's fill is a light step, so the foreground flips - which is the
+   accent rule for text on a filled accent, applied to the mark inside the
+   fill. */
+
+[data-bs-theme="dark"] .form-check-input:checked[type="checkbox"] {
+  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+/* Every GFM checkbox carries `disabled`, so Bootstrap's own
+   `.form-check-input:disabled { opacity: .5 }` would apply to all of them.
+   Measured: at half opacity the light theme's white check composites to 2.01:1
+   against its own fill, below the 3:1 floor a graphic needs, and the mark is
+   the whole point of the box. It stays `disabled` - the attribute and the
+   `pointer-events: none` are what say it is not a control - but a rendered task
+   list is content, so it is not dimmed. A real control elsewhere keeps
+   Bootstrap's opacity: this is scoped to the article body. */
+
+.article-body .form-check-input:disabled {
+  opacity: 1;
+}
+
+/* --- Blockquote --- */
+
+.article-body blockquote {
+  opacity: 0.8;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(var(--bs-body-color-rgb), 0.5);
 }
 
 /* --- Code spans ---
@@ -66,6 +137,42 @@ pre code {
   padding: 0;
   background-color: transparent;
   outline: none;
+}
+
+/* --- The renderer's own heading ---
+   The footnote section opens with `<h2 class="sr-only" id="footnote-label">`,
+   and Bootstrap defines `.visually-hidden` rather than `.sr-only`, so the
+   heading would otherwise appear above the notes as a visible English word.
+   The table of contents drops it by slug, in `src/markdown.ts`. */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Article body ---
+   `line-height` is set on the container rather than on `*`: the main site's
+   `.article * { line-height: 1.7 }` outranks `h2 { line-height: 1.2 }`, so its
+   headings inherit 1.7 along with the paragraphs. Inheritance gives us the
+   paragraphs, and the headings are brought back to the same rhythm explicitly,
+   because Bootstrap writes a `line-height` on every heading - which a
+   container's inheritance cannot reach - and 1.2 measured too tight against
+   1.7 prose. The rule says `inherit`, not `1.7`, so the number keeps one home. */
+
+.article-body {
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+
+.article-body :is(h1, h2, h3, h4, h5, h6) {
+  line-height: inherit;
 }
 
 /* --- Buttons ---
@@ -95,4 +202,10 @@ pre code {
   --bs-btn-disabled-color: var(--shar-primary-contrast);
   --bs-btn-disabled-bg: var(--bs-primary);
   --bs-btn-disabled-border-color: var(--bs-primary);
+}
+
+/* --- Active Nav Link --- */
+
+.nav-link.active {
+  font-weight: calc(var(--bs-body-font-weight) + 100);
 }

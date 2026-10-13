@@ -1,0 +1,93 @@
+---
+interface Props {
+  /** The page's heading, rendered as the document's `h1`. */
+  title: string;
+  /** The page's introduction, under the heading. */
+  description: string;
+  /** The cover's URL, when the page kind has one. */
+  light?: string;
+  /** The dark-theme variant, when the page declares a pair. */
+  dark?: string;
+}
+
+// A page opens with a heading, an introduction and - for the kinds that have
+// one - a cover. The cover is never load-bearing: a page without one renders
+// the same block with the text alone, so no layout shifts between page kinds.
+//
+// The row's gutters are `gx-5 gy-4`, and the horizontal one matters beyond this
+// file: the cover's column is a third of the container, and the article page's
+// table of contents is a third too, so the two share one right-rail width. The
+// two-thirds width the heading gets is then the article body's own width. Both
+// facts come from the same gutter value, so a change here moves the article
+// page's grid as well - the article layout's comment says the same thing from
+// the other side.
+const { title, description, light, dark } = Astro.props;
+---
+
+<div class="page-hero container py-4">
+  <div class="row align-items-center gx-5 gy-4 my-auto">
+    <div class:list={["col-12", light ? "col-lg-8" : ""]}>
+      <h1>{title}</h1>
+      <p class="text-body-secondary mb-0">{description}</p>
+    </div>
+    {light && (
+      <div class="col-12 col-lg-4">
+        <img class="page-hero-cover" src={light} alt="" data-cover="light" />
+        {dark && (
+          <img class="page-hero-cover" src={dark} alt="" data-cover="dark" />
+        )}
+      </div>
+    )}
+  </div>
+</div>
+
+<hr />
+
+<style>
+  .page-hero {
+    min-height: 12rem;
+  }
+
+  hr {
+    margin-top: 0;
+  }
+
+  /* 4:3 at every breakpoint, and no larger than 320x240 below the wide one -
+     the same crop the list thumbnails use, so an author's "keep content inside
+     the central 70%" rule covers both.
+
+     Above the wide breakpoint the box fills its column instead, which is a
+     third of the container. That is the rule this file shares with the article
+     layout: one right-rail width, so the cover above the fold and the table of
+     contents below it line up. A 4:3 box a third wide is about a quarter of the
+     container tall - the height the main site's square cover occupies at a
+     quarter wide. */
+  .page-hero-cover {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  @media (min-width: 992px) {
+    .page-hero-cover {
+      max-width: none;
+    }
+  }
+
+  /* The theme is a concrete attribute, so the pair is toggled here rather than
+     by a media query - `<picture>` cannot express the reader's choice. A page
+     whose script never ran carries no attribute and is the light theme. */
+  img[data-cover="dark"] {
+    display: none;
+  }
+
+  [data-bs-theme="dark"] img[data-cover="light"] {
+    display: none;
+  }
+
+  [data-bs-theme="dark"] img[data-cover="dark"] {
+    display: block;
+  }
+</style>

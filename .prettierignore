@@ -10,3 +10,6 @@ pnpm-lock.yaml
 
 # Prettier has no Python parser; Python is formatted with black instead.
 *.py
+
+# Licenses: should be provided as-is
+public/licenses

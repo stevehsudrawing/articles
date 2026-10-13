@@ -105,12 +105,15 @@ const ROWS = [...VARIANTS].sort((a, b) => b[0].length - a[0].length);
  * `programmed` and `programmer` contain `programme`, `greyhound` contains
  * `grey`, and `analyses` is the noun's plural in both - the verb's third
  * person, which is the one form the two disagree on, does not turn up in this
- * project's prose.
+ * project's prose. `labelledby` is here because the spelling is WAI-ARIA's own:
+ * the attribute is `aria-labelledby`, and no stylesheet or script may rename
+ * it.
  */
 const KEEP = new Set([
   "analyses",
   "greyhound",
   "greyhounds",
+  "labelledby",
   "programmed",
   "programmer",
   "programmers",

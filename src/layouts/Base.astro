@@ -10,19 +10,93 @@ import "../styles/parameters.css";
 import "../styles/fonts.css";
 import "../styles/base.css";
 import "../styles/syntax.css";
-import { getLocale, type Locale } from "../i18n/locales";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.vue";
+import { t } from "../i18n/messages";
+import {
+  defaultLocale,
+  getLocale,
+  locales,
+  type Locale,
+} from "../i18n/locales";
 
 interface Props {
   /** The locale whose language and BCP-47 tag the document carries. */
   locale: Locale;
-  /** The document title, already composed by the page. */
-  title: string;
+  /** Which of the header's items this page is, for `aria-current`. */
+  page?: "home" | "list" | "tags";
+  /** The page's own title. Omitted on the home page, which is the site name. */
+  title?: string;
+  /** The list's page number: it reaches the title and never the heading. */
+  pageNumber?: number;
+  /**
+   * The page's own path inside its locale (`page/2/`, `<slug>/`), which is what
+   * the language switcher links to. Every locale serves the same shape, so the
+   * switcher never has to know which of them holds a translation.
+   */
+  path?: string;
   /** Whether the page should stay out of search results. */
   noindex?: boolean;
+  /** The translations this page really has, for `hreflang`. */
+  alternates?: { tag: string; href: string }[];
 }
 
-const { locale, title, noindex = false } = Astro.props;
+const {
+  locale,
+  page,
+  title,
+  pageNumber,
+  path = "",
+  noindex = false,
+  alternates = [],
+} = Astro.props;
+
 const entry = getLocale(locale);
+const siteName = t(locale, "text-site-name");
+const absolute = (href: string) => new URL(href, Astro.site).href;
+
+// The composition has one home: the page hands over its own title and, on a
+// paginated page, its number, and the number arrives through a message so a
+// locale can put it where its own grammar does.
+const documentTitle = !title
+  ? siteName
+  : pageNumber
+    ? t(locale, "text-title-paged", title, String(pageNumber))
+    : `${title} - ${siteName}`;
+
+// The list's own URL is its first page: `/page/` exists only as a redirect, and
+// no in-site link should need one.
+const NAV_PATH: Record<"home" | "list" | "tags", string> = {
+  home: "",
+  list: "page/1/",
+  tags: "tags/",
+};
+
+const nav = (["home", "list", "tags"] as const).map((kind) => ({
+  href: getRelativeLocaleUrl(locale, NAV_PATH[kind]),
+  label: t(locale, `text-nav-${kind}`),
+  current: page === kind,
+}));
+
+const languages = locales.map((other) => ({
+  tag: other.tag,
+  name: other.name,
+  href: getRelativeLocaleUrl(other.identity, path),
+  current: other.identity === locale,
+}));
+
+const themes = (
+  [
+    ["auto", "contrast"],
+    ["light", "lightMode"],
+    ["dark", "darkMode"],
+  ] as const
+).map(([value, icon]) => ({
+  value,
+  icon,
+  label: t(locale, `text-action-theme-${value}`),
+}));
 ---
 
 <!doctype html>
@@ -30,27 +104,57 @@ const entry = getLocale(locale);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{documentTitle}</title>
+    {alternates.map((alternate) => (
+      <link
+        rel="alternate"
+        hreflang={alternate.tag}
+        href={absolute(alternate.href)}
+      />
+    ))}
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={absolute(getRelativeLocaleUrl(defaultLocale, path))}
+    />
     {noindex && <meta name="robots" content="noindex" />}
     <script is:inline>
       // The theme has to be a concrete value before the first paint: Bootstrap
       // ships no automatic dark mode, so `auto` is resolved here and a system
-      // change is followed while the page is open.
+      // change is followed while the page is open. This script owns the theme -
+      // the header island only writes the stored choice and fires `shar:theme` -
+      // so the rule lives in one place rather than in two.
       (() => {
-        const stored = localStorage.getItem("theme");
-        const choice =
-          stored === "light" || stored === "dark" ? stored : "auto";
         const system = matchMedia("(prefers-color-scheme: dark)");
         const apply = () => {
+          const stored = localStorage.getItem("theme");
+          const choice =
+            stored === "light" || stored === "dark" ? stored : "auto";
           document.documentElement.dataset.bsTheme =
             choice === "auto" ? (system.matches ? "dark" : "light") : choice;
         };
         apply();
-        if (choice === "auto") system.addEventListener("change", apply);
+        system.addEventListener("change", apply);
+        document.addEventListener("shar:theme", apply);
       })();
     </script>
   </head>
   <body class="d-flex flex-column min-vh-100">
-    <slot />
+    <SiteHeader
+      client:idle
+      siteName={siteName}
+      nav={nav}
+      languages={languages}
+      languageLabel={t(locale, "text-action-language")}
+      themeLabel={t(locale, "text-action-theme")}
+      menuLabel={t(locale, "text-action-menu")}
+      settingsLabel={t(locale, "text-action-settings")}
+      closeLabel={t(locale, "text-action-close")}
+      themes={themes}
+    />
+    <main class="flex-grow-1">
+      <slot />
+    </main>
+    <SiteFooter locale={locale} />
   </body>
 </html>

@@ -88,6 +88,11 @@
   --shar-primary-hover: var(--shar-primary-300);
   --shar-primary-active: var(--shar-primary-200);
 
+  --bs-body-bg: #222621;
+  --bs-body-bg-rgb: 34, 38, 33;
+  --bs-tertiary-bg: #2d312c;
+  --bs-tertiary-bg-rgb: 45, 49, 44;
+
   --bs-primary: var(--shar-primary-400);
   --bs-primary-rgb: var(--shar-primary-400-rgb);
   --bs-link-color: var(--shar-primary-400);
@@ -112,4 +117,11 @@
   --shar-syntax-function: hsl(207, 82%, 66%);
   --shar-syntax-keyword: hsl(286, 60%, 67%);
   --shar-syntax-url: hsl(187, 47%, 55%);
+}
+
+/* --- Dropdown Menu --- */
+
+.dropdown-menu {
+  --bs-dropdown-link-active-bg: var(--bs-primary);
+  --bs-dropdown-link-active-color: var(--shar-primary-contrast);
 }

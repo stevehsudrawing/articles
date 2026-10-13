@@ -1,0 +1,10 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import type { Locale } from "../../../i18n/locales";
+
+// `/page/` is not a page of its own: it exists so the paginated list has a
+// stable entry URL, and it hands over to the first page.
+const locale: Locale = "zh-hant";
+
+return Astro.redirect(getRelativeLocaleUrl(locale, "page/1/"), 301);
+---
