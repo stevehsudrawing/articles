@@ -66,11 +66,11 @@ const documentTitle = !title
     : `${title} - ${siteName}`;
 
 // The list's own URL is its first page: `/page/` exists only as a redirect, and
-// no in-site link should need one.
+// no in-site link should need one. The tag index follows the same shape.
 const NAV_PATH: Record<"home" | "list" | "tags", string> = {
   home: "",
   list: "page/1/",
-  tags: "tags/",
+  tags: "tags/page/1/",
 };
 
 const nav = (["home", "list", "tags"] as const).map((kind) => ({

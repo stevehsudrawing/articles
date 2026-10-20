@@ -30,6 +30,9 @@
   "text-hero-description-list": "Every article, newest first, %1 to a page.",
   "text-hero-title-404": "HTTP 404",
   "text-hero-description-404": "This page does not exist. Check the address and try again.",
+  "text-hero-title-tags": "Tags",
+  "text-hero-description-tags": "Browse every article on the site by tag.",
+  "text-hero-description-tag": "Every article tagged \"%1\".",
 
   "text-label-author": "Author",
   "text-label-license": "License",

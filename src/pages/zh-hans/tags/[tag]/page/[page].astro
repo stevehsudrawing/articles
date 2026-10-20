@@ -1,0 +1,45 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import ArticleCard from "../../../../../components/ArticleCard.astro";
+import Pagination from "../../../../../components/Pagination.astro";
+import Page from "../../../../../layouts/Page.astro";
+import { t } from "../../../../../i18n/messages";
+import { locales, type Locale } from "../../../../../i18n/locales";
+import { tagPages } from "../../../../../tags";
+
+const locale: Locale = "zh-hans";
+
+// The locale is passed rather than read: `getStaticPaths` is hoisted to module
+// scope and cannot see a frontmatter constant (measured on the list route).
+export const getStaticPaths = tagPages("zh-hans");
+
+const { page } = Astro.props;
+const tag = Astro.params.tag!;
+const label = t(locale, `text-tag-${tag}`);
+
+const alternates = locales.map((other) => ({
+  tag: other.tag,
+  href: getRelativeLocaleUrl(
+    other.identity,
+    `tags/${tag}/page/${page.currentPage}/`,
+  ),
+}));
+---
+
+<Page
+  locale={locale}
+  page="tags"
+  heroTitle={label}
+  heroDescription={t(locale, "text-hero-description-tag", label)}
+  title={label}
+  pageNumber={page.currentPage === 1 ? undefined : page.currentPage}
+  path={`tags/${tag}/page/${page.currentPage}/`}
+  alternates={alternates}
+>
+  {page.data.map((article) => (
+    <ArticleCard locale={locale} article={article} />
+  ))}
+  <div class="col-12">
+    <Pagination locale={locale} page={page} />
+  </div>
+</Page>

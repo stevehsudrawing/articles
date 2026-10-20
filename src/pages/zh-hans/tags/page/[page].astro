@@ -1,0 +1,61 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import Pagination from "../../../../components/Pagination.astro";
+import Page from "../../../../layouts/Page.astro";
+import { t } from "../../../../i18n/messages";
+import { locales, type Locale } from "../../../../i18n/locales";
+import {
+  assertTagLabels,
+  tagCounts,
+  tagIndexPages,
+  tagPageUrl,
+} from "../../../../tags";
+
+const locale: Locale = "zh-hans";
+
+// The locale is passed rather than read: `getStaticPaths` is hoisted to module
+// scope and cannot see a frontmatter constant (measured on the list route).
+export const getStaticPaths = tagIndexPages();
+
+// This is the page that renders every label, so it is where a missing one fails
+// the build, naming the tag rather than only the key.
+await assertTagLabels();
+
+const { page } = Astro.props;
+const counts = await tagCounts(locale);
+
+const alternates = locales.map((other) => ({
+  tag: other.tag,
+  href: getRelativeLocaleUrl(other.identity, `tags/page/${page.currentPage}/`),
+}));
+---
+
+<Page
+  locale={locale}
+  page="tags"
+  heroTitle={t(locale, "text-hero-title-tags")}
+  heroDescription={t(locale, "text-hero-description-tags")}
+  title={t(locale, "text-hero-title-tags")}
+  pageNumber={page.currentPage === 1 ? undefined : page.currentPage}
+  path={`tags/page/${page.currentPage}/`}
+  alternates={alternates}
+>
+  {page.data.map((tag) => (
+    <div class="col-md-6 col-lg-4 col-xxl-3">
+      <a
+        class="card h-100 text-decoration-none"
+        href={tagPageUrl(locale, tag, 1)}
+      >
+        <div class="card-body d-flex align-items-center justify-content-between gap-2">
+          <span class="card-title h5 mb-0">{t(locale, `text-tag-${tag}`)}</span>
+          <span class="badge text-bg-secondary font-tnum">
+            {counts.get(tag) ?? 0}
+          </span>
+        </div>
+      </a>
+    </div>
+  ))}
+  <div class="col-12">
+    <Pagination locale={locale} page={page} />
+  </div>
+</Page>

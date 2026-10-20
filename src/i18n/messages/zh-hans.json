@@ -31,6 +31,9 @@
   "text-hero-description-list": "按时间倒序排列的全部文章，每页 %1 篇。",
   "text-hero-title-404": "HTTP 404",
   "text-hero-description-404": "找不到这个页面，请检查网址是否输入正确。",
+  "text-hero-title-tags": "标签",
+  "text-hero-description-tags": "按标签浏览站内的全部文章。",
+  "text-hero-description-tag": "带有「%1」标签的全部文章。",
 
   "text-label-author": "作者",
   "text-label-license": "许可协议",

@@ -48,6 +48,16 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 /** A tag: lowercase and hyphenated, so it can be a message-key fragment too. */
 const TAG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/**
+ * The one tag slug a route already owns.
+ *
+ * The tag index and the tag pages paginate under a literal `page` segment, so a
+ * tag named `page` would want `/tags/page/`, which is where `tags/page/1/`
+ * lives. Reserving it keeps one URL meaning one page; `webpage` says the same
+ * thing without a route behind it.
+ */
+const RESERVED_TAG = "page";
+
 /** The message a date without quotes gets, wherever it is written. */
 const QUOTED_DATE = 'Write the date in quotes, as "YYYY-MM-DD".';
 
@@ -174,6 +184,10 @@ export function articleSchema(locale: Locale) {
               .regex(
                 TAG,
                 "A tag is lowercase and hyphenated, like seed-article.",
+              )
+              .refine(
+                (tag) => tag !== RESERVED_TAG,
+                `"${RESERVED_TAG}" is a reserved tag: it names the pagination segment, so use "webpage" for that idea.`,
               ),
           )
           .optional(),

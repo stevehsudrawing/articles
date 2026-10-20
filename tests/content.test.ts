@@ -196,6 +196,22 @@ describe("articleSchema", () => {
     ).toBe(false);
   });
 
+  it("rejects the reserved page tag, and names the word to use", () => {
+    const result = schema.safeParse({ ...frontmatter, tags: ["page"] });
+
+    expect(result.success).toBe(false);
+    if (result.success) {
+      throw new Error("expected the reserved tag to be rejected");
+    }
+    expect(result.error.issues[0]?.message).toContain("webpage");
+  });
+
+  it("accepts webpage as a tag", () => {
+    expect(
+      schema.safeParse({ ...frontmatter, tags: ["webpage"] }).success,
+    ).toBe(true);
+  });
+
   it("rejects a licenseUrl that is not a URL", () => {
     expect(
       schema.safeParse({ ...frontmatter, licenseUrl: "creativecommons.org" })

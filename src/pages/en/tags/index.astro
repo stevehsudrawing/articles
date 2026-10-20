@@ -1,0 +1,11 @@
+---
+import type { Locale } from "../../../i18n/locales";
+import { tagIndexUrl } from "../../../tags";
+
+// `/tags/` is not a page of its own: it exists so the index has a stable entry
+// URL, and it hands over to the first page, exactly as `/page/` does for the
+// article list.
+const locale: Locale = "en";
+
+return Astro.redirect(tagIndexUrl(locale, 1), 301);
+---

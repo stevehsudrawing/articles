@@ -1,0 +1,12 @@
+---
+import type { Locale } from "../../../../i18n/locales";
+import { tagPageUrl, tagPaths } from "../../../../tags";
+
+// `/tags/<tag>/` is not a page of its own: it hands over to the tag's first
+// page, so the tag keeps a stable URL that needs no page number.
+const locale: Locale = "en";
+
+export const getStaticPaths = tagPaths();
+
+return Astro.redirect(tagPageUrl(locale, Astro.params.tag!, 1), 301);
+---

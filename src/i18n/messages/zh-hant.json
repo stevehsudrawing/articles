@@ -30,6 +30,9 @@
   "text-hero-description-list": "依時間倒序排列的所有文章，每頁 %1 篇。",
   "text-hero-title-404": "HTTP 404",
   "text-hero-description-404": "找不到這個頁面，請檢查網址是否輸入正確。",
+  "text-hero-title-tags": "標籤",
+  "text-hero-description-tags": "依標籤瀏覽站內的所有文章。",
+  "text-hero-description-tag": "帶有「%1」標籤的所有文章。",
 
   "text-label-author": "作者",
   "text-label-license": "授權條款",
