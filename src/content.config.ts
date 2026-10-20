@@ -2,6 +2,7 @@ import type { SchemaContext } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { defineCollection } from "astro:content";
+import { assertContentLayout, isArticleFolder } from "./content-layout";
 import { localeIdentities, type Locale } from "./i18n/locales";
 
 /**
@@ -44,9 +45,6 @@ const LICENSE_IDS = Object.keys(LICENSES) as [LicenseId, ...LicenseId[]];
 /** `YYYY-MM-DD`, the only shape a frontmatter date may take. */
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** `<YYYY-MM-DD>-<id>`: the article folder's name, which is also its slug. */
-const SLUG = /^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
 /** A tag: lowercase and hyphenated, so it can be a message-key fragment too. */
 const TAG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -75,65 +73,81 @@ function assertQuotedDate(field: string, value: unknown, entry: string): void {
 }
 
 /**
- * Derives an entry's `id` from its path, and checks what the path states.
+ * Builds one locale collection's `generateId`, which derives an entry's `id`
+ * from its path and checks what the path states.
  *
- * The id is the article folder's name, because that name is the slug. The
+ * The id is the article folder's name, because that folder name is the slug,
+ * so every locale of one article derives the same id from the same folder. The
  * folder also states the article's date, so this is the one place that can
  * compare it with the frontmatter's: the callback receives the entry path and
  * the unvalidated frontmatter, while a schema sees only the data. The
  * parameter's type restates the loader's own, which the loader does not export.
  *
- * @param options - The loader's options; only `entry` and `data` are read.
- * @returns The article folder's name.
- * @throws If the entry is not a folder's `index.md`, if the folder name is not
+ * @param locale - The identity of the collection this callback serves.
+ * @returns The loader's `generateId` callback.
+ * @throws If the entry is not `<slug>/<locale>.md`, if the folder name is not
  * `<YYYY-MM-DD>-<id>`, if a date is unquoted, or if the two dates disagree.
  */
-export function generateId({
-  entry,
-  data,
-}: {
-  entry: string;
-  base: URL;
-  data: Record<string, unknown>;
-}): string {
-  const segments = entry.split("/");
-  const file = segments.pop();
-  const folder = segments.pop();
+export function articleId(locale: Locale) {
+  return ({
+    entry,
+    data,
+  }: {
+    entry: string;
+    base: URL;
+    data: Record<string, unknown>;
+  }): string => {
+    const segments = entry.split("/");
+    const file = segments.pop();
+    const folder = segments.pop();
 
-  if (file !== "index.md" || !folder) {
-    throw new Error(
-      `An article must be a folder with an index.md: ${entry}. Move it to <YYYY-MM-DD>-<id>/index.md.`,
-    );
-  }
+    if (!file || !folder || segments.length > 0) {
+      throw new Error(
+        `An article is one folder plus one file: ${entry} must be src/content/<YYYY-MM-DD>-<id>/${locale}.md.`,
+      );
+    }
 
-  if (!SLUG.test(folder)) {
-    throw new Error(
-      `Article folder must be named <YYYY-MM-DD>-<id>, for example 2026-10-11-hello-world: "${folder}" in ${entry}.`,
-    );
-  }
+    if (file === "index.md") {
+      throw new Error(
+        `An article is one file per locale: rename ${entry} to ${folder}/${locale}.md.`,
+      );
+    }
 
-  assertQuotedDate("date", data.date, entry);
-  assertQuotedDate("updated", data.updated, entry);
+    if (file !== `${locale}.md`) {
+      throw new Error(
+        `The ${locale} file of "${folder}" must be named ${locale}.md, not ${file}: ${entry}.`,
+      );
+    }
 
-  const folderDate = folder.slice(0, 10);
+    if (!isArticleFolder(folder)) {
+      throw new Error(
+        `Article folder must be named <YYYY-MM-DD>-<id>, for example 2026-10-11-hello-world: "${folder}" in ${entry}.`,
+      );
+    }
 
-  if (typeof data.date === "string" && data.date !== folderDate) {
-    throw new Error(
-      `Folder date ${folderDate} and frontmatter date ${data.date} disagree in ${entry}. Make them the same day.`,
-    );
-  }
+    assertQuotedDate("date", data.date, entry);
+    assertQuotedDate("updated", data.updated, entry);
 
-  return folder;
+    const folderDate = folder.slice(0, 10);
+
+    if (typeof data.date === "string" && data.date !== folderDate) {
+      throw new Error(
+        `Folder date ${folderDate} and frontmatter date ${data.date} disagree in ${entry}. Make them the same day.`,
+      );
+    }
+
+    return folder;
+  };
 }
 
 /**
  * Builds the schema every locale's articles are validated against.
  *
  * The fields are identical in every locale; the only difference is the `lang`
- * the factory injects, so an article's language is the folder it lives in
- * rather than a field an author can get wrong.
+ * the factory injects, so an article's language is the file it lives in rather
+ * than a field an author can get wrong.
  *
- * @param locale - The identity of the locale whose folder the collection reads.
+ * @param locale - The identity of the locale whose file the collection reads.
  * @returns The function Astro calls with its schema context.
  */
 export function articleSchema(locale: Locale) {
@@ -163,7 +177,6 @@ export function articleSchema(locale: Locale) {
               ),
           )
           .optional(),
-        translationKey: z.string().min(1).optional(),
         draft: z.boolean().default(false),
         cover: z
           .object({ light: image(), dark: image().optional() })
@@ -176,18 +189,29 @@ export function articleSchema(locale: Locale) {
 }
 
 /**
- * One collection per locale, named after its identity: the loader reads that
- * locale's folder and the schema injects the same identity as `lang`, so a
- * collection name, a folder name and a `lang` value are one string.
+ * The layout the loaders below assume, checked where it cannot be skipped.
+ *
+ * This runs at module scope because Astro evaluates a page's frontmatter once
+ * per rendered route: a route with no paths to render never runs it, which is
+ * exactly the state a mistyped file name produces. Measured - with the only
+ * article renamed to `zh-Hans.md`, a check in the article route let the build
+ * finish and the site was simply one article shorter.
+ */
+assertContentLayout();
+
+/**
+ * One collection per locale, named after its identity: every collection reads
+ * the same `src/content/`, and each matches only that locale's file, so a
+ * collection name, a file name and a `lang` value are one string.
  */
 export const collections = Object.fromEntries(
   localeIdentities.map((locale) => [
     locale,
     defineCollection({
       loader: glob({
-        pattern: "**/*.md",
-        base: `./src/content/${locale}`,
-        generateId,
+        pattern: `**/${locale}.md`,
+        base: "./src/content",
+        generateId: articleId(locale),
       }),
       schema: articleSchema(locale),
     }),

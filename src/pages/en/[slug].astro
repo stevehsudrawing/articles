@@ -5,7 +5,6 @@ import Article from "../../layouts/Article.astro";
 import {
   articleSlugs,
   articleUrl,
-  assertDefaultCovers,
   localesWith,
   redirectUrl,
 } from "../../articles";
@@ -15,9 +14,8 @@ const locale: Locale = "en";
 
 // Every locale generates a route for every article the default locale has, so a
 // missing translation has a URL that redirects rather than no URL at all. The
-// build also fails here, by name, if a locale holds an article the default
-// locale lacks.
-await assertDefaultCovers();
+// build-time content checks run on the home page instead, because they have to
+// run even when this route has nothing to render.
 
 export async function getStaticPaths() {
   const slugs = await articleSlugs();

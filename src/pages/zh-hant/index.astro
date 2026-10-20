@@ -2,7 +2,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import ArticleCard from "../../components/ArticleCard.astro";
 import Page from "../../layouts/Page.astro";
-import { published } from "../../articles";
+import { assertArticles, published } from "../../articles";
 import { t } from "../../i18n/messages";
 import { locales, type Locale } from "../../i18n/locales";
 
@@ -14,6 +14,11 @@ const locale: Locale = "zh-hant";
 // in commit 9; until then the home renders the same text-only hero the list
 // page does, rather than pointing at a file that does not exist.
 const SHOWCASE = 6;
+
+// The home renders even when a locale has no articles, so it is where the
+// collection checks run: an article route renders once per article, and never
+// when the article it would check is missing.
+await assertArticles();
 
 const articles = (await published(locale)).slice(0, SHOWCASE);
 

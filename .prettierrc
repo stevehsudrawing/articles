@@ -7,7 +7,7 @@
   "plugins": ["prettier-plugin-astro"],
   "overrides": [
     {
-      "files": ["src/content/zh-hans/**", "src/content/zh-hant/**"],
+      "files": ["src/content/**/zh-hans.md", "src/content/**/zh-hant.md"],
       "options": { "proseWrap": "never" }
     }
   ]

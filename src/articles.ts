@@ -151,9 +151,109 @@ export async function assertDefaultCovers(): Promise<void> {
     for (const article of await published(locale)) {
       if (!known.has(article.id)) {
         throw new Error(
-          `${locale} holds "${article.id}", which ${defaultLocale} does not have. Every article needs a ${defaultLocale} version: add src/content/${defaultLocale}/${article.id}/index.md or remove the file.`,
+          `${locale} holds "${article.id}", which ${defaultLocale} does not have. Every article needs a ${defaultLocale} version: add src/content/${article.id}/${defaultLocale}.md or remove the file.`,
         );
       }
     }
   }
+}
+
+/**
+ * The frontmatter one article states once for all of its locales.
+ *
+ * These three describe the article rather than a translation of it: its byline,
+ * the license it is published under and the tags it is filed with. `date` is
+ * not here, because every locale file's date is already checked against the
+ * folder's.
+ */
+export const SHARED_FIELDS = ["author", "license", "tags"] as const;
+
+/**
+ * Renders one field's value for a failure message.
+ *
+ * @param value - The field's value, which may be absent.
+ * @returns The value as the author would read it back.
+ */
+function describe(value: unknown): string {
+  if (value === undefined) {
+    return "unset";
+  }
+  return Array.isArray(value) ? `[${value.join(", ")}]` : String(value);
+}
+
+/**
+ * What differs between the locales of one article, or nothing when they agree.
+ *
+ * Pure, so a test can drive it without a collection. The values are compared as
+ * the schema produced them, so two tag lists holding the same tags in a
+ * different order count as a difference - which is intended: one article has
+ * one tag list, and the order is the order they render in.
+ *
+ * @param entries - Two or more locales of the same article.
+ * @returns The message naming the field and both files, or `undefined`.
+ */
+export function sharedFieldMismatch(
+  entries: readonly Article[],
+): string | undefined {
+  const [first, ...rest] = entries;
+  if (!first) {
+    return undefined;
+  }
+
+  for (const other of rest) {
+    for (const field of SHARED_FIELDS) {
+      const mine = describe(first.data[field]);
+      const theirs = describe(other.data[field]);
+      if (mine !== theirs) {
+        return `"${field}" differs between ${first.filePath ?? first.id} (${mine}) and ${other.filePath ?? other.id} (${theirs}). An article states it once for every locale, so make them the same.`;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Fails the build when the locales of one article disagree about it.
+ *
+ * `content-layout.ts` keeps the file paths honest; this keeps the values
+ * honest, so "the license belongs to the article" is a fact rather than a
+ * convention an author has to remember. Only published entries are compared: a
+ * draft is not part of the site yet, and it is checked when it publishes.
+ *
+ * @throws If `author`, `license` or `tags` differ between two locales of one
+ * article.
+ */
+export async function assertSharedFields(): Promise<void> {
+  const byId = new Map<string, Article[]>();
+
+  for (const locale of localeIdentities) {
+    for (const article of await published(locale)) {
+      const group = byId.get(article.id) ?? [];
+      group.push(article);
+      byId.set(article.id, group);
+    }
+  }
+
+  for (const entries of byId.values()) {
+    const mismatch = sharedFieldMismatch(entries);
+    if (mismatch) {
+      throw new Error(mismatch);
+    }
+  }
+}
+
+/**
+ * The collection checks every page that renders articles runs first.
+ *
+ * They read the collections, which exist only once the content layer has
+ * synced, so they cannot live in `content.config.ts` the way the file-layout
+ * guard does. They are called by each locale's home page rather than by an
+ * article route, because a route's frontmatter runs once per rendered path: an
+ * article route with no articles renders nothing and runs nothing, so a check
+ * placed there cannot see the state that leaves an article unreachable.
+ */
+export async function assertArticles(): Promise<void> {
+  await assertDefaultCovers();
+  await assertSharedFields();
 }
