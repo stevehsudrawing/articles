@@ -125,3 +125,21 @@
   --bs-dropdown-link-active-bg: var(--bs-primary);
   --bs-dropdown-link-active-color: var(--shar-primary-contrast);
 }
+
+/* --- Backdrops --- */
+
+.offcanvas-backdrop {
+  --bs-backdrop-bg: var(--bs-body-bg);
+  --bs-backdrop-bg-rgb: var(--bs-body-bg-rgb);
+  --bs-backdrop-opacity: 0.75;
+  background-color: rgba(var(--bs-backdrop-bg-rgb), 0);
+  transition:
+    background-color 0.15s linear,
+    backdrop-filter 0.15s linear;
+}
+
+.offcanvas-backdrop.show {
+  background-color: rgba(var(--bs-backdrop-bg-rgb), var(--bs-backdrop-opacity));
+  opacity: 1;
+  backdrop-filter: blur(0.5rem);
+}

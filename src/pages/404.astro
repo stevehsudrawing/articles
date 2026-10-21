@@ -11,7 +11,11 @@ import { defaultLocale } from "../i18n/locales";
 const locale = defaultLocale;
 ---
 
-<Base locale={locale} noindex>
+<Base
+  locale={locale}
+  noindex
+  description={t(locale, "text-hero-description-404")}
+>
   <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center py-5">
     <h1 class="h3">{t(locale, "text-hero-title-404")}</h1>
     <div class="px-3 pb-2">

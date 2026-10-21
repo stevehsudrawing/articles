@@ -5,14 +5,14 @@ import Page from "../../layouts/Page.astro";
 import { assertArticles, published } from "../../articles";
 import { t } from "../../i18n/messages";
 import { locales, type Locale } from "../../i18n/locales";
+import { asset, IMAGES } from "../../site-assets";
 
 const locale: Locale = "zh-hans";
 
 // The home is a showcase, not the first page of the list: six articles at most
-// and no pagination, so its URL never moves when an article is published.
-// Its hero cover, `public/images/index-cover.png`, arrives with the site assets
-// in commit 9; until then the home renders the same text-only hero the list
-// page does, rather than pointing at a file that does not exist.
+// and no pagination, so its URL never moves when an article is published. Its
+// hero cover is the site's own artwork, `index-cover.png`: one transparent file
+// that serves both themes, so it takes no dark variant.
 const SHOWCASE = 6;
 
 // The home renders even when a locale has no articles, so it is where the
@@ -33,6 +33,7 @@ const alternates = locales.map((other) => ({
   page="home"
   heroTitle={t(locale, "text-hero-title-home")}
   heroDescription={t(locale, "text-hero-description-home")}
+  light={asset(IMAGES.homeCover)}
   alternates={alternates}
 >
   {articles.map((article) => (

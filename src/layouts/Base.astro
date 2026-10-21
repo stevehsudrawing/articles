@@ -13,6 +13,7 @@ import "../styles/syntax.css";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.vue";
+import SiteIcons from "../components/SiteIcons.astro";
 import { t } from "../i18n/messages";
 import {
   defaultLocale,
@@ -20,12 +21,15 @@ import {
   locales,
   type Locale,
 } from "../i18n/locales";
+import { absoluteAsset, IMAGES } from "../site-assets";
 
 interface Props {
   /** The locale whose language and BCP-47 tag the document carries. */
   locale: Locale;
   /** Which of the header's items this page is, for `aria-current`. */
   page?: "home" | "list" | "tags";
+  /** The page's introduction: the hero's lede, and the card's text. */
+  description: string;
   /** The page's own title. Omitted on the home page, which is the site name. */
   title?: string;
   /** The list's page number: it reaches the title and never the heading. */
@@ -38,6 +42,16 @@ interface Props {
   path?: string;
   /** Whether the page should stay out of search results. */
   noindex?: boolean;
+  /**
+   * The absolute URL of the image a shared link shows. Defaults to the site
+   * card, which is what a page with no artwork of its own advertises.
+   */
+  ogImage?: string;
+  /**
+   * What the page is, for `og:type`: an article is a document of its own,
+   * every other page is part of the site.
+   */
+  ogType?: "website" | "article";
   /** The translations this page really has, for `hreflang`. */
   alternates?: { tag: string; href: string }[];
 }
@@ -45,10 +59,13 @@ interface Props {
 const {
   locale,
   page,
+  description,
   title,
   pageNumber,
   path = "",
   noindex = false,
+  ogImage,
+  ogType = "website",
   alternates = [],
 } = Astro.props;
 
@@ -58,12 +75,19 @@ const absolute = (href: string) => new URL(href, Astro.site).href;
 
 // The composition has one home: the page hands over its own title and, on a
 // paginated page, its number, and the number arrives through a message so a
-// locale can put it where its own grammar does.
+// locale can put it where its own grammar does. `<title>` and `og:title` read
+// this one string, so a shared link cannot be named differently from the tab.
 const documentTitle = !title
   ? siteName
   : pageNumber
     ? t(locale, "text-title-paged", title, String(pageNumber))
     : `${title} - ${siteName}`;
+
+// The page's own address: `Astro.url` carries the path the build rendered and
+// the base in front of it, and making it absolute against the site is what a
+// shared link needs - a crawler reads it outside the page it came from.
+const canonical = absolute(Astro.url.pathname);
+const cardImage = ogImage ?? absoluteAsset(IMAGES.siteCard);
 
 // The list's own URL is its first page: `/page/` exists only as a redirect, and
 // no in-site link should need one. The tag index follows the same shape.
@@ -105,6 +129,7 @@ const themes = (
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{documentTitle}</title>
+    <SiteIcons />
     {alternates.map((alternate) => (
       <link
         rel="alternate"
@@ -118,6 +143,16 @@ const themes = (
       href={absolute(getRelativeLocaleUrl(defaultLocale, path))}
     />
     {noindex && <meta name="robots" content="noindex" />}
+    {!noindex && (
+      <>
+        <meta property="og:site_name" content={siteName} />
+        <meta property="og:title" content={documentTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={cardImage} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:type" content={ogType} />
+      </>
+    )}
     <script is:inline>
       // The theme has to be a concrete value before the first paint: Bootstrap
       // ships no automatic dark mode, so `auto` is resolved here and a system

@@ -1,0 +1,42 @@
+---
+import { asset, ICONS } from "../site-assets";
+
+// Two pages own a `<head>` - `Base.astro` and the language gate - so the icon
+// set is a component rather than a block copied into both.
+//
+// The pair is chosen by `media`, and this is the one place the theme is read
+// from the system instead of from `data-bs-theme`: a favicon has no CSS
+// context, so the reader's stored choice cannot reach it. A browser that does
+// not understand `media` on a `<link>` falls back to the first icon, which is
+// the light one.
+---
+
+<link
+  rel="icon"
+  href={asset(ICONS.lightSvg)}
+  type="image/svg+xml"
+  sizes="any"
+  media="(prefers-color-scheme: light)"
+/>
+<link
+  rel="icon"
+  href={asset(ICONS.darkSvg)}
+  type="image/svg+xml"
+  sizes="any"
+  media="(prefers-color-scheme: dark)"
+/>
+<link
+  rel="icon"
+  href={asset(ICONS.lightPng)}
+  type="image/png"
+  sizes="512x512"
+  media="(prefers-color-scheme: light)"
+/>
+<link
+  rel="icon"
+  href={asset(ICONS.darkPng)}
+  type="image/png"
+  sizes="512x512"
+  media="(prefers-color-scheme: dark)"
+/>
+<link rel="apple-touch-icon" href={asset(ICONS.appleTouch)} sizes="180x180" />

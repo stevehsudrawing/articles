@@ -1,4 +1,5 @@
 ---
+import { getImage } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import PageHero from "../components/PageHero.astro";
@@ -6,6 +7,7 @@ import TableOfContents from "../components/TableOfContents.astro";
 import { LICENSES, type LicenseId } from "../content.config";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
+import { absoluteAsset, assertCoverSize, asset, IMAGES } from "../site-assets";
 import Base from "./Base.astro";
 
 /** What `render()` hands back, whose `Content` and `headings` are both used. */
@@ -33,6 +35,34 @@ interface Props {
 const { locale, article, rendered, tagHref, alternates } = Astro.props;
 const { Content, headings } = rendered;
 const cover = article.data.cover;
+
+// A declared cover has to be the size a share card expects, and the layout is
+// where its dimensions exist: the schema's `image()` resolves them after a
+// refinement has run. The check happens before anything renders, so a wrong
+// cover fails the build instead of shipping a card a crawler has to crop.
+if (cover) {
+  assertCoverSize(cover.light, `${article.id}/${locale}.md cover.light`);
+  if (cover.dark) {
+    assertCoverSize(cover.dark, `${article.id}/${locale}.md cover.dark`);
+  }
+}
+
+// The hero shows a pair: an article's own cover, or the site's default artwork
+// when it declares none. Only the light half is ever advertised, because a
+// crawler sends no `prefers-color-scheme` and would never see the dark one.
+const heroCover = cover
+  ? { light: cover.light.src, dark: cover.dark?.src }
+  : {
+      light: asset(IMAGES.defaultCoverLight),
+      dark: asset(IMAGES.defaultCoverDark),
+    };
+const ogImage = cover
+  ? new URL(
+      (await getImage({ src: cover.light, format: "png" })).src,
+      Astro.site,
+    ).href
+  : absoluteAsset(IMAGES.defaultCoverLight);
+
 const license = LICENSES[article.data.license as LicenseId];
 const licenseUrl = article.data.licenseUrl ?? license.url;
 const author = article.data.author;
@@ -41,18 +71,21 @@ const updated = article.data.updated;
 
 <Base
   locale={locale}
+  description={article.data.description}
   title={article.data.title}
   path={`${article.id}/`}
+  ogImage={ogImage}
+  ogType="article"
   alternates={alternates}
 >
   <PageHero
     title={article.data.title}
     description={article.data.description}
-    light={cover?.light.src}
-    dark={cover?.dark?.src}
+    light={heroCover.light}
+    dark={heroCover.dark}
   />
   <div class="container pb-4">
-    <div class="row g-5">
+    <div class="row g-4">
       <div class="col-12 col-xl-4 order-xl-last">
         <TableOfContents locale={locale} headings={headings} />
       </div>

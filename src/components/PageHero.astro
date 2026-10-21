@@ -24,14 +24,19 @@ interface Props {
 const { title, description, light, dark } = Astro.props;
 ---
 
-<div class="page-hero container py-4">
-  <div class="row align-items-center gx-5 gy-4 my-auto">
+<div class="page-hero container pb-4">
+  <div class="row align-items-center gx-4 gy-4 my-2 my-lg-0">
     <div class:list={["col-12", light ? "col-lg-8" : ""]}>
       <h1>{title}</h1>
       <p class="text-body-secondary mb-0">{description}</p>
     </div>
     {light && (
-      <div class="col-12 col-lg-4">
+      <div
+        class:list={[
+          "page-hero-cover-column col-12 col-lg-4 order-first order-lg-last",
+          dark && "cover-pair",
+        ]}
+      >
         <img class="page-hero-cover" src={light} alt="" data-cover="light" />
         {dark && (
           <img class="page-hero-cover" src={dark} alt="" data-cover="dark" />
@@ -46,9 +51,14 @@ const { title, description, light, dark } = Astro.props;
 <style>
   .page-hero {
     min-height: 12rem;
+    display: flex;
   }
 
   hr {
+    margin-top: 0;
+  }
+
+  .page-hero > .row > * {
     margin-top: 0;
   }
 
@@ -76,18 +86,49 @@ const { title, description, light, dark } = Astro.props;
     }
   }
 
-  /* The theme is a concrete attribute, so the pair is toggled here rather than
-     by a media query - `<picture>` cannot express the reader's choice. A page
-     whose script never ran carries no attribute and is the light theme. */
+  /* Below the wide breakpoint the cover is the block's first line and the
+     heading follows it - the order the main site's hero uses - and the image
+     hugs the right edge of its column, which is what makes the stacked block
+     read as artwork over text rather than as two left-aligned boxes.
+
+     The order comes from Bootstrap's utilities on the column rather than from
+     the markup, so the heading stays first in the document for a reader and
+     for a browser without the stylesheet. The gap is declared here because the
+     row's `gy-4` no longer supplies one: the hero zeroes its children's
+     `margin-top` to keep Bootstrap's negative row margin from shifting the
+     block. */
+  @media (max-width: 991.98px) {
+    .page-hero-cover-column {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-hero-cover {
+      margin-left: auto;
+    }
+  }
+
+  /* The theme is a concrete attribute on `<html>`, so the pair is toggled here
+     rather than by a media query - `<picture>` cannot express the reader's
+     choice. A page whose script never ran carries no attribute and is the light
+     theme.
+
+     The theme selector is `:global()` because `<html>` is outside this
+     component: a scoped selector would ask it for the component's scope
+     attribute and never match.
+
+     Only a page that declared a dark variant hides its light image: a single
+     file, such as the home page's transparent artwork, serves both themes
+     unchanged. The rule keys off the pair rather than off the image, because a
+     lone light image and the light half of a pair are otherwise identical. */
   img[data-cover="dark"] {
     display: none;
   }
 
-  [data-bs-theme="dark"] img[data-cover="light"] {
+  :global([data-bs-theme="dark"]) .cover-pair img[data-cover="light"] {
     display: none;
   }
 
-  [data-bs-theme="dark"] img[data-cover="dark"] {
+  :global([data-bs-theme="dark"]) .cover-pair img[data-cover="dark"] {
     display: block;
   }
 </style>

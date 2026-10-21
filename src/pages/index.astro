@@ -1,5 +1,6 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
+import SiteIcons from "../components/SiteIcons.astro";
 import { defaultLocale, getLocale, locales } from "../i18n/locales";
 import messages from "../i18n/messages/zh-hans.json";
 
@@ -15,6 +16,7 @@ const links = locales.map((locale) => ({
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{messages["text-site-name"]}</title>
+    <SiteIcons />
     <meta name="robots" content="noindex" />
     <style is:global>
       :root {

@@ -26,6 +26,9 @@ importers:
       bootstrap-vue-next:
         specifier: ^1.2.2
         version: 1.2.2(bootstrap@5.3.8(@popperjs/core@2.11.8))(vue@3.5.43(@typescript/typescript6@6.0.2))
+      sharp:
+        specifier: 0.35.5
+        version: 0.35.5(@types/node@26.6.5)
       vue:
         specifier: ^3.5.43
         version: 3.5.43(@typescript/typescript6@6.0.2)
@@ -3150,8 +3153,7 @@ snapshots:
 
   '@fontsource-variable/roboto-mono@5.3.0': {}
 
-  '@img/colour@1.1.0':
-    optional: true
+  '@img/colour@1.1.0': {}
 
   '@img/sharp-darwin-arm64@0.35.5':
     optionalDependencies:
@@ -4503,7 +4505,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.5
       '@img/sharp-win32-x64': 0.35.5
       '@types/node': 26.6.5
-    optional: true
 
   shiki@4.5.0:
     dependencies:

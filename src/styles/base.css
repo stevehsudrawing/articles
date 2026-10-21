@@ -209,3 +209,33 @@ pre code {
 .nav-link.active {
   font-weight: calc(var(--bs-body-font-weight) + 100);
 }
+
+/* --- Dropdown Menu --- */
+
+.dropdown-menu {
+  box-shadow: var(--bs-box-shadow);
+}
+
+/* --- Offcanvas --- */
+
+.offcanvas-header {
+  padding-bottom: 0;
+}
+
+.offcanvas-body {
+  padding: var(--bs-offcanvas-padding-y) 0;
+}
+
+.offcanvas-body > .site-panel-group {
+  padding: 0 var(--bs-offcanvas-padding-x);
+}
+
+.offcanvas-body .nav-link {
+  width: 100%;
+  text-align: left;
+  padding: var(--bs-nav-link-padding-y) var(--bs-offcanvas-padding-x);
+}
+
+.offcanvas-body .nav-link.active {
+  background-color: var(--bs-tertiary-bg);
+}
