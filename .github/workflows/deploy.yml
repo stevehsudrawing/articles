@@ -1,0 +1,80 @@
+# Builds the site and deploys it to GitHub Pages. This is the repository's
+# own workflow directory; the workspace's `.github/` never enters a commit.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# The deploy needs a Pages deployment and an OIDC token; everything else is
+# read-only.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and one that is already running is left to
+# finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # A hung install would otherwise hold a runner for the default six hours.
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      # pnpm comes first: setup-node runs `pnpm store path` to key the cache.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm exec prettier --check .
+
+      - name: Run the tests
+        run: pnpm test
+
+      - name: Check types
+        run: pnpm typecheck
+
+      - name: Build the site
+        run: pnpm build
+
+      # Late on purpose: while the repository is private these four checks
+      # still run, and only the publishing half fails - by name, rather than
+      # with the deploy action's generic error.
+      - name: Read the Pages configuration
+        uses: actions/configure-pages@v6
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
