@@ -23,16 +23,16 @@ const author = article.data.author;
 
 <div class="col-md-6 col-xl-4">
   <article class="card h-100">
-    {cover && (
+    <a href={href}>
       <img
-        class="card-img-top article-card-cover"
-        src={cover.src}
-        width={cover.width}
-        height={cover.height}
+        class="card-img-top article-card-cover border-bottom"
+        src={cover?.src ?? "/articles/images/default-cover-light.png"}
+        width={cover?.width ?? 1200}
+        height={cover?.height ?? 630}
         alt=""
         loading="lazy"
       />
-    )}
+    </a>
     <div class="card-body">
       <h2 class="card-title h5">
         <a href={href}>{article.data.title}</a>
@@ -72,12 +72,13 @@ const author = article.data.author;
 </div>
 
 <style>
-  /* The list thumbnails crop to 4:3, which discards 15% from each side - the
-     same rule the hero follows, so an author keeps content inside the central
-     70% of the width. */
+  /* The list thumbnails crop to 16:9, which discards 3.3% from each side - this
+     is different from the hero because a card can't take up too much of the
+     page. */
   .article-card-cover {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
+    height: 100%;
   }
 
   /* A glyph is a `1em` box sitting on the text's baseline, so an inline one
