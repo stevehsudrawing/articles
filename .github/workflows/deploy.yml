@@ -57,9 +57,10 @@ jobs:
       - name: Build the site
         run: pnpm build
 
-      # Late on purpose: while the repository is private these four checks
-      # still run, and only the publishing half fails - by name, rather than
-      # with the deploy action's generic error.
+      # Late on purpose: the four checks report on their own before anything
+      # reads the Pages configuration, and a repository whose Pages is
+      # misconfigured fails here by name rather than with the deploy action's
+      # generic error.
       - name: Read the Pages configuration
         uses: actions/configure-pages@v6
 
