@@ -14,13 +14,13 @@ interface Props {
 // one - a cover. The cover is never load-bearing: a page without one renders
 // the same block with the text alone, so no layout shifts between page kinds.
 //
-// The row's gutters are `gx-5 gy-4`, and the horizontal one matters beyond this
+// The row's gutters are `gx-4 gy-4`, and the horizontal one matters beyond this
 // file: the cover's column is a third of the container, and the article page's
 // table of contents is a third too, so the two share one right-rail width. The
-// two-thirds width the heading gets is then the article body's own width. Both
-// facts come from the same gutter value, so a change here moves the article
-// page's grid as well - the article layout's comment says the same thing from
-// the other side.
+// two-thirds width the heading gets is then the article body's own width. That
+// is why the article layout's row carries a plain `g-4` - its horizontal half is
+// the same 1.5rem as this `gx-4` - and why the two files say so in their own
+// comments: changing one without the other moves the rails out of line.
 const { title, description, light, dark } = Astro.props;
 ---
 

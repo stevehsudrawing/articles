@@ -17,14 +17,7 @@
   /* The focus ring is a hard outline, never a shadow. */
   --shar-focus-ring-width: 2px;
 
-  /* Blur radii */
-  --shlh-blur-sm: 0.5rem;
-  --shlh-blur-md: 1rem;
-
-  /* Opacities */
-  --shlh-surface-opacity: 0.8;
-
   /* Durations */
-  --shlh-duration-fast: 0.1s;
-  --shlh-duration-base: 0.2s;
+  --shar-duration-fast: 0.1s;
+  --shar-duration-base: 0.2s;
 }

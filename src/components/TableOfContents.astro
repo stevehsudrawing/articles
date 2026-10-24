@@ -20,13 +20,15 @@ const entries = tableOfContents(headings);
 
 {entries.length > 0 && (
   <nav class="table-of-contents" aria-labelledby="toc-label">
-    <h2 class="h6 text-uppercase text-body-secondary" id="toc-label">
+    <h2 class="h6 text-uppercase" id="toc-label">
       {t(locale, "text-nav-toc")}
     </h2>
     <ul class="list-unstyled mb-0">
       {entries.map((heading) => (
         <li class:list={["toc-item", `toc-depth-${heading.depth}`]}>
-          <a href={`#${heading.slug}`}>{heading.text}</a>
+          <a class="link-secondary" href={`#${heading.slug}`}>
+            {heading.text}
+          </a>
         </li>
       ))}
     </ul>

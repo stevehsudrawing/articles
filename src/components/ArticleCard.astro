@@ -2,6 +2,7 @@
 import { articleUrl, type Article } from "../articles";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
+import { asset, COVER_HEIGHT, COVER_WIDTH, IMAGES } from "../site-assets";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -23,12 +24,12 @@ const author = article.data.author;
 
 <div class="col-md-6 col-xl-4">
   <article class="card h-100">
-    <a href={href}>
+    <a href={href} tabindex="-1" aria-hidden="true">
       <img
         class="card-img-top article-card-cover border-bottom"
-        src={cover?.src ?? "/articles/images/default-cover-light.png"}
-        width={cover?.width ?? 1200}
-        height={cover?.height ?? 630}
+        src={cover?.src ?? asset(IMAGES.defaultCoverLight)}
+        width={cover?.width ?? COVER_WIDTH}
+        height={cover?.height ?? COVER_HEIGHT}
         alt=""
         loading="lazy"
       />
@@ -72,13 +73,20 @@ const author = article.data.author;
 </div>
 
 <style>
-  /* The list thumbnails crop to 16:9, which discards 3.3% from each side - this
-     is different from the hero because a card can't take up too much of the
-     page. */
+  /* The list thumbnails crop to 16:9, which discards 3.3% from each side. The
+     hero keeps 4:3 because it has the room; a card does not - a 4:3 thumbnail
+     would make every row taller than the text beside it. Both crops stay inside
+     the authoring rule's central 70%, so a cover composed for the hero is safe
+     here too.
+
+     `height: auto` is load-bearing, not a leftover: the `<img>` carries
+     `height="630"` for its intrinsic ratio, and that attribute is a
+     presentational hint - an explicit height, which beats `aspect-ratio`. With
+     the hint winning, the measured box was 366x630 instead of 366x206. */
   .article-card-cover {
     aspect-ratio: 16 / 9;
+    height: auto;
     object-fit: cover;
-    height: 100%;
   }
 
   /* A glyph is a `1em` box sitting on the text's baseline, so an inline one

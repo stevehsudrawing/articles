@@ -28,6 +28,21 @@
   --shar-primary-700-rgb: 38, 108, 0;
   --shar-primary-800-rgb: 33, 82, 14;
   --shar-primary-900-rgb: 28, 56, 19;
+
+  /* Bootstrap's gray scale as RGB twins. It ships `--bs-gray-*` as hex and no
+     `-rgb` counterpart (read from `bootstrap.min.css` in 5.3.8), and the
+     `rgba(var(--bs-…-rgb), <alpha>)` form needs one. These nine values are
+     therefore copies: a Bootstrap upgrade that changes a gray has to change
+     the matching line here too, and nothing fails if it does not. */
+  --bs-gray-100-rgb: 248, 249, 250;
+  --bs-gray-200-rgb: 233, 236, 239;
+  --bs-gray-300-rgb: 222, 226, 230;
+  --bs-gray-400-rgb: 206, 212, 218;
+  --bs-gray-500-rgb: 173, 181, 189;
+  --bs-gray-600-rgb: 108, 117, 125;
+  --bs-gray-700-rgb: 73, 80, 87;
+  --bs-gray-800-rgb: 52, 58, 64;
+  --bs-gray-900-rgb: 33, 37, 41;
 }
 
 /* ==========================================================================
@@ -47,13 +62,18 @@
   /* The text color on a filled accent: the light steps are dark, so a fill
      takes white text. */
   --shar-primary-contrast: #fff;
+  --shar-secondary-contrast: #fff;
 
   /* The filled states, mirrored around the theme's own step. */
   --shar-primary-hover: var(--shar-primary-700);
   --shar-primary-active: var(--shar-primary-800);
+  --shar-secondary-hover: var(--bs-gray-700);
+  --shar-secondary-active: var(--bs-gray-800);
 
   --bs-primary: var(--shar-primary-600);
   --bs-primary-rgb: var(--shar-primary-600-rgb);
+  --bs-secondary: var(--bs-gray-600);
+  --bs-secondary-rgb: var(--bs-gray-600-rgb);
   --bs-link-color: var(--shar-primary-600);
   --bs-link-color-rgb: var(--shar-primary-600-rgb);
   --bs-link-hover-color: var(--shar-primary-700);
@@ -84,9 +104,12 @@
 [data-bs-theme="dark"] {
   /* The dark steps are light, so a fill takes black text. */
   --shar-primary-contrast: #000;
+  --shar-secondary-contrast: #000;
 
   --shar-primary-hover: var(--shar-primary-300);
   --shar-primary-active: var(--shar-primary-200);
+  --shar-secondary-hover: var(--bs-gray-400);
+  --shar-secondary-active: var(--bs-gray-300);
 
   --bs-body-bg: #222621;
   --bs-body-bg-rgb: 34, 38, 33;
@@ -95,6 +118,8 @@
 
   --bs-primary: var(--shar-primary-400);
   --bs-primary-rgb: var(--shar-primary-400-rgb);
+  --bs-secondary: var(--bs-gray-500);
+  --bs-secondary-rgb: var(--bs-gray-500-rgb);
   --bs-link-color: var(--shar-primary-400);
   --bs-link-color-rgb: var(--shar-primary-400-rgb);
   --bs-link-hover-color: var(--shar-primary-300);

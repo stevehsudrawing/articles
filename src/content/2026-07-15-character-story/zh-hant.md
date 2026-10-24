@@ -3,16 +3,16 @@ title: 什五與 Kato 的角色設定資料
 author: Steve Hsu (什五)
 license: All-Rights-Reserved
 date: "2026-07-15"
-updated: "2026-10-22"
+updated: "2026-10-24"
 description: "[INFO @unyLogger] 已新增關注對象：觀察者 @you"
 cover:
-  light: ./cover.png
+  light: ./cover.jpg
 tags:
   - sci-fi
   - worldview
 ---
 
-> [!WARNING]
+> [!IMPORTANT]
 >
 > 非最終版本，隨時可能修改。
 >

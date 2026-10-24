@@ -32,6 +32,57 @@ html {
   --bs-border-radius-pill: 0;
 }
 
+/* --- Other Bootstrap parameter overrides --- */
+
+:root {
+  --bs-link-underline-opacity: 0.5;
+}
+
+/* --- Default Links --- */
+
+a {
+  text-decoration-color: rgba(
+    var(--bs-primary-rgb),
+    var(--bs-link-underline-opacity)
+  );
+}
+
+a:hover {
+  text-decoration-color: var(--shar-primary-hover);
+}
+
+a:active {
+  text-decoration-color: var(--shar-primary-active);
+}
+
+/* --- Secondary Links ---
+   The hover and active counterparts of the two rules above. They move together
+   with them: a secondary link that darkened only its text would be the one link
+   on the site whose underline stays at the resting 50%. */
+
+.link-secondary:focus,
+.link-secondary:hover {
+  color: var(--shar-secondary-hover) !important;
+  text-decoration-color: var(--shar-secondary-hover) !important;
+}
+
+.link-secondary:active {
+  color: var(--shar-secondary-active) !important;
+  text-decoration-color: var(--shar-secondary-active) !important;
+}
+
+/* --- Filled secondary surfaces ---
+   Bootstrap compiles `.text-bg-secondary` as `color: #fff !important`, and the
+   dark theme's secondary fill is a light step, so the foreground has to flip
+   with it - the same rule the primary fill follows. Measured: white on
+   `--bs-gray-600` is 4.69:1 in the light theme, while the light-on-dark pairing
+   would be 2.07:1; the flip gives 10.12:1. The `!important` is Bootstrap's own,
+   and the two selectors tie on specificity, so the later sheet is what wins. */
+
+.text-bg-secondary {
+  color: var(--shar-secondary-contrast) !important;
+}
+
 /* --- Selection --- */
 
 *::selection {
@@ -46,8 +97,8 @@ html {
   margin: calc(var(--bs-card-border-width) / 2);
   outline: var(--bs-card-border-width) solid var(--bs-card-border-color);
   transition:
-    background-color var(--shlh-duration-fast) ease-in-out,
-    outline var(--shlh-duration-fast) ease-in-out;
+    background-color var(--shar-duration-fast) ease-in-out,
+    outline var(--shar-duration-fast) ease-in-out;
 }
 
 .card:hover {

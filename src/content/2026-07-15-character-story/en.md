@@ -3,16 +3,16 @@ title: Character Settings of Steve Hsu & Kato
 author: Steve Hsu (什五)
 license: All-Rights-Reserved
 date: "2026-07-15"
-updated: "2026-10-22"
+updated: "2026-10-24"
 description: "[INFO @unyLogger] Watched subjects added: observer @you"
 cover:
-  light: ./cover.png
+  light: ./cover.jpg
 tags:
   - sci-fi
   - worldview
 ---
 
-> [!WARNING]
+> [!IMPORTANT]
 >
 > Not the final version; subject to change at any time.
 >
