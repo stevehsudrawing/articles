@@ -20,4 +20,12 @@
   /* Durations */
   --shar-duration-fast: 0.1s;
   --shar-duration-base: 0.2s;
+
+  /* Bootstrap's border, composed from the three parts it writes inline in its
+     `.border-*` utilities and never defines together. Ours, hence the prefix: a
+     `--bs-*` name would sit in Bootstrap's namespace and a later release that
+     defined it would be silently overridden. The color is a reference, resolved
+     where it is used, so one definition serves both themes. */
+  --shar-border: var(--bs-border-width) var(--bs-border-style)
+    var(--bs-border-color);
 }

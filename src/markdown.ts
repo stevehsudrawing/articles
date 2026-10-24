@@ -193,9 +193,9 @@ const ALERT_ICON = "alert-icon";
  *
  * The marker is GitHub's, so the source stays portable and an author writes
  * what they would write in a GitHub comment. What the marker becomes is this
- * site's: a block on Bootstrap's `.alert-primary`, whose three color tokens
- * the bridge already points at the accent scale in both themes, a title that
- * names the kind in the article's own language, and the kind's glyph.
+ * site's: a block on Bootstrap's `.alert` plus the kind's own color family, a
+ * title that names the kind in the article's own language, and the kind's
+ * glyph.
  *
  * It stays a `<blockquote>`: measured, `setProperty(node, "tagName", "div")`
  * writes a `tagName="div"` attribute rather than renaming the element, and the
@@ -284,10 +284,13 @@ export const markdownAlerts = {
         children: [{ type: "raw", value: ICONS[kind.icon] }],
       });
 
-      context.setProperty(node, "className", ["alert", "alert-primary"]);
-      // The kind is data, not a style: the five share `.alert-primary`, and a
-      // class in Bootstrap's namespace (`alert-danger`, say) would either do
-      // nothing or, worse, bring that family's color back with it.
+      context.setProperty(node, "className", [
+        "alert",
+        `alert-${kind.variant}`,
+      ]);
+      // The kind stays readable even where two kinds share a variant, and it is
+      // the word a rule or a test keys on rather than a class name that has to
+      // be decoded back into one.
       context.setProperty(node, "dataAlertKind", parsed.kind);
     },
   },

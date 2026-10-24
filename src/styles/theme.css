@@ -111,10 +111,15 @@
   --shar-secondary-hover: var(--bs-gray-400);
   --shar-secondary-active: var(--bs-gray-300);
 
-  --bs-body-bg: #222621;
-  --bs-body-bg-rgb: 34, 38, 33;
-  --bs-tertiary-bg: #2d312c;
-  --bs-tertiary-bg-rgb: 45, 49, 44;
+  /* The two surfaces are pure gray, 11 apart in every channel. The palette's
+     only hues are the accent scale, the syntax ten and Bootstrap's two
+     semantic alert families, so a tinted surface would put a fourth hue under
+     all of them - and the two families are warm, which is what makes them the
+     page's only warm color. */
+  --bs-body-bg: #222222;
+  --bs-body-bg-rgb: 34, 34, 34;
+  --bs-tertiary-bg: #2d2d2d;
+  --bs-tertiary-bg-rgb: 45, 45, 45;
 
   --bs-primary: var(--shar-primary-400);
   --bs-primary-rgb: var(--shar-primary-400-rgb);
@@ -142,29 +147,4 @@
   --shar-syntax-function: hsl(207, 82%, 66%);
   --shar-syntax-keyword: hsl(286, 60%, 67%);
   --shar-syntax-url: hsl(187, 47%, 55%);
-}
-
-/* --- Dropdown Menu --- */
-
-.dropdown-menu {
-  --bs-dropdown-link-active-bg: var(--bs-primary);
-  --bs-dropdown-link-active-color: var(--shar-primary-contrast);
-}
-
-/* --- Backdrops --- */
-
-.offcanvas-backdrop {
-  --bs-backdrop-bg: var(--bs-body-bg);
-  --bs-backdrop-bg-rgb: var(--bs-body-bg-rgb);
-  --bs-backdrop-opacity: 0.75;
-  background-color: rgba(var(--bs-backdrop-bg-rgb), 0);
-  transition:
-    background-color 0.15s linear,
-    backdrop-filter 0.15s linear;
-}
-
-.offcanvas-backdrop.show {
-  background-color: rgba(var(--bs-backdrop-bg-rgb), var(--bs-backdrop-opacity));
-  opacity: 1;
-  backdrop-filter: blur(0.5rem);
 }

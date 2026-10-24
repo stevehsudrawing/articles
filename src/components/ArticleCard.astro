@@ -43,11 +43,11 @@ const coverAttrs = {
       />
       {dark && <img {...coverAttrs} src={dark} data-theme-image="dark" />}
     </a>
-    <div class="card-body">
+    <div class="card-body d-flex flex-column">
       <h2 class="card-title h5">
         <a href={href}>{article.data.title}</a>
       </h2>
-      <p class="card-text text-body-secondary mb-0">
+      <p class="card-text text-body-secondary mb-auto">
         {article.data.description}
       </p>
       <p class="card-text text-body-secondary mt-1 mb-0 small font-tnum d-flex gap-2 flex-wrap">

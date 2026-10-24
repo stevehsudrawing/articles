@@ -18,11 +18,12 @@ html {
   scroll-padding-top: var(--shar-header-height);
 }
 
-/* --- Square corners ---
-   All seven of Bootstrap's radius tokens resolve to zero. `.rounded-circle`
-   survives, because it is a literal `50%` rather than a token. */
+/* --- Bootstrap variable overrides --- */
 
 :root {
+  /* Square corners: All seven of Bootstrap's radius tokens resolve to zero.
+     `.rounded-circle` survives, because it is a literal `50%` rather than a
+     token. */
   --bs-border-radius: 0;
   --bs-border-radius-sm: 0;
   --bs-border-radius-lg: 0;
@@ -30,15 +31,15 @@ html {
   --bs-border-radius-xxl: 0;
   --bs-border-radius-2xl: 0;
   --bs-border-radius-pill: 0;
-}
 
-/* --- Other Bootstrap parameter overrides --- */
-
-:root {
+  /* Bootstrap reads this variable in each of its `.link-*` rules with a `1`
+     fallback and never defines it, and `a` below reads it with no fallback at
+     all - so without this line Bootstrap's link classes would draw a solid
+     underline and ours would fall back to `currentColor`. */
   --bs-link-underline-opacity: 0.5;
 }
 
-/* --- Default Links --- */
+/* --- Default (primary) links --- */
 
 a {
   text-decoration-color: rgba(
@@ -202,18 +203,19 @@ a:active {
 
 /* --- Alerts ---
    `markdownAlerts` rewrites `> [!NOTE]` into a blockquote carrying
-   `.alert.alert-primary` and `data-alert-kind="note"`, so Bootstrap's `.alert`
-   brings the padding, the border and the three `--bs-alert-*` tokens - and the
-   bridge already points `--bs-primary-{text-emphasis,bg-subtle,border-subtle}`
-   at the accent scale per theme, so nothing here restates a color. Measured on the
-   shipped tokens: 8.03:1 for the text on its surface in the light theme and
-   7.01:1 in the dark one.
+   `.alert`, `alert-<variant>` and `data-alert-kind="note"`. The variant is one
+   of Bootstrap's three color families in the alert's own sense: `note`, `tip`
+   and `important` take `alert-primary`, whose three `--bs-alert-*` tokens the
+   bridge already points at the accent scale; `warning` and `caution` take
+   `alert-warning` and `alert-danger`, which point at that family's emphasis,
+   subtle-background and subtle-border tokens - defined twice in Bootstrap, once
+   per theme. So every block arrives themed with nothing restated here.
 
-   The five kinds share every one of those declarations: the palette is one
-   accent hue, so the title and the glyph are the only things that tell them
-   apart. The glyph is inlined by the renderer from `ICONS`, is
-   `fill="currentColor"`, and sits in a span marked `aria-hidden` - it repeats
-   the title rather than adding to it. */
+   Measured, text on its own surface: 8.03:1 and 7.01:1 (primary, light and
+   dark), 7.21:1 and 10.82:1 (warning), 10.22:1 and 7.15:1 (danger). The glyph
+   is inlined by the renderer from `ICONS`, is `fill="currentColor"`, and sits
+   in a span marked `aria-hidden` - it repeats the title rather than adding to
+   it. */
 
 .alert {
   --bs-alert-padding-y: 0.8rem;
@@ -226,15 +228,25 @@ a:active {
   font-weight: 600;
 }
 
-.article-body p {
-  margin-bottom: 0.5rem;
+/* A link takes the alert's own color: the accent is 4.12:1 on the warning
+   surface and 3.42:1 on the danger one, both under AA. `--bs-alert-link-color`
+   is the emphasis color the variant already resolved, so the rule reads a token
+   rather than repeating the value, and it beats `a:hover` on specificity -
+   inside an alert there is no second color to move to that keeps the contrast.
+   The underline goes opaque because, with the color gone, it is the only thing
+   identifying the link; the site's default is a 50% accent tint, which says
+   nothing on these surfaces. */
+
+.article-body .alert a {
+  color: var(--bs-alert-link-color);
+  text-decoration-color: currentColor;
 }
 
-/* An alert's box is padded, so the last paragraph's margin would read as
-   doubled padding at the bottom only: measured before this rule, the alert was
-   16px from its text above and 33px below. Bootstrap keeps `p { margin-bottom:
-   1rem }` inside an alert - it has no `:last-child` rule of its own - so the
-   bottom margin is what goes. */
+/* An alert's box is padded, so a last child's bottom margin reads as doubled
+   padding at the bottom only: `.article-body p` gives it 0.5rem, another 8px
+   below the 12.8px the box already has, and Bootstrap has no `:last-child` rule
+   of its own to cancel it. With this rule the box measures 12.79px from its
+   text above and below. */
 
 .article-body .alert > :last-child {
   margin-bottom: 0;
@@ -311,6 +323,31 @@ pre code {
   line-height: inherit;
 }
 
+/* Tighter than Bootstrap's 1rem: the prose is long, and a full line of air
+   between paragraphs reads as a section break rather than as a paragraph. */
+
+.article-body p {
+  margin-bottom: 0.5rem;
+}
+
+/* --- Article footnotes ---
+   The separator is ours: the renderer's section needs no `---` in the source,
+   which is why an article never writes one before its notes. `.footnotes p`
+   shares `.article-body p`'s specificity and wins on source order alone, so
+   this block has to stay after the paragraph rule above. */
+
+.footnotes {
+  font-size: 0.875em;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: var(--shar-border);
+  color: var(--bs-secondary-color);
+}
+
+.footnotes p {
+  margin-bottom: 0.3rem;
+}
+
 /* --- Buttons ---
    Flat surfaces: Bootstrap's decorative button shadows are removed. */
 
@@ -349,6 +386,8 @@ pre code {
 /* --- Dropdown Menu --- */
 
 .dropdown-menu {
+  --bs-dropdown-link-active-bg: var(--bs-primary);
+  --bs-dropdown-link-active-color: var(--shar-primary-contrast);
   box-shadow: var(--bs-box-shadow);
 }
 
@@ -374,4 +413,22 @@ pre code {
 
 .offcanvas-body .nav-link.active {
   background-color: var(--bs-tertiary-bg);
+}
+
+/* --- Backdrops --- */
+
+.offcanvas-backdrop {
+  --bs-backdrop-bg: var(--bs-body-bg);
+  --bs-backdrop-bg-rgb: var(--bs-body-bg-rgb);
+  --bs-backdrop-opacity: 0.75;
+  background-color: rgba(var(--bs-backdrop-bg-rgb), 0);
+  transition:
+    background-color 0.15s linear,
+    backdrop-filter 0.15s linear;
+}
+
+.offcanvas-backdrop.show {
+  background-color: rgba(var(--bs-backdrop-bg-rgb), var(--bs-backdrop-opacity));
+  opacity: 1;
+  backdrop-filter: blur(0.5rem);
 }

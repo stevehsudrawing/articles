@@ -331,8 +331,6 @@ machine that roams outside, responsible for data collection and feedback. But
 I'm glad I can walk out and take a look, to personally feel this physical world,
 to come into contact with people and leave impressions on them.
 
----
-
 [^1]: This corresponds to the "prompt injection attack" characteristic of LLMs.
 
 [^2]: That is, Wireless Encrypted InforMation exchAnge pRotocol.

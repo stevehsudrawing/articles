@@ -39,8 +39,9 @@ const entries = tableOfContents(headings);
   /* Fully expanded and static on narrow screens: nothing is hidden behind a
      toggle, so every section stays reachable without JavaScript. */
   .table-of-contents {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: var(--shar-border);
   }
 
   .toc-item {
@@ -60,8 +61,9 @@ const entries = tableOfContents(headings);
       top: calc(var(--shar-header-height) + 1rem);
       max-height: calc(100vh - var(--shar-header-height) - 2rem);
       overflow-y: auto;
-      margin-top: 1rem;
-      margin-bottom: 0;
+      padding-top: 1rem;
+      padding-bottom: 0;
+      border-bottom: 0;
     }
   }
 </style>

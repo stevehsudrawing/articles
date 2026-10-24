@@ -20,28 +20,46 @@ import type { IconName } from "./icons";
  */
 const ALERT_MARKER = /^\[!([A-Za-z]+)\](?:[ \t]+([\s\S]*))?$/;
 
-/** One alert kind: its message key and the glyph that marks it. */
+/** One alert kind: its message key, the glyph that marks it, and its tint. */
 export interface AlertKind {
   /** The message key holding the kind's name in the reader's language. */
   key: string;
   /** The glyph, from the set the whole site shares. */
   icon: IconName;
+  /** Which of Bootstrap's alert colors this kind takes. */
+  variant: AlertVariant;
 }
+
+/**
+ * How an alert is tinted: one of the three Bootstrap alert families the site
+ * uses, as a suffix of `alert-<variant>`.
+ *
+ * `warning` and `danger` exist in Bootstrap with a light and a dark value for
+ * all three of their tokens, so a severity tint costs one class and no CSS of
+ * ours. Nothing else on the site may take these two families - a badge, a button
+ * or a link keeps the accent scale.
+ */
+export type AlertVariant = "primary" | "warning" | "danger";
 
 /**
  * The five kinds GitHub defines, keyed by the marker's own word.
  *
  * The list is closed because GitHub's is: a sixth word is a typo, not a kind,
- * and the source guard reports it as one. Every kind draws the same surface -
- * the palette is one accent hue - so the label and this glyph are the only
- * things that tell them apart.
+ * and the source guard reports it as one. Three kinds share `primary`, because
+ * the palette is one accent hue and only the two that carry a consequence of
+ * getting it wrong earn a tint of their own; the localized label and the glyph
+ * are what separate the other three.
  */
 export const ALERT_KINDS: Record<string, AlertKind> = {
-  note: { key: "text-alert-note", icon: "info" },
-  tip: { key: "text-alert-tip", icon: "lightbulb" },
-  important: { key: "text-alert-important", icon: "smsFailed" },
-  warning: { key: "text-alert-warning", icon: "warning" },
-  caution: { key: "text-alert-caution", icon: "report" },
+  note: { key: "text-alert-note", icon: "info", variant: "primary" },
+  tip: { key: "text-alert-tip", icon: "lightbulb", variant: "primary" },
+  important: {
+    key: "text-alert-important",
+    icon: "smsFailed",
+    variant: "primary",
+  },
+  warning: { key: "text-alert-warning", icon: "warning", variant: "warning" },
+  caution: { key: "text-alert-caution", icon: "report", variant: "danger" },
 };
 
 /** What a marker line says. */
