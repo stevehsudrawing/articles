@@ -24,6 +24,12 @@
   "text-action-theme-light": "Light",
   "text-action-theme": "Theme",
 
+  "text-alert-caution": "Caution",
+  "text-alert-important": "Important",
+  "text-alert-note": "Note",
+  "text-alert-tip": "Tip",
+  "text-alert-warning": "Warning",
+
   "text-hero-title-home": "Steve Hsu (什五)'s Articles",
   "text-hero-description-home": "Essays · Stories · Drawing · Design · Skills",
   "text-hero-title-list": "Articles",

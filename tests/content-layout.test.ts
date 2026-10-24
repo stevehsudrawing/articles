@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sharedFieldMismatch, type Article } from "../src/articles";
-import { contentPathError } from "../src/content-layout";
+import { alertMarkerErrors, contentPathError } from "../src/content-layout";
 
 /**
  * One article as the guard sees it: a path, and the fields it compares. The
@@ -137,5 +137,90 @@ describe("sharedFieldMismatch", () => {
         article("/src/content/2026-10-11-seed/en.md", withoutAuthor),
       ]),
     ).toContain("(unset)");
+  });
+});
+
+describe("alertMarkerErrors", () => {
+  const seed = "/src/content/2026-10-11-seed/zh-hans.md";
+
+  it("accepts the five kinds inside a blockquote", () => {
+    const text = [
+      "---",
+      "title: x",
+      "---",
+      "",
+      "> [!NOTE]",
+      ">",
+      "> 内容",
+      "> [!TIP] 自定义标题",
+      "> [!IMPORTANT]",
+      "> [!WARNING]",
+      "> [!CAUTION]",
+    ].join("\n");
+
+    expect(alertMarkerErrors(seed, text)).toEqual([]);
+  });
+
+  it("names a kind that does not exist, with its line", () => {
+    const text = [
+      "---",
+      "title: x",
+      "---",
+      "",
+      "> [!NOTEA]",
+      ">",
+      "> 内容",
+    ].join("\n");
+
+    expect(alertMarkerErrors(seed, text)).toEqual([
+      `${seed}:5 writes [!NOTEA], which is not an alert kind. Use NOTE, TIP, IMPORTANT, WARNING or CAUTION, and to show a marker as text, put it in a code span or a fence`,
+    ]);
+  });
+
+  it("skips a fenced block, which is how the syntax is shown", () => {
+    const text = [
+      "---",
+      "title: x",
+      "---",
+      "",
+      "```markdown",
+      "> [!NOTEA]",
+      "```",
+      "",
+      "~~~",
+      "> [!OOPS]",
+      "~~~",
+    ].join("\n");
+
+    expect(alertMarkerErrors(seed, text)).toEqual([]);
+  });
+
+  it("skips the frontmatter, where a description may start with one", () => {
+    const text = ["---", 'description: "[!NOTE] is a marker"', "---", ""].join(
+      "\n",
+    );
+
+    expect(alertMarkerErrors(seed, text)).toEqual([]);
+  });
+
+  it("ignores a marker inside a code span, and one inside a sentence", () => {
+    const text = [
+      "---",
+      "title: x",
+      "---",
+      "",
+      "写 `> [!NOTEA]` 这样。",
+      "> 见 [!NOTEA] 的说法",
+    ].join("\n");
+
+    expect(alertMarkerErrors(seed, text)).toEqual([]);
+  });
+
+  it("lists every offender at once", () => {
+    const text = ["---", "title: x", "---", "", "> [!NOTEA]", "> [!OOPS]"].join(
+      "\n",
+    );
+
+    expect(alertMarkerErrors(seed, text)).toHaveLength(2);
   });
 });

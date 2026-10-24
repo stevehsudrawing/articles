@@ -24,6 +24,12 @@
   "text-action-theme-light": "淺色",
   "text-action-theme": "主題",
 
+  "text-alert-caution": "注意",
+  "text-alert-important": "重要",
+  "text-alert-note": "備註",
+  "text-alert-tip": "提示",
+  "text-alert-warning": "警告",
+
   "text-hero-title-home": "Steve Hsu (什五) 的文章",
   "text-hero-description-home": "隨想 · 故事 · 繪畫 · 設計 · 技巧",
   "text-hero-title-list": "文章",

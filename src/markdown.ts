@@ -1,6 +1,6 @@
-// The renderer's own step. Three things the built markup needs and the Markdown
-// pipeline does not supply are added here, in one pass over the tree, because
-// none of the three needs a dependency:
+// The renderer's own steps. What the built markup needs and the Markdown
+// pipeline does not supply is added here, in one pass over the tree each,
+// because none of it needs a dependency:
 //
 //   1. Bootstrap's `table` class on every GFM table. Bootstrap attaches its
 //      table styles to the class, and a bare `<table>` gets only Reboot's
@@ -14,6 +14,8 @@
 //   3. `tabindex="0"` on every `<pre>`. A fenced block scrolls horizontally,
 //      and a scrollable box that cannot take focus cannot be scrolled by
 //      keyboard. Shiki's output carried the attribute; Prism's does not.
+//   4. A GitHub alert's marker turned into an alert block, with a title in the
+//      article's own language - see `markdownAlerts` below.
 //
 // The Astro 7 processor is Sätteri, so the hook is a Sätteri hast visitor and
 // not a unified plugin: `markdown.rehypePlugins` is the legacy path and needs
@@ -21,6 +23,11 @@
 // visitor also filters in the parser rather than in JavaScript - only the
 // elements named in `filter` are handed across - so the walk costs nothing on
 // the rest of the document.
+
+import { ALERT_KINDS, parseAlertMarker } from "./alerts";
+import { ICONS } from "./icons";
+import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
+import { t } from "./i18n/messages";
 
 /** An element of the rendered tree, as much of it as this step reads. */
 interface HastElement {
@@ -91,6 +98,197 @@ export const markdownStep = {
         return;
       }
       context.setProperty(node, "tabIndex", 0);
+    },
+  },
+};
+
+/** An element or a text node, as much of it as the alert step reads. */
+interface AlertNode {
+  type: string;
+  tagName?: string;
+  value?: string;
+  properties?: Record<string, unknown>;
+  children?: readonly AlertNode[];
+}
+
+/** The alert step's context, as much of it as it uses. */
+interface AlertVisitorContext {
+  /**
+   * The file being rendered, as the processor was told it.
+   *
+   * An article file is named after its locale, so this is where the alert's
+   * title learns which language to speak; `undefined` when the caller gave no
+   * URL at all.
+   */
+  readonly fileURL: URL | undefined;
+  /**
+   * Removes one child of an element.
+   *
+   * @param node - The parent.
+   * @param index - The child's position.
+   */
+  removeChildAt(node: Readonly<AlertNode>, index: number): void;
+  /**
+   * Inserts a node as an element's first child.
+   *
+   * @param node - The parent.
+   * @param child - The node to insert.
+   */
+  prependChild(node: Readonly<AlertNode>, child: unknown): void;
+  /**
+   * Sets one property on one node.
+   *
+   * @param node - The node to change.
+   * @param key - The property's name, in hast's camelCase form (`className`).
+   * @param value - The value; an array becomes a space-separated attribute.
+   */
+  setProperty(node: Readonly<AlertNode>, key: string, value: unknown): void;
+  /**
+   * Records a diagnostic for the build to print.
+   *
+   * @param options - What to say, and how loudly.
+   */
+  report(options: {
+    message: string;
+    severity?: "error" | "warning" | "info";
+  }): void;
+}
+
+/**
+ * The name of the file being rendered.
+ *
+ * @param fileURL - The document's URL, when the processor was given one.
+ * @returns Its last path segment, or a placeholder when there is none.
+ */
+function fileNameOf(fileURL: URL | undefined): string {
+  return fileURL?.pathname.split("/").pop() ?? "(unknown file)";
+}
+
+/**
+ * The locale an article file is written in.
+ *
+ * Every article file is named after its locale - `zh-hans.md` - which is the
+ * identity the rest of the site treats as authoritative, so the file name is
+ * the only thing this step needs from the document it is rendering.
+ *
+ * @param fileURL - The document's URL, when the processor was given one.
+ * @returns The locale, and whether the file named one.
+ */
+function localeOf(fileURL: URL | undefined): {
+  locale: Locale;
+  named: boolean;
+} {
+  const name = fileNameOf(fileURL).replace(/\.mdx?$/, "");
+  if (!localeIdentities.includes(name as Locale)) {
+    return { locale: defaultLocale, named: false };
+  }
+  return { locale: name as Locale, named: true };
+}
+
+/** The wrapper the glyph sits in, so it stays out of the accessibility tree. */
+const ALERT_ICON = "alert-icon";
+
+/**
+ * Turns a GitHub alert into an alert block with a localized title.
+ *
+ * The marker is GitHub's, so the source stays portable and an author writes
+ * what they would write in a GitHub comment. What the marker becomes is this
+ * site's: a block on Bootstrap's `.alert-primary`, whose three color tokens
+ * the bridge already points at the accent scale in both themes, a title that
+ * names the kind in the article's own language, and the kind's glyph.
+ *
+ * It stays a `<blockquote>`: measured, `setProperty(node, "tagName", "div")`
+ * writes a `tagName="div"` attribute rather than renaming the element, and the
+ * visitor's return value is not a replacement path for a node that keeps its
+ * own children. `base.css` therefore excludes `.alert` from its blockquote
+ * rule - the quotation's dimming and left border belong to a quotation.
+ *
+ * The title has three sources, in order: text the author wrote after the
+ * marker, other inline nodes on that same line, and the message table. A marker
+ * that names no kind is reported and left as text - printing `[!NOTEA]` is a
+ * worse failure than a warning in the build output.
+ */
+export const markdownAlerts = {
+  name: "articles/alerts",
+  element: {
+    filter: ["blockquote"],
+    /**
+     * Recognizes the marker and rebuilds the blockquote's first paragraph.
+     *
+     * @param node - The blockquote.
+     * @param context - The visitor's context.
+     */
+    visit(node: Readonly<AlertNode>, context: AlertVisitorContext): void {
+      // The tree keeps the newlines between blocks, so the first child is
+      // usually a whitespace text node; the marker lives in the first element.
+      const paragraph = (node.children ?? []).find(
+        (child) => child.type === "element",
+      );
+      if (!paragraph || paragraph.tagName !== "p") {
+        return;
+      }
+      const inline = paragraph.children ?? [];
+      const at = inline.findIndex(
+        (child) => !(child.type === "text" && !(child.value ?? "").trim()),
+      );
+      const marker = at >= 0 ? inline[at] : undefined;
+      if (
+        !marker ||
+        marker.type !== "text" ||
+        typeof marker.value !== "string"
+      ) {
+        return;
+      }
+      const parsed = parseAlertMarker(marker.value);
+      if (!parsed) {
+        return;
+      }
+      const kind = ALERT_KINDS[parsed.kind];
+      if (!kind) {
+        // Left alone on purpose: a marker naming no kind stays the paragraph
+        // it was. The processor's diagnostics never reach the build, and a
+        // throw here would make the content loader drop the article's whole
+        // body while the build still exits 0 - both measured - so the report
+        // comes from `assertAlertMarkers()` in `src/content-layout.ts`, where
+        // a throw is fatal.
+        return;
+      }
+
+      const { locale, named } = localeOf(context.fileURL);
+      if (!named) {
+        context.report({
+          message:
+            "An alert needs the article's locale, and this file is not named after one; its title falls back to the default locale.",
+          severity: "warning",
+        });
+      }
+
+      const title = parsed.title || t(locale, kind.key);
+      const tail = inline
+        .slice(at + 1)
+        .some(
+          (child) => !(child.type === "text" && !(child.value ?? "").trim()),
+        );
+      if (parsed.title || !tail) {
+        context.setProperty(marker, "value", title);
+      } else {
+        // The title is the rest of the line - emphasis the author wrote - so
+        // only the marker itself goes.
+        context.removeChildAt(paragraph, at);
+      }
+      context.setProperty(paragraph, "className", ["alert-title"]);
+      context.prependChild(paragraph, {
+        type: "element",
+        tagName: "span",
+        properties: { className: [ALERT_ICON], ariaHidden: "true" },
+        children: [{ type: "raw", value: ICONS[kind.icon] }],
+      });
+
+      context.setProperty(node, "className", ["alert", "alert-primary"]);
+      // The kind is data, not a style: the five share `.alert-primary`, and a
+      // class in Bootstrap's namespace (`alert-danger`, say) would either do
+      // nothing or, worse, bring that family's color back with it.
+      context.setProperty(node, "dataAlertKind", parsed.kind);
     },
   },
 };

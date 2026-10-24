@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseAlertMarker } from "../src/alerts";
 import { markdownStep, tableOfContents } from "../src/markdown";
 
 /** An element of the shape the visitor is handed. */
@@ -74,6 +75,49 @@ describe("markdownStep", () => {
     const { patches } = run("pre", { className: ["language-yaml"] });
 
     expect(patches).toEqual([{ key: "tabIndex", value: 0 }]);
+  });
+});
+
+describe("parseAlertMarker", () => {
+  it("reads a bare marker", () => {
+    expect(parseAlertMarker("[!NOTE]")).toEqual({ kind: "note", title: "" });
+  });
+
+  it("reads the title written after the marker", () => {
+    expect(parseAlertMarker("[!TIP] 先看文档")).toEqual({
+      kind: "tip",
+      title: "先看文档",
+    });
+  });
+
+  it("matches the kind without regard to case, as GitHub does", () => {
+    expect(parseAlertMarker("[!warning]")).toEqual({
+      kind: "warning",
+      title: "",
+    });
+  });
+
+  it("ignores the whitespace around the line", () => {
+    expect(parseAlertMarker("  [!CAUTION]  ")).toEqual({
+      kind: "caution",
+      title: "",
+    });
+  });
+
+  it("reports a kind that is not one of the five as a marker", () => {
+    expect(parseAlertMarker("[!NOTEA]")).toEqual({ kind: "notea", title: "" });
+  });
+
+  it("leaves a bracketed word inside a sentence alone", () => {
+    expect(parseAlertMarker("见 [!NOTE]")).toBeNull();
+  });
+
+  it("needs a closing bracket", () => {
+    expect(parseAlertMarker("[!NOTE")).toBeNull();
+  });
+
+  it("needs whitespace before the title", () => {
+    expect(parseAlertMarker("[!NOTE]标题")).toBeNull();
   });
 });
 

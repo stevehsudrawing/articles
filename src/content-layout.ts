@@ -1,3 +1,4 @@
+import { isAlertKind, parseAlertMarker } from "./alerts";
 import { localeIdentities } from "./i18n/locales";
 
 /**
@@ -107,5 +108,112 @@ export function assertContentLayout(): void {
     if (error) {
       throw new Error(error);
     }
+  }
+}
+
+/**
+ * Every source file's text, keyed by the path `contentFiles()` reports.
+ *
+ * Eager and raw, because the guard below reads the Markdown itself rather than
+ * the entries a loader produced - and because it runs at module scope, where
+ * nothing can await.
+ *
+ * @returns The sources, as path to text.
+ */
+function contentSources(): Record<string, string> {
+  return import.meta.glob("/src/content/**/*.md", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  });
+}
+
+/** A line that is only a frontmatter delimiter. */
+const FRONTMATTER = /^(?:---|\+\+\+)\s*$/;
+
+/** A fence's opening or closing line, allowing a blockquote's `>` markers. */
+const FENCE = /^(?:\s*>)*\s*(`{3,}|~{3,})/;
+
+/**
+ * What is wrong with one source's alert markers, or nothing when they are fine.
+ *
+ * The renderer only reads a marker at the start of a blockquote's first
+ * paragraph, and this looks for the same thing in the text: the frontmatter is
+ * skipped because a `description` may legitimately start with one, a fenced
+ * block is skipped whole because an article about the syntax writes the marker
+ * inside one, and a line that opens with a backtick is a code span and cannot
+ * match. Every offender is listed, so one build names them all.
+ *
+ * Pure, so a test can drive it without a repository.
+ *
+ * @param file - The path to name, as `contentFiles()` reports it.
+ * @param text - The file's whole text.
+ * @returns One line per marker that names no kind.
+ */
+export function alertMarkerErrors(file: string, text: string): string[] {
+  const errors: string[] = [];
+  let fence: string | undefined;
+  let frontmatter = false;
+
+  text.split("\n").forEach((line, index) => {
+    if (index === 0 && FRONTMATTER.test(line)) {
+      frontmatter = true;
+      return;
+    }
+    if (frontmatter) {
+      if (FRONTMATTER.test(line)) {
+        frontmatter = false;
+      }
+      return;
+    }
+
+    const fenceLine = FENCE.exec(line);
+    if (fenceLine) {
+      const character = fenceLine[1][0];
+      if (fence === undefined) {
+        fence = character;
+      } else if (fence === character) {
+        fence = undefined;
+      }
+      return;
+    }
+    if (fence !== undefined) {
+      return;
+    }
+
+    let rest = line;
+    while (/^\s?>/.test(rest)) {
+      rest = rest.replace(/^\s?>\s?/, "");
+    }
+    const marker = parseAlertMarker(rest);
+    if (marker && !isAlertKind(marker.kind)) {
+      const written = rest.trim().split(/\s/)[0];
+      errors.push(
+        `${file}:${index + 1} writes ${written}, which is not an alert kind. Use NOTE, TIP, IMPORTANT, WARNING or CAUTION, and to show a marker as text, put it in a code span or a fence`,
+      );
+    }
+  });
+
+  return errors;
+}
+
+/**
+ * Fails the build when an article writes an alert marker that is not an alert.
+ *
+ * The renderer cannot report this itself, and that is measured rather than
+ * assumed: the processor's diagnostics never reach the build, and a throw
+ * inside a render step makes the content loader drop the article's whole body
+ * while the build still exits 0. A throw at this module's scope is what a page
+ * render cannot give - the same reason the layout check above lives here.
+ *
+ * @throws If any source outside its code writes a kind that is not one of the
+ *   five.
+ */
+export function assertAlertMarkers(): void {
+  const errors = Object.entries(contentSources()).flatMap(([file, text]) =>
+    alertMarkerErrors(file, text),
+  );
+  if (errors.length > 0) {
+    throw new Error(errors.join("\n"));
   }
 }

@@ -188,12 +188,66 @@ a:active {
   opacity: 1;
 }
 
-/* --- Blockquote --- */
+/* --- Blockquote ---
+   An alert is a blockquote in the source but not a quotation on the page: the
+   step in `src/markdown.ts` gives it `.alert`, and Bootstrap's own alert
+   supplies its surface, so the dimming and the rule below are for quotations
+   only. */
 
-.article-body blockquote {
+.article-body blockquote:not(.alert) {
   opacity: 0.8;
   padding-left: 1rem;
   border-left: 2px solid rgba(var(--bs-body-color-rgb), 0.5);
+}
+
+/* --- Alerts ---
+   `markdownAlerts` rewrites `> [!NOTE]` into a blockquote carrying
+   `.alert.alert-primary` and `data-alert-kind="note"`, so Bootstrap's `.alert`
+   brings the padding, the border and the three `--bs-alert-*` tokens - and the
+   bridge already points `--bs-primary-{text-emphasis,bg-subtle,border-subtle}`
+   at the accent scale per theme, so nothing here restates a color. Measured on the
+   shipped tokens: 8.03:1 for the text on its surface in the light theme and
+   7.01:1 in the dark one.
+
+   The five kinds share every one of those declarations: the palette is one
+   accent hue, so the title and the glyph are the only things that tell them
+   apart. The glyph is inlined by the renderer from `ICONS`, is
+   `fill="currentColor"`, and sits in a span marked `aria-hidden` - it repeats
+   the title rather than adding to it. */
+
+.alert {
+  --bs-alert-padding-y: 0.8rem;
+  border: 0;
+  border-left: 2px solid var(--bs-alert-color);
+}
+
+.article-body .alert-title {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.article-body p {
+  margin-bottom: 0.5rem;
+}
+
+/* An alert's box is padded, so the last paragraph's margin would read as
+   doubled padding at the bottom only: measured before this rule, the alert was
+   16px from its text above and 33px below. Bootstrap keeps `p { margin-bottom:
+   1rem }` inside an alert - it has no `:last-child` rule of its own - so the
+   bottom margin is what goes. */
+
+.article-body .alert > :last-child {
+  margin-bottom: 0;
+}
+
+/* The glyph is a `1em` box from the extraction tool, so it follows the title's
+   font size; the wrapper takes an inline image's descender gap away the way
+   `.card-icon` does, and its margin is the whole space before the label. */
+
+.alert-icon {
+  display: inline-flex;
+  vertical-align: -0.125em;
+  margin-right: 0.375em;
 }
 
 /* --- Code spans ---

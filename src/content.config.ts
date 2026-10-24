@@ -2,7 +2,11 @@ import type { SchemaContext } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { defineCollection } from "astro:content";
-import { assertContentLayout, isArticleFolder } from "./content-layout";
+import {
+  assertAlertMarkers,
+  assertContentLayout,
+  isArticleFolder,
+} from "./content-layout";
 import { localeIdentities, type Locale } from "./i18n/locales";
 
 /**
@@ -212,6 +216,7 @@ export function articleSchema(locale: Locale) {
  * finish and the site was simply one article shorter.
  */
 assertContentLayout();
+assertAlertMarkers();
 
 /**
  * One collection per locale, named after its identity: every collection reads
