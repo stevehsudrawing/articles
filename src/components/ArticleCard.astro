@@ -1,8 +1,7 @@
 ---
-import { articleUrl, type Article } from "../articles";
+import { articleUrl, coverPair, type Article } from "../articles";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
-import { asset, COVER_HEIGHT, COVER_WIDTH, IMAGES } from "../site-assets";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -16,23 +15,33 @@ interface Props {
 // that decides which URLs a locale lacks then keeps one home.
 const { locale, article } = Astro.props;
 const href = articleUrl(locale, article.id);
-const cover = article.data.cover?.light;
+const { light, dark, width, height } = coverPair(article);
 const date = article.data.date;
 const updated = article.data.updated;
 const author = article.data.author;
+
+// Both halves of a pair are below the fold in the same way, so both are lazy -
+// the same deferral the card's single image already had. The attributes are the
+// ones the toggle in `base.css` keys on; a card whose article has no dark twin
+// writes neither, and keeps its light cover in both themes.
+const coverAttrs = {
+  class: "card-img-top article-card-cover border-bottom",
+  width,
+  height,
+  alt: "",
+  loading: "lazy",
+} as const;
 ---
 
 <div class="col-md-6 col-xl-4">
   <article class="card h-100">
     <a href={href} tabindex="-1" aria-hidden="true">
       <img
-        class="card-img-top article-card-cover border-bottom"
-        src={cover?.src ?? asset(IMAGES.defaultCoverLight)}
-        width={cover?.width ?? COVER_WIDTH}
-        height={cover?.height ?? COVER_HEIGHT}
-        alt=""
-        loading="lazy"
+        {...coverAttrs}
+        src={light}
+        data-theme-image={dark ? "light" : undefined}
       />
+      {dark && <img {...coverAttrs} src={dark} data-theme-image="dark" />}
     </a>
     <div class="card-body">
       <h2 class="card-title h5">

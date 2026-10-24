@@ -22,6 +22,12 @@ interface Props {
 // the same 1.5rem as this `gx-4` - and why the two files say so in their own
 // comments: changing one without the other moves the rails out of line.
 const { title, description, light, dark } = Astro.props;
+
+// A page's cover is one file or a pair. The pair carries the attributes the
+// toggle in `base.css` keys on, and a lone image carries neither, so a page
+// whose artwork reads on both themes cannot be half-hidden by mistake. Where
+// the toggle lives, and why it is `!important`, is written there.
+const coverAttrs = { class: "page-hero-cover", alt: "" };
 ---
 
 <div class="page-hero container pb-4">
@@ -31,16 +37,13 @@ const { title, description, light, dark } = Astro.props;
       <p class="text-body-secondary mb-0">{description}</p>
     </div>
     {light && (
-      <div
-        class:list={[
-          "page-hero-cover-column col-12 col-lg-4 order-first order-lg-last",
-          dark && "cover-pair",
-        ]}
-      >
-        <img class="page-hero-cover" src={light} alt="" data-cover="light" />
-        {dark && (
-          <img class="page-hero-cover" src={dark} alt="" data-cover="dark" />
-        )}
+      <div class="page-hero-cover-column col-12 col-lg-4 order-first order-lg-last">
+        <img
+          {...coverAttrs}
+          src={light}
+          data-theme-image={dark ? "light" : undefined}
+        />
+        {dark && <img {...coverAttrs} src={dark} data-theme-image="dark" />}
       </div>
     )}
   </div>
@@ -105,30 +108,5 @@ const { title, description, light, dark } = Astro.props;
     .page-hero-cover {
       margin-left: auto;
     }
-  }
-
-  /* The theme is a concrete attribute on `<html>`, so the pair is toggled here
-     rather than by a media query - `<picture>` cannot express the reader's
-     choice. A page whose script never ran carries no attribute and is the light
-     theme.
-
-     The theme selector is `:global()` because `<html>` is outside this
-     component: a scoped selector would ask it for the component's scope
-     attribute and never match.
-
-     Only a page that declared a dark variant hides its light image: a single
-     file, such as the home page's transparent artwork, serves both themes
-     unchanged. The rule keys off the pair rather than off the image, because a
-     lone light image and the light half of a pair are otherwise identical. */
-  img[data-cover="dark"] {
-    display: none;
-  }
-
-  :global([data-bs-theme="dark"]) .cover-pair img[data-cover="light"] {
-    display: none;
-  }
-
-  :global([data-bs-theme="dark"]) .cover-pair img[data-cover="dark"] {
-    display: block;
   }
 </style>

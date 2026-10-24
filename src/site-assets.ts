@@ -22,7 +22,7 @@ export const IMAGES = {
   homeCover: "images/index-cover.png",
   /** The light half of the default pair, and the `og:image` of a coverless article. */
   defaultCoverLight: "images/default-cover-light.png",
-  /** The dark half of the default pair; never themed, never advertised. */
+  /** The dark half of the default pair: the dark theme's card and hero artwork, never advertised. */
   defaultCoverDark: "images/default-cover-dark.png",
 } as const;
 
@@ -52,16 +52,28 @@ export function asset(path: string): string {
 }
 
 /**
- * Turns a `public/` path into the absolute URL a crawler needs.
+ * Turns any URL under the site's base into the absolute URL a crawler needs.
  *
  * `og:image` is read outside any page: a social crawler gets the URL out of the
  * markup and fetches it directly, so a base-relative one cannot be resolved.
+ * This is the primitive - it takes a URL that already carries the base, such as
+ * one the build wrote for an asset it emitted.
+ *
+ * @param path - A site-relative URL, with its leading slash.
+ * @returns The file's absolute URL.
+ */
+export function absoluteUrl(path: string): string {
+  return new URL(path, import.meta.env.SITE).href;
+}
+
+/**
+ * Turns a `public/` path into the absolute URL a crawler needs.
  *
  * @param path - A `public/`-relative path, as `IMAGES` and `ICONS` hold them.
  * @returns The file's absolute URL.
  */
 export function absoluteAsset(path: string): string {
-  return new URL(asset(path), import.meta.env.SITE).href;
+  return absoluteUrl(asset(path));
 }
 
 /** The width an article cover must have, in pixels. */
@@ -89,6 +101,33 @@ export function assertCoverSize(
   if (size.width !== COVER_WIDTH || size.height !== COVER_HEIGHT) {
     throw new Error(
       `Cover image ${entry} is ${size.width}x${size.height}; a cover must be ${COVER_WIDTH}x${COVER_HEIGHT}.`,
+    );
+  }
+}
+
+/** The formats a cover may be shared in: the two every crawler can show. */
+const COVER_FORMATS: readonly string[] = ["png", "jpg", "jpeg"];
+
+/**
+ * Fails the build when a declared cover is not a format `og:image` can use.
+ *
+ * A cover is advertised as itself - no re-encode - so its own format is what a
+ * crawler receives. `astro:assets` can read and emit more than that, and webp
+ * is what it prefers when asked to transform, so the rule needs a check that
+ * runs before anything renders.
+ *
+ * @param image - The cover as `image()` resolved it, whose `format` is the
+ *   file's own (`"jpg"` for a JPEG, `"png"` for a PNG).
+ * @param entry - What to name in the message: the file and the field.
+ * @throws If the image is neither PNG nor JPEG.
+ */
+export function assertCoverFormat(
+  image: { format: string },
+  entry: string,
+): void {
+  if (!COVER_FORMATS.includes(image.format)) {
+    throw new Error(
+      `Cover image ${entry} is ${image.format}; a cover must be PNG or JPEG.`,
     );
   }
 }

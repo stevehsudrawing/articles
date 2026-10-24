@@ -2,6 +2,7 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import type { PaginateFunction } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
+import { asset, COVER_HEIGHT, COVER_WIDTH, IMAGES } from "./site-assets";
 
 /** One article, as the collection hands it over. */
 export type Article = CollectionEntry<Locale>;
@@ -47,6 +48,47 @@ export async function published(locale: Locale): Promise<Article[]> {
  */
 export function articleUrl(locale: Locale, id: string): string {
   return getRelativeLocaleUrl(locale, `${id}/`);
+}
+
+/**
+ * The images an article's page and its card show, and the size to declare.
+ *
+ * The hero and the card ask one question - "which files does this article
+ * show?" - and used to answer it separately. An article with a cover shows its
+ * own light file and its optional dark twin; an article without one shows the
+ * site's default pair, so a coverless page and a coverless card follow the
+ * theme too. The dimensions travel with the URLs because a card writes them as
+ * the image's intrinsic size, and a declared cover's have already passed
+ * `assertCoverSize()`.
+ *
+ * `dark` is absent, not empty, when there is no twin: the attribute that marks
+ * a pair must not appear on a lone image, which is the whole rule the toggle
+ * rests on.
+ *
+ * @param article - The article, as the collection hands it over.
+ * @returns The URLs to show and the size to declare for them.
+ */
+export function coverPair(article: Article): {
+  light: string;
+  dark?: string;
+  width: number;
+  height: number;
+} {
+  const cover = article.data.cover;
+  if (cover) {
+    return {
+      light: cover.light.src,
+      dark: cover.dark?.src,
+      width: cover.light.width,
+      height: cover.light.height,
+    };
+  }
+  return {
+    light: asset(IMAGES.defaultCoverLight),
+    dark: asset(IMAGES.defaultCoverDark),
+    width: COVER_WIDTH,
+    height: COVER_HEIGHT,
+  };
 }
 
 /**

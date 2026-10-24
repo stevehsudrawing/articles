@@ -1,13 +1,19 @@
 ---
-import { getImage } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
+import { coverPair } from "../articles";
 import PageHero from "../components/PageHero.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import { LICENSES, type LicenseId } from "../content.config";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
-import { absoluteAsset, assertCoverSize, asset, IMAGES } from "../site-assets";
+import {
+  absoluteAsset,
+  absoluteUrl,
+  assertCoverFormat,
+  assertCoverSize,
+  IMAGES,
+} from "../site-assets";
 import Base from "./Base.astro";
 
 /** What `render()` hands back, whose `Content` and `headings` are both used. */
@@ -36,31 +42,33 @@ const { locale, article, rendered, tagHref, alternates } = Astro.props;
 const { Content, headings } = rendered;
 const cover = article.data.cover;
 
-// A declared cover has to be the size a share card expects, and the layout is
-// where its dimensions exist: the schema's `image()` resolves them after a
-// refinement has run. The check happens before anything renders, so a wrong
-// cover fails the build instead of shipping a card a crawler has to crop.
+// A declared cover has to be the size a share card expects and a format one can
+// show, and the layout is where its dimensions exist: the schema's `image()`
+// resolves them after a refinement has run. The checks happen before anything
+// renders, so a wrong cover fails the build instead of shipping a card a
+// crawler has to crop or cannot read at all.
 if (cover) {
-  assertCoverSize(cover.light, `${article.id}/${locale}.md cover.light`);
+  const entry = (field: string) => `${article.id}/${locale}.md cover.${field}`;
+  assertCoverSize(cover.light, entry("light"));
+  assertCoverFormat(cover.light, entry("light"));
   if (cover.dark) {
-    assertCoverSize(cover.dark, `${article.id}/${locale}.md cover.dark`);
+    assertCoverSize(cover.dark, entry("dark"));
+    assertCoverFormat(cover.dark, entry("dark"));
   }
 }
 
 // The hero shows a pair: an article's own cover, or the site's default artwork
 // when it declares none. Only the light half is ever advertised, because a
 // crawler sends no `prefers-color-scheme` and would never see the dark one.
-const heroCover = cover
-  ? { light: cover.light.src, dark: cover.dark?.src }
-  : {
-      light: asset(IMAGES.defaultCoverLight),
-      dark: asset(IMAGES.defaultCoverDark),
-    };
+const heroCover = coverPair(article);
+
+// `og:image` is the cover's own file - the one the hero already serves - so it
+// is never re-encoded here; a 146 KB JPEG used to become a 512 KB PNG for a
+// crawler that may never fetch it. The URL must be absolute because it is read
+// outside any page, and the format checks above are what make "the cover
+// itself" a safe thing to hand a crawler.
 const ogImage = cover
-  ? new URL(
-      (await getImage({ src: cover.light, format: "png" })).src,
-      Astro.site,
-    ).href
+  ? absoluteUrl(cover.light.src)
   : absoluteAsset(IMAGES.defaultCoverLight);
 
 const license = LICENSES[article.data.license as LicenseId];

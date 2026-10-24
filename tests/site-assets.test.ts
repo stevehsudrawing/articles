@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { assertCoverSize, COVER_HEIGHT, COVER_WIDTH } from "../src/site-assets";
+import {
+  assertCoverFormat,
+  assertCoverSize,
+  COVER_HEIGHT,
+  COVER_WIDTH,
+} from "../src/site-assets";
 
 describe("assertCoverSize", () => {
   it("accepts the size the share card expects", () => {
@@ -26,5 +31,26 @@ describe("assertCoverSize", () => {
     expect(() =>
       assertCoverSize({ width: COVER_WIDTH, height: 600 }, "cover.png"),
     ).toThrow(/is 1200x600; a cover must be 1200x630\./);
+  });
+});
+
+describe("assertCoverFormat", () => {
+  it("accepts the two formats a crawler can show", () => {
+    for (const format of ["png", "jpg", "jpeg"]) {
+      expect(() =>
+        assertCoverFormat({ format }, "2026-10-11-seed/zh-hans.md cover"),
+      ).not.toThrow();
+    }
+  });
+
+  it("names the file, the field and the format it found", () => {
+    expect(() =>
+      assertCoverFormat(
+        { format: "webp" },
+        "2026-10-11-seed/zh-hans.md cover.light",
+      ),
+    ).toThrow(
+      "Cover image 2026-10-11-seed/zh-hans.md cover.light is webp; a cover must be PNG or JPEG.",
+    );
   });
 });

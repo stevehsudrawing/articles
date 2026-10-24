@@ -107,6 +107,37 @@ a:active {
   outline: calc(var(--bs-card-border-width) * 2) solid var(--bs-secondary);
 }
 
+/* --- Theme-aware images ---
+   An image with a dark twin is two `<img>` elements: the pair carries
+   `data-theme-image="light"` and `data-theme-image="dark"`, and this is the
+   only place that decides which half is shown. An image with no twin writes
+   neither attribute, so nothing here can ever hide it - the home page's
+   transparent cover is visible in both themes because it is alone in its
+   markup, not because a marker class was remembered.
+
+   `<picture>` with `media="(prefers-color-scheme: dark)"` would load exactly one
+   file, but it reads the system's preference and not the reader's stored one.
+   Measured: with `color-scheme: dark` on the root - which Bootstrap sets from
+   `data-bs-theme` - `prefers-color-scheme` still reports light, so `<picture>`
+   keeps the light source and never requests the dark file.
+
+   `!important` is deliberate. The shown half keeps whatever `display` its own
+   component gives it - the hero needs `display: block` for `margin-left: auto`
+   to push the image right below `lg` - so each rule names the theme its half is
+   *not* shown in and never matches the other one; without `!important` the
+   hiding would be decided by specificity against those component rules
+   instead. A Bootstrap utility that hides the element itself (`.d-none`)
+   carries `!important` as well, so a consumer that has to hide a pair hides
+   the element around it. */
+
+:root:not([data-bs-theme="dark"]) [data-theme-image="dark"] {
+  display: none !important;
+}
+
+:root[data-bs-theme="dark"] [data-theme-image="light"] {
+  display: none !important;
+}
+
 /* --- Focus ---
    An outline rather than a shadow. Bootstrap's `.btn:focus-visible` sets
    `outline: 0` and a box-shadow ring, and it is the more specific selector, so
