@@ -39,7 +39,10 @@ const alternates = locales.map((other) => ({
   {page.data.map((article) => (
     <ArticleCard locale={locale} article={article} />
   ))}
-  <div class="col-12">
-    <Pagination locale={locale} page={page} />
-  </div>
+  <Pagination
+    slot="strip"
+    locale={locale}
+    page={page}
+    countKey="text-count-articles"
+  />
 </Page>

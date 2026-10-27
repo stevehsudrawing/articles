@@ -64,4 +64,23 @@ const {
       <slot />
     </div>
   </div>
+  {Astro.slots.has("strip") && (
+    <div class="page-strip border-top mt-auto">
+      <div class="container">
+        <slot name="strip" />
+      </div>
+    </div>
+  )}
 </Base>
+
+<style>
+  /* The page frame's bottom edge: a rule across the viewport with the content on
+     the same container grid as everything above it, and `mt-auto` - which needs
+     `main` to be a flex column (see `Base.astro`) - to park it just above the
+     footer whenever the page is shorter than the viewport. A page that passes no
+     strip renders none, so the article and the home look exactly as before. */
+  .page-strip {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+  }
+</style>

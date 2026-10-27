@@ -55,7 +55,10 @@ const alternates = locales.map((other) => ({
       </a>
     </div>
   ))}
-  <div class="col-12">
-    <Pagination locale={locale} page={page} />
-  </div>
+  <Pagination
+    slot="strip"
+    locale={locale}
+    page={page}
+    countKey="text-count-tags"
+  />
 </Page>

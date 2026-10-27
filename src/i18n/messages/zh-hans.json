@@ -51,6 +51,8 @@
   "text-tag-seed-article": "种子文章",
   "text-tag-worldview": "世界观",
 
+  "text-count-articles": "共 %1 篇文章",
   "text-count-pages": "共 %1 页",
+  "text-count-tags": "共 %1 个标签",
   "text-title-paged": "%1（第 %2 页）"
 }

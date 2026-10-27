@@ -8,8 +8,10 @@ import chevronLeft from "./assets/icons/chevron_left.svg?raw";
 import chevronRight from "./assets/icons/chevron_right.svg?raw";
 import contrast from "./assets/icons/contrast.svg?raw";
 import darkMode from "./assets/icons/dark_mode.svg?raw";
+import firstPage from "./assets/icons/first_page.svg?raw";
 import info from "./assets/icons/info.svg?raw";
 import language from "./assets/icons/language.svg?raw";
+import lastPage from "./assets/icons/last_page.svg?raw";
 import lightMode from "./assets/icons/light_mode.svg?raw";
 import lightbulb from "./assets/icons/lightbulb.svg?raw";
 import menu from "./assets/icons/menu.svg?raw";
@@ -28,8 +30,10 @@ export const ICONS = {
   chevronRight,
   contrast,
   darkMode,
+  firstPage,
   info,
   language,
+  lastPage,
   lightMode,
   lightbulb,
   menu,

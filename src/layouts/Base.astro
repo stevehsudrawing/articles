@@ -187,7 +187,9 @@ const themes = (
       closeLabel={t(locale, "text-action-close")}
       themes={themes}
     />
-    <main class="flex-grow-1">
+    {/* `d-flex flex-column` is what lets a page's own bottom strip - the
+        pagination band `Page.astro` renders - park itself with `mt-auto`. */}
+    <main class="flex-grow-1 d-flex flex-column">
       <slot />
     </main>
     <SiteFooter locale={locale} />

@@ -142,10 +142,12 @@ a:active {
 /* --- Focus ---
    An outline rather than a shadow. Bootstrap's `.btn:focus-visible` sets
    `outline: 0` and a box-shadow ring, and it is the more specific selector, so
-   it is listed here too. */
+   it is listed here too; `.page-link:focus` does exactly the same with a blue
+   shadow, so the pagination's links are the third case of one rule. */
 
 :focus-visible,
-.btn:focus-visible {
+.btn:focus-visible,
+.page-link:focus-visible {
   outline: var(--shar-focus-ring-width) solid var(--bs-focus-ring-color);
   outline-offset: 2px;
 }
@@ -431,4 +433,51 @@ pre code {
   background-color: rgba(var(--bs-backdrop-bg-rgb), var(--bs-backdrop-opacity));
   opacity: 1;
   backdrop-filter: blur(0.5rem);
+}
+
+/* --- Pagination ---
+   The strip's chips. Three families of token are restated:
+
+   - The accent, for the current page. Its text color flips with the theme, as
+     every filled accent does.
+   - `--bs-secondary-bg`, which Bootstrap points the disabled and focus
+     backgrounds at, and which is the one dark surface left tinted because
+     nothing else renders it. A disabled chip is a 40px block, so the blue bias
+     would be visible: measured `#343a40` against the page's `#222222`, 1.38:1
+     with the blue end 12 units above the red one. The tertiary surface is the
+     neutral answer (1.16:1), and the disabled glyph keeps 6.91:1 on it.
+   - The focus shadow, which is Bootstrap's blue glow; the outline in the Focus
+     block above replaces it. */
+
+.pagination {
+  --bs-pagination-padding-x: var(--bs-pagination-padding-y);
+  --bs-pagination-active-color: var(--shar-primary-contrast);
+  --bs-pagination-active-bg: var(--bs-primary);
+  --bs-pagination-active-border-color: var(--bs-primary);
+  --bs-pagination-disabled-bg: var(--bs-tertiary-bg);
+  --bs-pagination-focus-bg: var(--bs-tertiary-bg);
+  --bs-pagination-focus-box-shadow: none;
+}
+
+/* A chip is a square that can still grow. `min-width` rather than `width`,
+   because a page number is text: `width: 2.5rem` wrapped "第一页" into a column
+   of single characters (measured `scrollHeight 78` in a `39` box) and would clip
+   a three-digit number. `inline-flex` is what centers the glyph chips: measured
+   after this rule, a 40x40 chip insets its glyph exactly 12px on all four
+   sides, where `text-align` alone only centers horizontally. */
+
+.page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  white-space: nowrap;
+}
+
+/* Bootstrap's `.disabled > .page-link` sets `pointer-events: none` on the chip
+   itself, so the cursor has to come from the list item. */
+
+.page-item.disabled {
+  cursor: not-allowed;
 }

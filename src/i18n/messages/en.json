@@ -51,5 +51,7 @@
   "text-tag-worldview": "Worldview",
 
   "text-title-paged": "%1 (page %2)",
-  "text-count-pages": "%1 pages"
+  "text-count-articles": "Articles: %1",
+  "text-count-pages": "%1 pages",
+  "text-count-tags": "Tags: %1"
 }

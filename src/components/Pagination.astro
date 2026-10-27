@@ -4,7 +4,7 @@ import { t } from "../i18n/messages";
 import Icon from "./Icon.astro";
 
 interface Props {
-  /** The locale whose copy labels the links. */
+  /** The locale whose copy labels the links and the counts. */
   locale: Locale;
   /** Astro's pagination object for the current page. */
   page: {
@@ -17,14 +17,26 @@ interface Props {
     };
     currentPage: number;
     lastPage: number;
+    /** How many items the index holds, across every page. */
+    total: number;
   };
+  /**
+   * The message key naming what those items are: `text-count-articles` or
+   * `text-count-tags`.
+   */
+  countKey: string;
 }
 
-// Every control is an anchor to a page that exists, so the strip works without
-// JavaScript and a crawler can follow it. `prev`, `next`, `first` and `last`
-// are `undefined` exactly when they would lead where the reader already is, so
-// no dead control is ever rendered.
-const { locale, page } = Astro.props;
+// The strip's content, not its frame: `Page.astro` draws the rule and the band,
+// and this component fills the container with one row that wraps. Every control
+// is an anchor to a page that exists, so the strip works without JavaScript and
+// a crawler can follow it. The two ends are glyphs rather than words, so no chip
+// can ever hold a label that folds inside a square.
+//
+// `total` is Astro's own count - measured on `paginate()`'s result - so the
+// number in the strip is the same one the pages were cut from, with no second
+// query and no second prop to keep in step.
+const { locale, page, countKey } = Astro.props;
 const { url, currentPage, lastPage } = page;
 
 /** How many numbered pages the window shows at most. */
@@ -42,59 +54,110 @@ const numbers = Array.from(
 
 const pageUrl = (number: number) =>
   (url.current ?? "").replace(/\/\d+\/$/, `/${number}/`);
+
+// The two controls on each side of the numbers, sharing one shape because they
+// share one rule: a control with nowhere to go is not a link. Astro leaves
+// `first` undefined on page 1 and `last` undefined on the final page - not only
+// `prev` and `next` - so both ends get the same treatment. Rendering a bare
+// anchor there would leave a chip that looks live and does nothing.
+const leading = [
+  {
+    href: url.first,
+    label: t(locale, "text-nav-first-page"),
+    icon: "firstPage",
+  },
+  {
+    href: url.prev,
+    label: t(locale, "text-nav-previous-page"),
+    icon: "chevronLeft",
+  },
+] as const;
+
+const trailing = [
+  {
+    href: url.next,
+    label: t(locale, "text-nav-next-page"),
+    icon: "chevronRight",
+  },
+  {
+    href: url.last,
+    label: t(locale, "text-nav-last-page"),
+    icon: "lastPage",
+  },
+] as const;
 ---
 
-{lastPage > 1 && (
-  <nav aria-label={t(locale, "text-nav-pagination")}>
-    <p class="text-body-secondary mb-2">
-      {t(locale, "text-count-pages", String(lastPage))}
-    </p>
-    <ul class="pagination">
-      {url.first && (
-        <li class="page-item">
-          <a class="page-link" href={url.first}>
-            {t(locale, "text-nav-first-page")}
-          </a>
-        </li>
-      )}
-      <li class:list={["page-item", !url.prev && "disabled"]}>
-        <a
-          class="page-link"
-          href={url.prev ?? url.current}
-          aria-label={t(locale, "text-nav-previous-page")}
-          aria-disabled={!url.prev}
-        >
-          <Icon name="chevronLeft" />
-        </a>
-      </li>
-      {numbers.map((number) => (
-        <li class:list={["page-item", number === currentPage && "active"]}>
-          <a
-            class="page-link"
-            href={pageUrl(number)}
-            aria-current={number === currentPage ? "page" : undefined}
-          >
-            {number}
-          </a>
-        </li>
-      ))}
-      <li class:list={["page-item", !url.next && "disabled"]}>
-        <a
-          class="page-link"
-          href={url.next ?? url.current}
-          aria-label={t(locale, "text-nav-next-page")}
-          aria-disabled={!url.next}
-        >
-          <Icon name="chevronRight" />
-        </a>
-      </li>
-      {url.last && (
-        <li class="page-item">
-          <a class="page-link" href={url.last}>
-            {t(locale, "text-nav-last-page")}
-          </a>
-        </li>
-      )}
-    </ul>
-  </nav>
-)}
+<div class="d-flex flex-wrap align-items-center gap-3">
+  <p class="mb-0 text-body-secondary">
+    {t(locale, countKey, String(page.total))}
+  </p>
+  {lastPage > 1 && (
+    <>
+      {/* `ms-sm-auto` rather than `ms-auto`: below that breakpoint the row has
+          already wrapped, and a nav pushed right on its own line reads as a
+          floating block - left-aligned, the three rows stack in reading order. */}
+      <nav class="ms-sm-auto" aria-label={t(locale, "text-nav-pagination")}>
+        <ul class="pagination mb-0">
+          {leading.map((control) => (
+            <li class:list={["page-item", !control.href && "disabled"]}>
+              {control.href ? (
+                <a
+                  class="page-link"
+                  href={control.href}
+                  aria-label={control.label}
+                >
+                  <Icon name={control.icon} />
+                </a>
+              ) : (
+                <span
+                  class="page-link disabled"
+                  role="link"
+                  aria-disabled="true"
+                  aria-label={control.label}
+                >
+                  <Icon name={control.icon} />
+                </span>
+              )}
+            </li>
+          ))}
+          {numbers.map((number) => (
+            <li class:list={["page-item", number === currentPage && "active"]}>
+              <a
+                class="page-link"
+                href={pageUrl(number)}
+                aria-current={number === currentPage ? "page" : undefined}
+              >
+                {number}
+              </a>
+            </li>
+          ))}
+          {trailing.map((control) => (
+            <li class:list={["page-item", !control.href && "disabled"]}>
+              {control.href ? (
+                <a
+                  class="page-link"
+                  href={control.href}
+                  aria-label={control.label}
+                >
+                  <Icon name={control.icon} />
+                </a>
+              ) : (
+                <span
+                  class="page-link disabled"
+                  role="link"
+                  aria-disabled="true"
+                  aria-label={control.label}
+                >
+                  <Icon name={control.icon} />
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <p class="mb-0 text-body-secondary">
+        {t(locale, "text-count-pages", String(lastPage))}
+      </p>
+    </>
+  )}
+</div>
