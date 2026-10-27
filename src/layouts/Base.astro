@@ -28,6 +28,13 @@ interface Props {
   locale: Locale;
   /** Which of the header's items this page is, for `aria-current`. */
   page?: "home" | "list" | "tags";
+  /**
+   * Whether the page renders the site's minimal chrome: no header, and a
+   * one-line colophon instead of the banded footer. The error page is the only
+   * caller - it is reached on a wrong address and offers one way back, so it
+   * neither needs the navigation nor should pay an island for it.
+   */
+  minimal?: boolean;
   /** The page's introduction: the hero's lede, and the card's text. */
   description: string;
   /** The page's own title. Omitted on the home page, which is the site name. */
@@ -59,6 +66,7 @@ interface Props {
 const {
   locale,
   page,
+  minimal = false,
   description,
   title,
   pageNumber,
@@ -175,23 +183,29 @@ const themes = (
     </script>
   </head>
   <body class="d-flex flex-column min-vh-100">
-    <SiteHeader
-      client:idle
-      siteName={siteName}
-      nav={nav}
-      languages={languages}
-      languageLabel={t(locale, "text-action-language")}
-      themeLabel={t(locale, "text-action-theme")}
-      menuLabel={t(locale, "text-action-menu")}
-      settingsLabel={t(locale, "text-action-settings")}
-      closeLabel={t(locale, "text-action-close")}
-      themes={themes}
-    />
+    {/* The header is the site's one island, so it is the whole reason any page
+        carries JavaScript: the minimal chrome is a page that ships none.
+        Measured on the error page - 41 KB gzip with the island, 1.6 KB
+        without. */}
+    {!minimal && (
+      <SiteHeader
+        client:idle
+        siteName={siteName}
+        nav={nav}
+        languages={languages}
+        languageLabel={t(locale, "text-action-language")}
+        themeLabel={t(locale, "text-action-theme")}
+        menuLabel={t(locale, "text-action-menu")}
+        settingsLabel={t(locale, "text-action-settings")}
+        closeLabel={t(locale, "text-action-close")}
+        themes={themes}
+      />
+    )}
     {/* `d-flex flex-column` is what lets a page's own bottom strip - the
         pagination band `Page.astro` renders - park itself with `mt-auto`. */}
     <main class="flex-grow-1 d-flex flex-column">
       <slot />
     </main>
-    <SiteFooter locale={locale} />
+    <SiteFooter locale={locale} minimal={minimal} />
   </body>
 </html>

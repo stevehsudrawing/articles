@@ -1,28 +1,61 @@
 ---
 import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
 import { t } from "../i18n/messages";
 import { defaultLocale } from "../i18n/locales";
 
 // The page renders in the default locale - the same answer the site gives
 // everywhere else that a translation is missing - and its one control points at
-// the bare root, so the gate decides which home the reader reaches. It carries
-// no language switcher: its URL is not locale-specific, so three locale links
-// would be three guesses.
+// the bare root, so the gate decides which home the reader reaches. It asks for
+// the minimal chrome: no header, and therefore no island and no language
+// switcher, which its locale-less URL could only have offered as three guesses;
+// and a footer that is one colophon line rather than the banded row with the
+// two outward links, because this page has one exit and needs only that.
 const locale = defaultLocale;
+const description = t(locale, "text-hero-description-404");
 ---
 
 <Base
   locale={locale}
+  minimal
   noindex
-  description={t(locale, "text-hero-description-404")}
+  title={t(locale, "text-hero-title-404")}
+  description={description}
 >
   <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center py-5">
+    <span class="error-glyph" aria-hidden="true">
+      <Icon name="warning" />
+    </span>
     <h1 class="h3">{t(locale, "text-hero-title-404")}</h1>
-    <div class="px-3 pb-2">
-      <p class="mb-1">{t(locale, "text-hero-description-404")}</p>
-    </div>
+    {/* No side padding: the sentence is the panel's widest line, and 16 px of
+        it was measured to be the difference between one line and a two-line
+        orphan at a 375 viewport (a 319.3 px box for 320 px of text). */}
+    <p class="mb-1 pb-2">{description}</p>
     <a class="btn btn-primary" href={import.meta.env.BASE_URL}>
       {t(locale, "text-action-home")}
     </a>
   </div>
 </Base>
+
+<style>
+  /* The page's one piece of artwork, standing where the main site's sticker
+     stands: 128px beside a 28px heading is the proportion that page gives its
+     own artwork, and at this size the glyph anchors the panel instead of
+     sitting above it. A glyph is a `1em` box, so `font-size` is the size, and
+     `inline-flex` blockifies it - which is what removes the descender gap an
+     inline replaced element leaves in a line box (`.card-icon` makes the same
+     correction). The dimming is one `opacity` on the body color rather than
+     `--bs-secondary-color`, which is fixed at 75% alpha and reads as a very
+     large secondary icon instead of artwork. At half the glyph composites to
+     `#909294` on white and `#808284` on `#222222` - 3.1:1 and 4.2:1 - and the
+     asymmetry is why it stops there: the dark theme already sits higher, and
+     0.6 measured a visibly loud triangle on `#222222`. Decoration owes no
+     contrast ratio, so the number is a composition choice. */
+  .error-glyph {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    font-size: 8rem;
+    color: var(--bs-body-color);
+    opacity: 0.5;
+  }
+</style>
