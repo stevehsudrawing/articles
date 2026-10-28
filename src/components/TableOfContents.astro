@@ -25,7 +25,9 @@ const entries = tableOfContents(headings);
     </h2>
     <ul class="list-unstyled mb-0">
       {entries.map((heading) => (
-        <li class:list={["toc-item", `toc-depth-${heading.depth}`]}>
+        <li
+          class:list={["toc-item", "font-tnum", `toc-depth-${heading.depth}`]}
+        >
           <a class="link-secondary" href={`#${heading.slug}`}>
             {heading.text}
           </a>
@@ -58,8 +60,8 @@ const entries = tableOfContents(headings);
   @media (min-width: 1200px) {
     .table-of-contents {
       position: sticky;
-      top: calc(var(--shar-header-height) + 1rem);
-      max-height: calc(100vh - var(--shar-header-height) - 2rem);
+      top: calc(var(--shar-header-height));
+      max-height: calc(100vh - var(--shar-header-height));
       overflow-y: auto;
       padding-top: 1rem;
       padding-bottom: 0;

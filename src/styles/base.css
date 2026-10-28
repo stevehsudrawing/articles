@@ -289,6 +289,14 @@ pre code {
   outline: none;
 }
 
+/* --- Larger headings punctuation compression ---
+   Larger headings need to use the "kern" font feature to compress the
+   punctuation spacing. */
+
+:is(h1, h2) {
+  font-feature-settings: "kern";
+}
+
 /* --- The renderer's own heading ---
    The footnote section opens with `<h2 class="sr-only" id="footnote-label">`,
    and Bootstrap defines `.visually-hidden` rather than `.sr-only`, so the
@@ -323,6 +331,7 @@ pre code {
 
 .article-body :is(h1, h2, h3, h4, h5, h6) {
   line-height: inherit;
+  font-feature-settings: "kern", "tnum";
 }
 
 /* Tighter than Bootstrap's 1rem: the prose is long, and a full line of air
