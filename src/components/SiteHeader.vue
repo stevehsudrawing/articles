@@ -14,7 +14,7 @@
 //
 // BootstrapVueNext is imported here rather than registered globally: its
 // `createBootstrap()` plugin registers no components, and a component that
-// relied on it would render nothing at build time. See the instructions.
+// relied on it would render nothing at build time.
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { BDropdown, BDropdownItem, BOffcanvas } from "bootstrap-vue-next";
 import mark from "../assets/brand/mark.svg?raw";

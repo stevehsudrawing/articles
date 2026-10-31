@@ -1,9 +1,9 @@
 /* ==========================================================================
    Colors - the accent scale and the bridge onto Bootstrap
 
-   One accent hue, expanded into nine steps. The steps are recorded in the
-   project roadmap; this file is where they become `--shar-*` tokens, and from
-   here every component refers to a token rather than to a hex value.
+   One accent hue, expanded into nine steps. This file is where they become
+   `--shar-*` tokens, and from here every component refers to a token rather
+   than to a hex value.
    ========================================================================== */
 
 :root {

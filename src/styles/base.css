@@ -276,8 +276,9 @@ a:active {
 
 /* --- Code spans ---
    A chip, as on the main site. `word-break: break-all` is scoped to inline
-   code and must never be promoted to `*`. Bootstrap's `pre code` rule keeps a
-   fenced block from being hard-wrapped: it is the more specific selector. */
+   code, where a long path has no other break opportunity; on `*` it would
+   break prose mid-word too. Bootstrap's `pre code` rule keeps a fenced block
+   from being hard-wrapped: it is the more specific selector. */
 
 code {
   font-size: 0.9em;
@@ -350,18 +351,18 @@ pre code {
    and the chrome keep their own sizes, because what a reader sizes is the text
    being read, not the page around it.
 
-   `[data-reading-scale]` is the gate, and it is not decoration. There is no safe
-   "off" for a `calc` that multiplies by a missing custom property - the
-   declaration would simply be dropped - so gating means at rest these rules do
-   not exist and Bootstrap's own heading declarations are the only ones in force.
+   `[data-reading-scale]` is the gate: there is no safe "off" for a `calc` that
+   multiplies by a missing custom property - the declaration would simply be
+   dropped - so gating means at rest these rules do not exist and Bootstrap's
+   own heading declarations are the only ones in force.
 
    The headings have to be restated because Bootstrap sizes them from the root
    (`h2` is `calc(1.325rem + 0.9vw)`, and `2rem` from 1200px) while a paragraph
    inherits the body's `1rem`: growing the container alone would grow the prose
    and leave every heading where it was. The six values and the four overrides
    are Bootstrap 5.3.8's, copied because it exposes no `--bs-h2-font-size`; the
-   `1200px` breakpoint is its own. Re-read them from `bootstrap.css` before
-   changing one - they are the one place a dependency's numbers live here. */
+   `1200px` breakpoint is its own, and they are the one place a dependency's
+   numbers live in this sheet. */
 
 :root[data-reading-scale] .article-body {
   font-size: calc(var(--bs-body-font-size) * var(--shar-reading-scale));

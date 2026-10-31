@@ -36,8 +36,8 @@ export interface AlertKind {
  *
  * `warning` and `danger` exist in Bootstrap with a light and a dark value for
  * all three of their tokens, so a severity tint costs one class and no CSS of
- * ours. Nothing else on the site may take these two families - a badge, a button
- * or a link keeps the accent scale.
+ * ours. The two families exist for these kinds alone: a badge, a button and a
+ * link draw on the accent scale instead.
  */
 export type AlertVariant = "primary" | "warning" | "danger";
 

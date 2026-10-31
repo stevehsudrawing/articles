@@ -36,7 +36,7 @@ interface Props {
 
 // The row is the layout: the article takes eight columns and the table of
 // contents four, so the article's measure is narrower on wide screens than the
-// container - the intended consequence of having a sidebar, not an accident.
+// container - the intended consequence of having a sidebar.
 // The four columns are also the hero cover's column (see `PageHero.astro`): one
 // third of the container is the right rail, and the cover above the fold lines
 // up with the contents below it.
@@ -290,7 +290,7 @@ const updated = article.data.updated;
      `.col-xl-8` is a plain declaration, so the selector below outranks it
      rather than fighting it with `!important`.
 
-     `margin-inline: 0` is the second half of that, and it is not cosmetic:
+     `margin-inline: 0` is the second half of that:
      `.row` carries a negative gutter that cancels the container's horizontal
      padding, which the columns' own gutters then put back. With those gutters
      zeroed (below) the negative margin would be the last word and the text would
@@ -331,7 +331,7 @@ const updated = article.data.updated;
      The hero is deliberately left out: it keeps the container's width while this
      row centers at the measure, so the cover overhangs the column and the title
      starts further left than the body. The `<hr>` between them is the seam that
-     makes that read as a masthead, and lining the two up again is not a fix. */
+     makes that read as a masthead. */
   :root[data-reading-view="comfort"] .article-wrapper {
     margin-top: 1rem;
   }
