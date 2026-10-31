@@ -16,6 +16,15 @@
      number. */
   --shar-tools-height: 64px;
 
+  /* The reading measure: how wide a line of article prose is in the comfortable
+     view. 33rem is 33 characters, because a Han character measures exactly 1em,
+     and the same width holds about 74 characters of this site's English - both
+     inside the published ranges of 25-40 and 45-75. The natural guess, 640px,
+     is 40 Han characters but 90 English ones: a value that serves one locale and
+     breaks the other. Every consumer multiplies it by the reading scale, so the
+     characters per line stay constant across the five steps. */
+  --shar-measure: 33rem;
+
   /* The header's layer, the one value that has to sit above the page and below
      nothing that matters. */
   --shar-z-header: 1030;

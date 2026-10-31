@@ -10,6 +10,7 @@ import chevronRight from "./assets/icons/chevron_right.svg?raw";
 import contrast from "./assets/icons/contrast.svg?raw";
 import darkMode from "./assets/icons/dark_mode.svg?raw";
 import firstPage from "./assets/icons/first_page.svg?raw";
+import formatAlignCenter from "./assets/icons/format_align_center.svg?raw";
 import info from "./assets/icons/info.svg?raw";
 import language from "./assets/icons/language.svg?raw";
 import lastPage from "./assets/icons/last_page.svg?raw";
@@ -35,6 +36,7 @@ export const ICONS = {
   contrast,
   darkMode,
   firstPage,
+  formatAlignCenter,
   info,
   language,
   lastPage,

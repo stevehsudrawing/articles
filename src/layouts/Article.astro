@@ -95,10 +95,10 @@ const updated = article.data.updated;
     dark={heroCover.dark}
   />
   <div class="container pb-4">
-    <div class="row g-4">
+    <div class="article-row row g-4">
       {/* A flex column so the bar's `margin-top: auto` can reach this column's
           bottom edge, which is the row's bottom - the end of the article. */}
-      <div class="col-12 col-xl-4 order-xl-last d-flex flex-column">
+      <div class="article-rail col-12 col-xl-4 order-xl-last d-flex flex-column">
         <TableOfContents locale={locale} headings={headings} />
         {/* The rail copy's sticky containing block is this column, so the bar
             floats at the viewport bottom and settles where the article ends. */}
@@ -174,7 +174,7 @@ const updated = article.data.updated;
 
   {/* The bar is rendered twice, so its behavior lives here, once: one delegated
       handler serves both copies and they cannot disagree. Inline, because the
-      state is two attributes on the document and an island would cost the Vue
+      state is attributes on the document and an island would cost the Vue
       runtime for it. Nothing is stored - a reload is the reset. */}
   <script is:inline>
     (() => {
@@ -212,11 +212,48 @@ const updated = article.data.updated;
         if (status) status.textContent = Math.round(steps[index] * 100) + "%";
       };
 
+      // The view is a second branch of the same handler, for the same reason as
+      // the first: the bar is rendered twice. The attribute's absence is the
+      // normal view, so nothing has to be initialized.
+      const viewToggles = document.querySelectorAll("[data-view-toggle]");
+
+      const setView = (comfort) => {
+        const pressed = document.activeElement.closest("[data-view-toggle]");
+
+        if (comfort) {
+          root.dataset.readingView = "comfort";
+        } else {
+          delete root.dataset.readingView;
+        }
+
+        for (const toggle of viewToggles) {
+          toggle.setAttribute("aria-pressed", String(comfort));
+        }
+
+        // The copy that was pressed is the one the new view hides - the rail
+        // above `xl`, the dock below it - so focus would fall back to the
+        // document and a keyboard reader would start over. The same control in
+        // the visible copy takes it instead.
+        if (pressed) {
+          for (const toggle of viewToggles) {
+            if (toggle.getClientRects().length > 0) {
+              toggle.focus();
+              break;
+            }
+          }
+        }
+      };
+
       document.addEventListener("click", (event) => {
-        const control =
-          event.target instanceof Element
-            ? event.target.closest("[data-reading-step]")
-            : null;
+        const target = event.target instanceof Element ? event.target : null;
+        if (!target) return;
+
+        if (target.closest("[data-view-toggle]")) {
+          setView(root.dataset.readingView !== "comfort");
+          return;
+        }
+
+        const control = target.closest("[data-reading-step]");
         if (!control) return;
 
         // `pointer-events: none` stops a pointer, not a keyboard activation, so
@@ -241,5 +278,61 @@ const updated = article.data.updated;
     .article-wrapper {
       margin-top: 1rem;
     }
+  }
+</style>
+
+<style>
+  /* The row's second composition, and why it is one declaration.
+
+     `display: block` retires the column widths and the ordering together:
+     `order` applies only to flex and grid items, so it stops applying at all,
+     and the columns become block boxes whose width is ours. Bootstrap's
+     `.col-xl-8` is a plain declaration, so the selector below outranks it
+     rather than fighting it with `!important`.
+
+     `margin-inline: 0` is the second half of that, and it is not cosmetic:
+     `.row` carries a negative gutter that cancels the container's horizontal
+     padding, which the columns' own gutters then put back. With those gutters
+     zeroed (below) the negative margin would be the last word and the text would
+     sit flush against a 375px viewport's edges - measured at 0 to 360 rather than
+     the 12 to 348 it needs. Zeroing the row's margin leaves the container's
+     padding as the only inset. */
+  :root[data-reading-view="comfort"] .article-row {
+    display: block;
+    margin-inline: 0;
+  }
+
+  /* `padding-inline: 0` is what makes the measure the width of the text: `g-4`
+     gives each column a 0.75rem gutter, so a 528px box would otherwise hold
+     504px of prose. Both columns keep their own display mode, so the rail
+     column stays the flex column the bar's `margin-top: auto` needs. */
+  :root[data-reading-view="comfort"] .article-rail,
+  :root[data-reading-view="comfort"] .article-wrapper {
+    width: 100%;
+    max-width: var(--shar-measure);
+    margin-inline: auto;
+    padding-inline: 0;
+  }
+
+  /* The scaled measure, gated on the scale attribute exactly as `base.css`
+     gates its own rules: `--shar-reading-scale` has no definition until a reader
+     steps the size, and a `calc` that multiplies a missing custom property is
+     invalid at computed-value time - the cap would vanish in the common case,
+     because the view attribute does not imply the scale one. */
+  :root[data-reading-view="comfort"][data-reading-scale] .article-rail,
+  :root[data-reading-view="comfort"][data-reading-scale] .article-wrapper {
+    max-width: calc(var(--shar-measure) * var(--shar-reading-scale));
+  }
+
+  /* Stacked, the contents and the article need the distance the
+     `max-width: 1199.98px` block above already gives them. The two rules set one
+     property under different conditions, so neither adds to the other.
+
+     The hero is deliberately left out: it keeps the container's width while this
+     row centers at the measure, so the cover overhangs the column and the title
+     starts further left than the body. The `<hr>` between them is the seam that
+     makes that read as a masthead, and lining the two up again is not a fix. */
+  :root[data-reading-view="comfort"] .article-wrapper {
+    margin-top: 1rem;
   }
 </style>

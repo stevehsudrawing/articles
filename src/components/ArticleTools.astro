@@ -20,16 +20,17 @@ interface Props {
 // footer's top. That is what makes `position: sticky; bottom: 0` do the whole
 // job with no script and no measurement.
 //
-// Each copy carries only the display class it wants. Bootstrap's display
-// utilities all carry `!important` and tie on specificity, so a bare `d-flex`
-// on the root would leave the hiding below the breakpoint to the order of the
-// rules in the sheet rather than to the breakpoint.
+// The placement is the component's own two modifiers, not Bootstrap's display
+// utilities: those carry `!important`, so neither the breakpoint nor the mode
+// attribute could override them. Both copies are decided in the style block
+// below, in one place.
 //
 // The component holds no script: it is rendered twice, so the behavior belongs
 // to `Article.astro`, which renders both copies.
 const { locale, placement } = Astro.props;
 
 const backToTop = t(locale, "text-action-back-to-top");
+const comfortView = t(locale, "text-action-view-comfort");
 const fontDecrease = t(locale, "text-action-font-decrease");
 const fontIncrease = t(locale, "text-action-font-increase");
 
@@ -44,8 +45,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   class:list={[
     "article-tools align-items-center px-3 px-xl-0",
     placement === "rail"
-      ? "d-none d-xl-flex justify-content-xl-end"
-      : "d-flex d-xl-none justify-content-around border-top",
+      ? "article-tools--rail"
+      : "article-tools--dock border-top",
   ]}
   data-reading-steps={readingSteps}
   data-reading-default={readingDefault}
@@ -75,6 +76,17 @@ const readingDefault = String(DEFAULT_READING_SCALE);
       <Icon name="textIncrease" />
     </span>
   </button>
+  <button
+    class="article-tools-control"
+    type="button"
+    data-view-toggle
+    aria-pressed="false"
+    aria-label={comfortView}
+  >
+    <span class="article-tools-icon" aria-hidden="true">
+      <Icon name="formatAlignCenter" />
+    </span>
+  </button>
 </div>
 
 <style>
@@ -102,6 +114,52 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     z-index: var(--shar-z-tools);
     height: var(--shar-tools-height);
     background-color: var(--bs-body-bg);
+  }
+
+  /* Where each copy sits, in one place. The rail copy is the right rail's bar at
+     `xl` and above; the dock copy is the end of `main` below it. */
+  .article-tools--rail {
+    display: none;
+    justify-content: flex-end;
+  }
+
+  .article-tools--dock {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  @media (min-width: 1200px) {
+    .article-tools--rail {
+      display: flex;
+    }
+
+    .article-tools--dock {
+      display: none;
+    }
+  }
+
+  /* The comfortable view docks the bar at every width, capped at the measure and
+     centered, so it spreads its controls under the column they act on. At 1440
+     `space-around` across the viewport would put one glyph at each edge, which is
+     a toolbar-shaped void rather than a bar beside the article. `width: 100%` is
+     load-bearing: with an auto cross-axis margin a flex item stops stretching,
+     so without it the bar would shrink onto its own glyphs. */
+  :root[data-reading-view="comfort"] .article-tools--rail {
+    display: none;
+  }
+
+  :root[data-reading-view="comfort"] .article-tools--dock {
+    display: flex;
+    width: 100%;
+    max-width: var(--shar-measure);
+    margin-inline: auto;
+  }
+
+  /* The same gate `base.css` puts in front of its scale rules: the scale has no
+     definition until a size is chosen, and a `calc` over a missing custom
+     property is invalid, so the plain measure is what applies until then. */
+  :root[data-reading-view="comfort"][data-reading-scale] .article-tools--dock {
+    max-width: calc(var(--shar-measure) * var(--shar-reading-scale));
   }
 
   /* 44 px is the smallest comfortable thumb target. The glyph is sized as a
