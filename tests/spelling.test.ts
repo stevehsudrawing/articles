@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import spelling from "./spelling-variants.json";
 
 /** The repository root, one level above `tests/`. */
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -13,89 +14,13 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
  * the verb, its `-ising` form and its `-isation` noun - because neither
  * inflection contains the other. The list is curated rather than exhaustive: a
  * dictionary would flag identifiers and proper nouns, and the drift this
- * guards against is the project's own.
+ * guards against is the project's own. The vocabulary is data in
+ * `spelling-variants.json`, because it has a second reader outside this
+ * repository, which runs the same list over the trees no repository test can
+ * reach.
  */
-export const VARIANTS: ReadonlyArray<readonly [string, string]> = [
-  ["analyse", "analyze"],
-  ["analysing", "analyzing"],
-  ["apologise", "apologize"],
-  ["apologising", "apologizing"],
-  ["artefact", "artifact"],
-  ["behaviour", "behavior"],
-  ["capitalisation", "capitalization"],
-  ["capitalise", "capitalize"],
-  ["capitalising", "capitalizing"],
-  ["catalogue", "catalog"],
-  ["centre", "center"],
-  ["centred", "centered"],
-  ["centring", "centering"],
-  ["colour", "color"],
-  ["customisation", "customization"],
-  ["customise", "customize"],
-  ["customising", "customizing"],
-  ["defence", "defense"],
-  ["emphasise", "emphasize"],
-  ["emphasising", "emphasizing"],
-  ["favour", "favor"],
-  ["grey", "gray"],
-  ["initialisation", "initialization"],
-  ["initialise", "initialize"],
-  ["initialising", "initializing"],
-  ["labelled", "labeled"],
-  ["labelling", "labeling"],
-  ["licence", "license"],
-  ["maximisation", "maximization"],
-  ["maximise", "maximize"],
-  ["maximising", "maximizing"],
-  ["minimisation", "minimization"],
-  ["minimise", "minimize"],
-  ["minimising", "minimizing"],
-  ["modelled", "modeled"],
-  ["modelling", "modeling"],
-  ["neighbour", "neighbor"],
-  ["normalisation", "normalization"],
-  ["normalise", "normalize"],
-  ["normalising", "normalizing"],
-  ["optimisation", "optimization"],
-  ["optimise", "optimize"],
-  ["optimising", "optimizing"],
-  ["organisation", "organization"],
-  ["organise", "organize"],
-  ["organising", "organizing"],
-  ["prioritisation", "prioritization"],
-  ["prioritise", "prioritize"],
-  ["prioritising", "prioritizing"],
-  ["programme", "program"],
-  ["realisation", "realization"],
-  ["realise", "realize"],
-  ["realising", "realizing"],
-  ["recognise", "recognize"],
-  ["recognising", "recognizing"],
-  ["serialisation", "serialization"],
-  ["serialise", "serialize"],
-  ["serialising", "serializing"],
-  ["specialisation", "specialization"],
-  ["specialise", "specialize"],
-  ["specialising", "specializing"],
-  ["standardisation", "standardization"],
-  ["standardise", "standardize"],
-  ["standardising", "standardizing"],
-  ["summarisation", "summarization"],
-  ["summarise", "summarize"],
-  ["summarising", "summarizing"],
-  ["synchronisation", "synchronization"],
-  ["synchronise", "synchronize"],
-  ["synchronising", "synchronizing"],
-  ["travelled", "traveled"],
-  ["travelling", "traveling"],
-  ["utilisation", "utilization"],
-  ["utilise", "utilize"],
-  ["utilising", "utilizing"],
-  ["visualisation", "visualization"],
-  ["visualise", "visualize"],
-  ["visualising", "visualizing"],
-  ["whilst", "while"],
-];
+export const VARIANTS: ReadonlyArray<readonly [string, string]> =
+  Object.entries(spelling.variants);
 
 /** The rows, longest key first, so a word takes the most specific one. */
 const ROWS = [...VARIANTS].sort((a, b) => b[0].length - a[0].length);
@@ -109,21 +34,13 @@ const ROWS = [...VARIANTS].sort((a, b) => b[0].length - a[0].length);
  * the attribute is `aria-labelledby`, and no stylesheet or script may rename
  * it.
  */
-const KEEP = new Set([
-  "analyses",
-  "greyhound",
-  "greyhounds",
-  "labelledby",
-  "programmed",
-  "programmer",
-  "programmers",
-]);
+const KEEP = new Set(spelling.keep);
 
 /**
  * Repository-relative paths the walk leaves alone: generated output, the
  * installed tree, the lockfile (other people's package names and descriptions),
- * a third party's verbatim license text, and this file, which spells every
- * variant on purpose.
+ * a third party's verbatim license text, and the two files that name every
+ * variant on purpose - this test and the vocabulary it reads.
  */
 const SKIPPED: readonly string[] = [
   ".astro/",
@@ -132,6 +49,7 @@ const SKIPPED: readonly string[] = [
   "node_modules/",
   "pnpm-lock.yaml",
   "public/licenses/",
+  "tests/spelling-variants.json",
   "tests/spelling.test.ts",
 ];
 
