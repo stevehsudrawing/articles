@@ -3,6 +3,7 @@
 // `currentColor` fill, which is the whole reason the glyphs are inlined rather
 // than served as files.
 import arrowOutward from "./assets/icons/arrow_outward.svg?raw";
+import arrowUpward from "./assets/icons/arrow_upward.svg?raw";
 import calendarToday from "./assets/icons/calendar_today.svg?raw";
 import chevronLeft from "./assets/icons/chevron_left.svg?raw";
 import chevronRight from "./assets/icons/chevron_right.svg?raw";
@@ -25,6 +26,7 @@ import warning from "./assets/icons/warning.svg?raw";
 /** The glyphs the site uses, by the name the extraction tool wrote. */
 export const ICONS = {
   arrowOutward,
+  arrowUpward,
   calendarToday,
   chevronLeft,
   chevronRight,

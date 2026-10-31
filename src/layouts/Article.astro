@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import { coverPair } from "../articles";
+import ArticleTools from "../components/ArticleTools.astro";
 import PageHero from "../components/PageHero.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import { LICENSES, type LicenseId } from "../content.config";
@@ -94,8 +95,13 @@ const updated = article.data.updated;
   />
   <div class="container pb-4">
     <div class="row g-4">
-      <div class="col-12 col-xl-4 order-xl-last">
+      {/* A flex column so the bar's `margin-top: auto` can reach this column's
+          bottom edge, which is the row's bottom - the end of the article. */}
+      <div class="col-12 col-xl-4 order-xl-last d-flex flex-column">
         <TableOfContents locale={locale} headings={headings} />
+        {/* The rail copy's sticky containing block is this column, so the bar
+            floats at the viewport bottom and settles where the article ends. */}
+        <ArticleTools locale={locale} placement="rail" />
       </div>
       <div class="article-wrapper col-12 col-xl-8">
         <article class="article-body">
@@ -148,9 +154,21 @@ const updated = article.data.updated;
       </div>
     </div>
   </div>
+
+  {/* Below `xl` this is the last child of `main`, whose bottom edge is the
+      footer's top edge - which is what makes the footer lift the bar without a
+      script or a measured offset. */}
+  <ArticleTools locale={locale} placement="dock" />
 </Base>
 
 <style is:inline>
+  /* The bar's height is reserved at the bottom of this page alone: beside
+     `scroll-padding-top` in `base.css` it would reserve 64 px on the home, the
+     list and every tag page, where no bar exists. */
+  :root {
+    scroll-padding-bottom: var(--shar-tools-height);
+  }
+
   @media (max-width: 1199.98px) {
     .article-wrapper {
       margin-top: 1rem;

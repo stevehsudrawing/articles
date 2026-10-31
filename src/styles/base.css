@@ -13,9 +13,19 @@
   font-optical-sizing: auto;
 }
 
-/* Anchors land below the header instead of behind it. */
+/* Anchors land below the header instead of behind it, and every in-page jump -
+   the contents' links, a footnote marker, back to top - is smooth. One rule
+   instead of one per link, which is why it lives here; the guard beside it is
+   what leaves a reader who asked for reduced motion on instant jumps. */
 html {
   scroll-padding-top: var(--shar-header-height);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* --- Bootstrap variable overrides --- */

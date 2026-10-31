@@ -10,9 +10,20 @@
      `scroll-padding-top` all read it, so the three cannot drift apart. */
   --shar-header-height: 64px;
 
+  /* The article tools bar's own height. Equal to the header's today, and a
+     separate token on purpose: the header's height has the three consumers
+     named above, so the two stay independent even while they hold the same
+     number. */
+  --shar-tools-height: 64px;
+
   /* The header's layer, the one value that has to sit above the page and below
      nothing that matters. */
   --shar-z-header: 1030;
+
+  /* The tools bar's layer: above page content, below the header, the offcanvas
+     backdrop and the panels, so an open panel dims the bar with the page
+     instead of the bar floating over it. */
+  --shar-z-tools: 1020;
 
   /* The focus ring is a hard outline, never a shadow. */
   --shar-focus-ring-width: 2px;

@@ -56,16 +56,49 @@ const entries = tableOfContents(headings);
   }
 
   /* Sticky through CSS alone, offset by the header height so it never slides
-     under the header. The list is at most as tall as the viewport. */
+     under the header. The list is at most as tall as the viewport minus the
+     header and the tools bar, so its last entry cannot slide under the bar. */
   @media (min-width: 1200px) {
     .table-of-contents {
       position: sticky;
       top: calc(var(--shar-header-height));
-      max-height: calc(100vh - var(--shar-header-height));
+      max-height: calc(
+        100vh - var(--shar-header-height) - var(--shar-tools-height)
+      );
       overflow-y: auto;
       padding-top: 1rem;
       padding-bottom: 0;
-      border-bottom: 0;
+
+      /* A 1 px edge under the box, drawn only while the list really overflows.
+         The switch is a scroll-driven animation on the scroll container itself:
+         while there is nothing to scroll the timeline is inactive, the animation
+         is not in effect, and the base transparent border shows; once the list
+         can scroll the animation applies and holds one color. Nothing moves,
+         which is why it needs no reduced-motion guard, and where
+         `animation-timeline` is unsupported the line is simply absent. At the
+         box's maximum height its bottom edge is the bar's top edge, so the line
+         lands exactly where the list is cut off.
+
+         Longhands, never the `animation` shorthand: the CSS minifier folds the
+         shorthand and `animation-timeline` into one `animation` value, which is
+         not grammar the browser accepts, and the whole declaration then
+         disappears - measured, `animationName` came back `none`. */
+      border-bottom: var(--bs-border-width) solid transparent;
+      animation-name: toc-overflow-edge;
+      animation-duration: 0s;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(self block);
+    }
+  }
+
+  /* The end frame alone, on purpose: two identical frames are collapsed to a
+     single 0% one, and a 0s animation with `both` then resolves to the end value
+     - the base color, which is nothing. With only `to` declared, the start
+     value is the transparent base and the end value is the line. */
+  @keyframes toc-overflow-edge {
+    to {
+      border-bottom-color: var(--bs-border-color);
     }
   }
 </style>

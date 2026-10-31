@@ -1,0 +1,100 @@
+---
+import Icon from "./Icon.astro";
+import type { Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
+
+interface Props {
+  /** The locale whose copy labels every control. */
+  locale: Locale;
+  /**
+   * Where the bar sits. `rail` is the right rail at `xl` and above, after the
+   * table of contents; `dock` is the end of `main` below `xl`.
+   */
+  placement: "rail" | "dock";
+}
+
+// One component, two placements, because the two are not the same node. The
+// rail copy's sticky containing block is the rail column, whose bottom edge is
+// the end of the article; the dock copy's is `main`, whose bottom edge is the
+// footer's top. That is what makes `position: sticky; bottom: 0` do the whole
+// job with no script and no measurement.
+//
+// Each copy carries only the display class it wants. Bootstrap's display
+// utilities all carry `!important` and tie on specificity, so a bare `d-flex`
+// on the root would leave the hiding below the breakpoint to the order of the
+// rules in the sheet rather than to the breakpoint.
+//
+// The component holds no script: it is rendered twice, so the behavior belongs
+// to `Article.astro`, which renders both copies.
+const { locale, placement } = Astro.props;
+
+const backToTop = t(locale, "text-action-back-to-top");
+---
+
+<div
+  class:list={[
+    "article-tools align-items-center px-3 px-xl-0",
+    placement === "rail"
+      ? "d-none d-xl-flex justify-content-xl-end"
+      : "d-flex d-xl-none justify-content-around border-top",
+  ]}
+>
+  <a class="article-tools-control" href="#top" aria-label={backToTop}>
+    <span class="article-tools-icon" aria-hidden="true">
+      <Icon name="arrowUpward" />
+    </span>
+  </a>
+</div>
+
+<style>
+  /* Sticky, never fixed: the bar stays in flow, so what lifts it is the
+     document's own structure rather than an offset someone measured.
+
+     `margin-top: auto` is what puts the bar at the bottom of its containing
+     block, and both placements need it. `position: sticky; bottom: 0` only ever
+     moves an element up - it never pushes one down - so a bar left at the top of
+     an empty stretch would ride up with the document instead of floating.
+
+     The separating `border-top` is the dock copy's alone. Below `xl` the article
+     scrolls under the bar, which is why that copy also needs the opaque
+     background; in the rail nothing ever passes beneath it, and a line across
+     the rail would separate the bar from nothing while standing beside the
+     article's own footer rule at the bottom of the page - half its width, in the
+     neighboring column, reading as two lines that failed to meet. The
+     background stays on both, because it costs nothing and it is what would keep
+     the bar legible if a future change ever put content behind it. */
+  .article-tools {
+    position: sticky;
+    bottom: 0;
+    flex: none;
+    margin-top: auto;
+    z-index: var(--shar-z-tools);
+    height: var(--shar-tools-height);
+    background-color: var(--bs-body-bg);
+  }
+
+  /* 44 px is the smallest comfortable thumb target. The glyph is sized as a
+     `font-size` on this wrapper because `Icon.astro` renders through
+     `set:html`, so the SVG carries no scope attribute and no scoped rule can
+     name it. The color is the header control's own, so the two bars read as one
+     system, and the underline is canceled because `base.css` gives every
+     anchor one. */
+  .article-tools-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.5rem;
+    color: rgba(var(--bs-body-color-rgb), 0.8);
+    text-decoration: none;
+  }
+
+  .article-tools-control:hover {
+    color: var(--bs-body-color);
+  }
+
+  .article-tools-icon {
+    display: inline-flex;
+  }
+</style>
