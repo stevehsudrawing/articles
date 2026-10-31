@@ -16,13 +16,21 @@ interface Props {
 // navigation blocks and hiding one would duplicate every link.
 const { locale, headings } = Astro.props;
 const entries = tableOfContents(headings);
+const skipToArticle = t(locale, "text-action-skip-to-article");
 ---
 
 {entries.length > 0 && (
   <nav class="table-of-contents" aria-labelledby="toc-label">
-    <h2 class="h6 text-uppercase" id="toc-label">
-      {t(locale, "text-nav-toc")}
-    </h2>
+    {/* The label and the link share one line. The link sits outside the `h2`,
+        because `aria-labelledby` names the landmark with that heading's text. */}
+    <div class="toc-head">
+      <h2 class="h6 text-uppercase mb-0" id="toc-label">
+        {t(locale, "text-nav-toc")}
+      </h2>
+      <a class="toc-skip" href="#article-body">
+        {skipToArticle}
+      </a>
+    </div>
     <ul class="list-unstyled mb-0">
       {entries.map((heading) => (
         <li
@@ -44,6 +52,25 @@ const entries = tableOfContents(headings);
     padding-top: 1rem;
     padding-bottom: 1rem;
     border-bottom: var(--shar-border);
+  }
+
+  /* The label and the link on one line: the heading's own bottom margin becomes
+     the row's, so the gap above the list stays 0.5rem. */
+  .toc-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Shown wherever the contents sits above the article - below `xl` and at every
+     width in the comfortable view - and hidden only where it is a sidebar, which
+     is the one place the article is already beside it. */
+  @media (min-width: 1200px) {
+    :root:not([data-reading-view="comfort"]) .toc-skip {
+      display: none;
+    }
   }
 
   .toc-item {
