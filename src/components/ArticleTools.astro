@@ -2,6 +2,7 @@
 import Icon from "./Icon.astro";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
+import { DEFAULT_READING_SCALE, READING_SCALES } from "../reading";
 
 interface Props {
   /** The locale whose copy labels every control. */
@@ -29,6 +30,14 @@ interface Props {
 const { locale, placement } = Astro.props;
 
 const backToTop = t(locale, "text-action-back-to-top");
+const fontDecrease = t(locale, "text-action-font-decrease");
+const fontIncrease = t(locale, "text-action-font-increase");
+
+// The steps reach the page's inline script through the bar's own attributes,
+// because an inline script cannot import. Both copies carry the same pair, from
+// this one list.
+const readingSteps = READING_SCALES.join(" ");
+const readingDefault = String(DEFAULT_READING_SCALE);
 ---
 
 <div
@@ -38,12 +47,34 @@ const backToTop = t(locale, "text-action-back-to-top");
       ? "d-none d-xl-flex justify-content-xl-end"
       : "d-flex d-xl-none justify-content-around border-top",
   ]}
+  data-reading-steps={readingSteps}
+  data-reading-default={readingDefault}
 >
   <a class="article-tools-control" href="#top" aria-label={backToTop}>
     <span class="article-tools-icon" aria-hidden="true">
       <Icon name="arrowUpward" />
     </span>
   </a>
+  <button
+    class="article-tools-control"
+    type="button"
+    data-reading-step="-1"
+    aria-label={fontDecrease}
+  >
+    <span class="article-tools-icon" aria-hidden="true">
+      <Icon name="textDecrease" />
+    </span>
+  </button>
+  <button
+    class="article-tools-control"
+    type="button"
+    data-reading-step="1"
+    aria-label={fontIncrease}
+  >
+    <span class="article-tools-icon" aria-hidden="true">
+      <Icon name="textIncrease" />
+    </span>
+  </button>
 </div>
 
 <style>
@@ -78,20 +109,36 @@ const backToTop = t(locale, "text-action-back-to-top");
      `set:html`, so the SVG carries no scope attribute and no scoped rule can
      name it. The color is the header control's own, so the two bars read as one
      system, and the underline is canceled because `base.css` gives every
-     anchor one. */
+     anchor one.
+
+     The class serves an anchor and two buttons, so the UA chrome a `<button>`
+     carries - its padding, border and background - is removed here rather than
+     restated per element. */
   .article-tools-control {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 2.75rem;
     height: 2.75rem;
+    padding: 0;
+    border: 0;
     font-size: 1.5rem;
     color: rgba(var(--bs-body-color-rgb), 0.8);
     text-decoration: none;
+    background-color: transparent;
   }
 
   .article-tools-control:hover {
     color: var(--bs-body-color);
+  }
+
+  /* The end of the range. `aria-disabled` rather than `disabled`, so the control
+     keeps focus instead of dropping it under a keyboard reader's fingers;
+     `pointer-events` is what makes it unclickable, and the handler still guards
+     the range because a keyboard activation dispatches a click regardless. */
+  .article-tools-control[aria-disabled="true"] {
+    opacity: 0.4;
+    pointer-events: none;
   }
 
   .article-tools-icon {

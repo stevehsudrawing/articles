@@ -20,6 +20,8 @@ import person from "./assets/icons/person.svg?raw";
 import report from "./assets/icons/report.svg?raw";
 import settings from "./assets/icons/settings.svg?raw";
 import smsFailed from "./assets/icons/sms_failed.svg?raw";
+import textDecrease from "./assets/icons/text_decrease.svg?raw";
+import textIncrease from "./assets/icons/text_increase.svg?raw";
 import update from "./assets/icons/update.svg?raw";
 import warning from "./assets/icons/warning.svg?raw";
 
@@ -43,6 +45,8 @@ export const ICONS = {
   report,
   settings,
   smsFailed,
+  textDecrease,
+  textIncrease,
   update,
   warning,
 } as const;

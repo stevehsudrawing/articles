@@ -17,6 +17,8 @@
 
   "text-action-back-to-top": "回到顶部",
   "text-action-close": "关闭",
+  "text-action-font-decrease": "缩小字号",
+  "text-action-font-increase": "放大字号",
   "text-action-home": "前往首页",
   "text-action-language": "语言",
   "text-action-menu": "菜单",
@@ -43,6 +45,7 @@
   "text-hero-description-tag": "带有「%1」标签的全部文章。",
 
   "text-label-author": "作者",
+  "text-label-font-scale": "字号",
   "text-label-license": "许可协议",
   "text-label-publish": "发表于",
   "text-label-update": "更新于",

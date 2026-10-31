@@ -8,6 +8,7 @@ import TableOfContents from "../components/TableOfContents.astro";
 import { LICENSES, type LicenseId } from "../content.config";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
+import { DEFAULT_READING_SCALE, readingScalePercent } from "../reading";
 import {
   absoluteAsset,
   absoluteUrl,
@@ -159,6 +160,73 @@ const updated = article.data.updated;
       footer's top edge - which is what makes the footer lift the bar without a
       script or a measured offset. */}
   <ArticleTools locale={locale} placement="dock" />
+
+  {/* One live region for both bar copies: a region inside the component would
+      be rendered twice and announce every step twice. It is hidden, so where it
+      sits does not matter. `aria-atomic` makes the caption part of every
+      announcement rather than a bare "110%". */}
+  <p class="visually-hidden" aria-live="polite" aria-atomic="true">
+    {t(locale, "text-label-font-scale")}{" "}
+    <span data-reading-status>
+      {readingScalePercent(DEFAULT_READING_SCALE)}%
+    </span>
+  </p>
+
+  {/* The bar is rendered twice, so its behavior lives here, once: one delegated
+      handler serves both copies and they cannot disagree. Inline, because the
+      state is two attributes on the document and an island would cost the Vue
+      runtime for it. Nothing is stored - a reload is the reset. */}
+  <script is:inline>
+    (() => {
+      const bar = document.querySelector("[data-reading-steps]");
+      const status = document.querySelector("[data-reading-status]");
+      const root = document.documentElement;
+      if (!bar) return;
+
+      const steps = bar.dataset.readingSteps.split(" ").map(Number);
+      const fallback = steps.indexOf(Number(bar.dataset.readingDefault));
+
+      // The current step is read back from the document, so the two copies and
+      // a later script share one source of truth. String comparison, because
+      // the attribute holds the scale as written.
+      const current = () => {
+        const index = steps.findIndex(
+          (step) => String(step) === root.dataset.readingScale,
+        );
+        return index === -1 ? fallback : index;
+      };
+
+      const apply = (index) => {
+        const scale = String(steps[index]);
+        root.dataset.readingScale = scale;
+        root.style.setProperty("--shar-reading-scale", scale);
+
+        for (const control of document.querySelectorAll(
+          "[data-reading-step]",
+        )) {
+          const direction = Number(control.dataset.readingStep);
+          const done = direction < 0 ? index === 0 : index === steps.length - 1;
+          control.setAttribute("aria-disabled", String(done));
+        }
+
+        if (status) status.textContent = Math.round(steps[index] * 100) + "%";
+      };
+
+      document.addEventListener("click", (event) => {
+        const control =
+          event.target instanceof Element
+            ? event.target.closest("[data-reading-step]")
+            : null;
+        if (!control) return;
+
+        // `pointer-events: none` stops a pointer, not a keyboard activation, so
+        // the range is guarded here as well.
+        const next = current() + Number(control.dataset.readingStep);
+        if (next < 0 || next >= steps.length) return;
+        apply(next);
+      });
+    })();
+  </script>
 </Base>
 
 <style is:inline>

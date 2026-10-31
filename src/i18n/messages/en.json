@@ -16,6 +16,8 @@
 
   "text-action-back-to-top": "Back to top",
   "text-action-close": "Close",
+  "text-action-font-decrease": "Decrease text size",
+  "text-action-font-increase": "Increase text size",
   "text-action-home": "Go to the home page",
   "text-action-language": "Language",
   "text-action-menu": "Menu",
@@ -42,6 +44,7 @@
   "text-hero-description-tag": "Every article tagged \"%1\".",
 
   "text-label-author": "Author",
+  "text-label-font-scale": "Text size",
   "text-label-license": "License",
   "text-label-publish": "Published on",
   "text-label-update": "Updated on",

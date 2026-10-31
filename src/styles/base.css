@@ -344,6 +344,71 @@ pre code {
   font-feature-settings: "kern", "tnum";
 }
 
+/* --- Article reading size ---
+   The tools bar sets `--shar-reading-scale` and `data-reading-scale` on the
+   document, and only `.article-body` reads them: the hero, the contents, the bar
+   and the chrome keep their own sizes, because what a reader sizes is the text
+   being read, not the page around it.
+
+   `[data-reading-scale]` is the gate, and it is not decoration. There is no safe
+   "off" for a `calc` that multiplies by a missing custom property - the
+   declaration would simply be dropped - so gating means at rest these rules do
+   not exist and Bootstrap's own heading declarations are the only ones in force.
+
+   The headings have to be restated because Bootstrap sizes them from the root
+   (`h2` is `calc(1.325rem + 0.9vw)`, and `2rem` from 1200px) while a paragraph
+   inherits the body's `1rem`: growing the container alone would grow the prose
+   and leave every heading where it was. The six values and the four overrides
+   are Bootstrap 5.3.8's, copied because it exposes no `--bs-h2-font-size`; the
+   `1200px` breakpoint is its own. Re-read them from `bootstrap.css` before
+   changing one - they are the one place a dependency's numbers live here. */
+
+:root[data-reading-scale] .article-body {
+  font-size: calc(var(--bs-body-font-size) * var(--shar-reading-scale));
+}
+
+:root[data-reading-scale] .article-body h1 {
+  font-size: calc(var(--shar-reading-scale) * (1.375rem + 1.5vw));
+}
+
+:root[data-reading-scale] .article-body h2 {
+  font-size: calc(var(--shar-reading-scale) * (1.325rem + 0.9vw));
+}
+
+:root[data-reading-scale] .article-body h3 {
+  font-size: calc(var(--shar-reading-scale) * (1.3rem + 0.6vw));
+}
+
+:root[data-reading-scale] .article-body h4 {
+  font-size: calc(var(--shar-reading-scale) * (1.275rem + 0.3vw));
+}
+
+:root[data-reading-scale] .article-body h5 {
+  font-size: calc(var(--shar-reading-scale) * 1.25rem);
+}
+
+:root[data-reading-scale] .article-body h6 {
+  font-size: calc(var(--shar-reading-scale) * 1rem);
+}
+
+@media (min-width: 1200px) {
+  :root[data-reading-scale] .article-body h1 {
+    font-size: calc(var(--shar-reading-scale) * 2.5rem);
+  }
+
+  :root[data-reading-scale] .article-body h2 {
+    font-size: calc(var(--shar-reading-scale) * 2rem);
+  }
+
+  :root[data-reading-scale] .article-body h3 {
+    font-size: calc(var(--shar-reading-scale) * 1.75rem);
+  }
+
+  :root[data-reading-scale] .article-body h4 {
+    font-size: calc(var(--shar-reading-scale) * 1.5rem);
+  }
+}
+
 /* Tighter than Bootstrap's 1rem: the prose is long, and a full line of air
    between paragraphs reads as a section break rather than as a paragraph. */
 

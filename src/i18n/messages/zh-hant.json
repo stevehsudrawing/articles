@@ -16,6 +16,8 @@
 
   "text-action-back-to-top": "回到頂部",
   "text-action-close": "關閉",
+  "text-action-font-decrease": "縮小字級",
+  "text-action-font-increase": "放大字級",
   "text-action-home": "前往首頁",
   "text-action-language": "語言",
   "text-action-menu": "選單",
@@ -42,6 +44,7 @@
   "text-hero-description-tag": "帶有「%1」標籤的所有文章。",
 
   "text-label-author": "作者",
+  "text-label-font-scale": "字級",
   "text-label-license": "授權條款",
   "text-label-publish": "發表於",
   "text-label-update": "更新於",
