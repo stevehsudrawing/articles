@@ -338,6 +338,41 @@ function setTheme(value: ThemeOption["value"]): void {
 .site-header {
   height: var(--shar-header-height);
   z-index: var(--shar-z-header);
+
+  /* The seam under the bar, drawn once the page is scrolled. The border is
+     always there at its final width and only its color moves, so the bar's
+     height never changes and `--shar-header-height` stays the one number the
+     sticky offset, the contents' `max-height` and `scroll-padding-top` read.
+
+     `animation-range: 0 1px` compresses the whole timeline into the page's
+     first pixel, which makes "scrolled past the top" and "progress 100%" the
+     same fact; `fill: both` holds it for the rest of the scroll. A 0s duration
+     with a single `to` keyframe would instead say "this page can scroll" - it
+     draws the line at the top of a long page, where the header is still in flow
+     and nothing is under it, and it keeps the line after a viewport resize
+     makes the page stop overflowing.
+
+     Longhands, never the `animation` shorthand: folding it together with
+     `animation-timeline` produces grammar the browser rejects and the whole
+     declaration disappears. And no `transition`: an animation in effect
+     outranks one on the same property, so it would never run - which is also
+     why nothing here needs a reduced-motion guard. */
+  border-bottom: var(--bs-border-width) solid transparent;
+  animation-name: shar-header-edge;
+  animation-duration: auto;
+  animation-fill-mode: both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 1px;
+}
+
+@keyframes shar-header-edge {
+  from {
+    border-bottom-color: transparent;
+  }
+
+  to {
+    border-bottom-color: var(--bs-border-color);
+  }
 }
 
 .site-header .navbar,
