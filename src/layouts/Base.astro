@@ -183,6 +183,21 @@ const themes = (
     </script>
   </head>
   <body class="d-flex flex-column min-vh-100">
+    {/* The site's first focusable element: a keyboard reader's first Tab would
+        otherwise land in the header and reaching the content would mean walking
+        that navigation. Bootstrap's utility is the whole hiding mechanism - it
+        clips the link while it has no focus and does nothing otherwise - and
+        `align-self-start` keeps it a button instead of a band across the
+        `d-flex` body. It navigates to a fragment, so it takes no
+        `role="button"`. */}
+    {!minimal && (
+      <a
+        class="visually-hidden-focusable btn btn-primary align-self-start"
+        href="#page-content"
+      >
+        {t(locale, "text-action-skip-to-content")}
+      </a>
+    )}
     {/* The header is the site's one island, so it is the whole reason any page
         carries JavaScript: the minimal chrome is a page that ships none.
         Measured on the error page - 41 KB gzip with the island, 1.6 KB
@@ -203,7 +218,7 @@ const themes = (
     )}
     {/* `d-flex flex-column` is what lets a page's own bottom strip - the
         pagination band `Page.astro` renders - park itself with `mt-auto`. */}
-    <main class="flex-grow-1 d-flex flex-column">
+    <main id="page-content" class="flex-grow-1 d-flex flex-column">
       <slot />
     </main>
     <SiteFooter locale={locale} minimal={minimal} />
