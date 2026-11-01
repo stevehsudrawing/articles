@@ -410,6 +410,23 @@ pre code {
   }
 }
 
+/* --- Article reading face ---
+   `data-reading-face="serif"` on the document, and only `.article-body` reads
+   it: the hero, the contents, the bar and the chrome keep the site's sans face,
+   and a fenced block keeps its own, because Bootstrap declares
+   `--bs-font-monospace` on the element and a direct declaration outranks
+   inheritance.
+
+   This is the only place the serif family is named, and that is what keeps it
+   free: a browser fetches a `@font-face` source only when some text needs a
+   glyph from it, so with the attribute absent nothing matches and no serif file
+   is requested. Naming the family anywhere else - in `--bs-font-sans-serif`, as
+   a fallback - would charge every page for it. */
+
+:root[data-reading-face="serif"] .article-body {
+  font-family: var(--shar-font-serif);
+}
+
 /* Tighter than Bootstrap's 1rem: the prose is long, and a full line of air
    between paragraphs reads as a section break rather than as a paragraph. */
 

@@ -1,13 +1,17 @@
 @import "@fontsource-variable/inter/opsz.css";
 @import "@fontsource-variable/inter/opsz-italic.css";
 @import "@fontsource-variable/roboto-mono/wght.css";
+@import "@fontsource-variable/source-serif-4/opsz.css";
+@import "@fontsource-variable/source-serif-4/opsz-italic.css";
 
 /* ==========================================================================
    Fonts - the stack fragments and the Bootstrap injection
 
-   Latin text rides on the two self-hosted webfonts imported above; CJK is
+   Latin text rides on the three self-hosted webfonts imported above; CJK is
    never downloaded and always resolves to the reader's system fonts, picked
-   per language.
+   per language. The serif set is the article body's second reading face, and
+   its font files are fetched only when a reader asks for that face: a family
+   named inside a rule nothing matches costs nothing.
    ========================================================================== */
 
 :root {
@@ -33,8 +37,22 @@
     "Source Han Sans TC", "Microsoft JhengHei UI", "微軟正黑體",
     "Microsoft JhengHei";
 
+  --shar-font-serif-en:
+    "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman";
+  --shar-font-serif-ja:
+    "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Noto Serif JP",
+    "Noto Serif CJK JP", "源ノ明朝", "Source Han Serif JP", "游明朝",
+    "Yu Mincho", "ＭＳ 明朝", "MS Mincho";
+  --shar-font-serif-zh-Hans:
+    "宋体-简", "Songti SC", "Noto Serif SC", "Noto Serif CJK SC", "思源宋体",
+    "Source Han Serif SC", "宋体", "SimSun", "NSimSun";
+  --shar-font-serif-zh-Hant:
+    "宋體-繁", "Songti TC", "Noto Serif TC", "Noto Serif CJK TC", "思源宋體",
+    "Source Han Serif TC", "新細明體", "PMingLiU", "MingLiU";
+
   --shar-font-sans-serif-system:
     -apple-system, ui-sans-serif, system-ui, sans-serif;
+  --shar-font-serif-system: ui-serif, serif;
   --shar-font-monospace-system: ui-monospace, monospace;
 }
 
@@ -58,6 +76,16 @@
     var(--shar-font-monospace-en), var(--shar-font-sans-serif-ja),
     var(--shar-font-monospace-system), var(--shar-font-sans-serif-en),
     var(--shar-font-sans-serif-system), var(--shar-font-emoji);
+
+  /* The serif set's last resort is the sans composition - the one home of the
+     site's sans stack - so a platform with no serif CJK falls back to exactly
+     what every other element shows. `--shar-font-serif-system` sits after every
+     named CJK serif and before that tail: a platform that has a serif CJK uses
+     it, and one that does not resolves `serif` to a face without CJK glyphs,
+     which falls through per glyph. */
+  --shar-font-serif:
+    var(--shar-font-serif-en), var(--shar-font-serif-ja),
+    var(--shar-font-serif-system), var(--bs-font-sans-serif);
 }
 
 /* Chinese (Simplified) */
@@ -71,6 +99,10 @@
     var(--shar-font-sans-serif-ja), var(--shar-font-monospace-system),
     var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
     var(--shar-font-emoji);
+  --shar-font-serif:
+    var(--shar-font-serif-en), var(--shar-font-serif-zh-Hans),
+    var(--shar-font-serif-ja), var(--shar-font-serif-system),
+    var(--bs-font-sans-serif);
 }
 
 /* Chinese (Traditional) */
@@ -84,6 +116,10 @@
     var(--shar-font-sans-serif-ja), var(--shar-font-monospace-system),
     var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
     var(--shar-font-emoji);
+  --shar-font-serif:
+    var(--shar-font-serif-en), var(--shar-font-serif-zh-Hant),
+    var(--shar-font-serif-ja), var(--shar-font-serif-system),
+    var(--bs-font-sans-serif);
 }
 
 /* ==========================================================================
