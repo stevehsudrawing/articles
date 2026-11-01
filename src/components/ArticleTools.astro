@@ -31,6 +31,7 @@ const { locale, placement } = Astro.props;
 
 const backToTop = t(locale, "text-action-back-to-top");
 const comfortView = t(locale, "text-action-view-comfort");
+const copyLink = t(locale, "text-action-copy-link");
 const fontDecrease = t(locale, "text-action-font-decrease");
 const fontIncrease = t(locale, "text-action-font-increase");
 
@@ -61,6 +62,20 @@ const readingDefault = String(DEFAULT_READING_SCALE);
       <Icon name="arrowUpward" />
     </span>
   </a>
+  <button
+    class="article-tools-control"
+    type="button"
+    data-copy-link
+    aria-label={copyLink}
+    title={copyLink}
+  >
+    <span class="article-tools-icon" data-copy-icon aria-hidden="true">
+      <Icon name="contentCopy" />
+    </span>
+    <span class="article-tools-icon" data-copied-icon aria-hidden="true">
+      <Icon name="check" />
+    </span>
+  </button>
   <button
     class="article-tools-control"
     type="button"
@@ -209,5 +224,21 @@ const readingDefault = String(DEFAULT_READING_SCALE);
 
   .article-tools-icon {
     display: inline-flex;
+  }
+
+  /* The copy control's confirmation: one button, two glyphs, and one attribute
+     on the button deciding which is drawn. Both copies of the button carry it,
+     because the state lives on the document rather than in the pressed node, so
+     a reader who switches placement mid-confirmation still sees the check. */
+  .article-tools-control [data-copied-icon] {
+    display: none;
+  }
+
+  .article-tools-control[data-copied] [data-copied-icon] {
+    display: inline-flex;
+  }
+
+  .article-tools-control[data-copied] [data-copy-icon] {
+    display: none;
   }
 </style>

@@ -16,6 +16,7 @@
 
   "text-action-back-to-top": "回到頂部",
   "text-action-close": "關閉",
+  "text-action-copy-link": "複製連結",
   "text-action-font-decrease": "縮小字級",
   "text-action-font-increase": "放大字級",
   "text-action-home": "前往首頁",
@@ -61,5 +62,7 @@
   "text-title-paged": "%1（第 %2 頁）",
   "text-count-articles": "共 %1 篇文章",
   "text-count-pages": "共 %1 頁",
-  "text-count-tags": "共 %1 個標籤"
+  "text-count-tags": "共 %1 個標籤",
+
+  "text-status-link-copied": "已複製連結"
 }

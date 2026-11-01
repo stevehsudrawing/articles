@@ -5,8 +5,10 @@
 import arrowOutward from "./assets/icons/arrow_outward.svg?raw";
 import arrowUpward from "./assets/icons/arrow_upward.svg?raw";
 import calendarToday from "./assets/icons/calendar_today.svg?raw";
+import check from "./assets/icons/check.svg?raw";
 import chevronLeft from "./assets/icons/chevron_left.svg?raw";
 import chevronRight from "./assets/icons/chevron_right.svg?raw";
+import contentCopy from "./assets/icons/content_copy.svg?raw";
 import contrast from "./assets/icons/contrast.svg?raw";
 import darkMode from "./assets/icons/dark_mode.svg?raw";
 import firstPage from "./assets/icons/first_page.svg?raw";
@@ -31,8 +33,10 @@ export const ICONS = {
   arrowOutward,
   arrowUpward,
   calendarToday,
+  check,
   chevronLeft,
   chevronRight,
+  contentCopy,
   contrast,
   darkMode,
   firstPage,

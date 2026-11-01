@@ -161,16 +161,25 @@ const updated = article.data.updated;
       script or a measured offset. */}
   <ArticleTools locale={locale} placement="dock" />
 
-  {/* One live region for both bar copies: a region inside the component would
-      be rendered twice and announce every step twice. It is hidden, so where it
-      sits does not matter. `aria-atomic` makes the caption part of every
-      announcement rather than a bare "110%". */}
+  {/* Two live regions, one per kind of announcement: a region inside the
+      component would be rendered twice and announce every change twice. They
+      are hidden, so where they sit does not matter. `aria-atomic` on the first
+      makes the caption part of every announcement rather than a bare "110%";
+      the second is one sentence, and it starts empty because the confirmation
+      only becomes true when a copy succeeds. */}
   <p class="visually-hidden" aria-live="polite" aria-atomic="true">
     {t(locale, "text-label-font-scale")}{" "}
     <span data-reading-status>
       {readingScalePercent(DEFAULT_READING_SCALE)}%
     </span>
   </p>
+
+  <p
+    class="visually-hidden"
+    aria-live="polite"
+    data-copy-status
+    data-copy-message={t(locale, "text-status-link-copied")}
+  ></p>
 
   {/* The bar is rendered twice, so its behavior lives here, once: one delegated
       handler serves both copies and they cannot disagree. Inline, because the
@@ -244,9 +253,46 @@ const updated = article.data.updated;
         }
       };
 
+      // The copy control's confirmation window: long enough to be noticed,
+      // short enough that the glyph is a check rather than a second state.
+      const COPIED_MS = 1500;
+      const copyButtons = document.querySelectorAll("[data-copy-link]");
+      const copyStatus = document.querySelector("[data-copy-status]");
+      let copiedTimer = 0;
+
+      const copy = async () => {
+        // Cleared before the write, so a second press is a real empty-to-text
+        // change even when the region already held the sentence.
+        if (copyStatus) copyStatus.textContent = "";
+
+        // `location.href` is the address the reader sees, hash and all: a
+        // reader who followed a contents entry has a URL worth sharing.
+        try {
+          await navigator.clipboard.writeText(location.href);
+        } catch {
+          // A refused clipboard leaves the button as it was. Claiming a copy
+          // that did not happen is worse than saying nothing.
+          return;
+        }
+
+        for (const button of copyButtons) button.dataset.copied = "";
+        if (copyStatus) copyStatus.textContent = copyStatus.dataset.copyMessage;
+
+        clearTimeout(copiedTimer);
+        copiedTimer = setTimeout(() => {
+          for (const button of copyButtons) delete button.dataset.copied;
+          if (copyStatus) copyStatus.textContent = "";
+        }, COPIED_MS);
+      };
+
       document.addEventListener("click", (event) => {
         const target = event.target instanceof Element ? event.target : null;
         if (!target) return;
+
+        if (target.closest("[data-copy-link]")) {
+          copy();
+          return;
+        }
 
         if (target.closest("[data-view-toggle]")) {
           setView(root.dataset.readingView !== "comfort");

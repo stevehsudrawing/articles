@@ -16,6 +16,7 @@
 
   "text-action-back-to-top": "Back to top",
   "text-action-close": "Close",
+  "text-action-copy-link": "Copy link",
   "text-action-font-decrease": "Decrease text size",
   "text-action-font-increase": "Increase text size",
   "text-action-home": "Go to the home page",
@@ -61,5 +62,7 @@
   "text-title-paged": "%1 (page %2)",
   "text-count-articles": "Articles: %1",
   "text-count-pages": "%1 pages",
-  "text-count-tags": "Tags: %1"
+  "text-count-tags": "Tags: %1",
+
+  "text-status-link-copied": "Link copied"
 }
