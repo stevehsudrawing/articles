@@ -186,13 +186,15 @@ const themes = (
     {/* The site's first focusable element: a keyboard reader's first Tab would
         otherwise land in the header and reaching the content would mean walking
         that navigation. Bootstrap's utility is the whole hiding mechanism - it
-        clips the link while it has no focus and does nothing otherwise - and
-        `align-self-start` keeps it a button instead of a band across the
-        `d-flex` body. It navigates to a fragment, so it takes no
-        `role="button"`. */}
+        clips the link to a pixel while nothing inside it has focus and stops
+        matching when something does - and the position utilities are what
+        replace that with `fixed`: in the flow the link existed only at the
+        document top, so focusing it from mid-article scrolled the reader back
+        there. Fixed, it is in the viewport at every scroll position and costs
+        no layout. It navigates to a fragment, so it takes no `role="button"`. */}
     {!minimal && (
       <a
-        class="visually-hidden-focusable btn btn-primary align-self-start"
+        class="skip-link visually-hidden-focusable btn btn-primary position-fixed top-0 start-0 m-2"
         href="#page-content"
       >
         {t(locale, "text-action-skip-to-content")}
@@ -224,3 +226,13 @@ const themes = (
     <SiteFooter locale={locale} minimal={minimal} />
   </body>
 </html>
+
+<style>
+  /* The header carries `--shar-z-header`, so the skip link needs a layer of its
+     own to be visible once it is fixed over that corner. It reads the token
+     rather than a literal, and only while focused: unfocused, Bootstrap's
+     utility has already taken it out of the picture. */
+  .skip-link:focus {
+    z-index: var(--shar-z-skip);
+  }
+</style>
