@@ -34,6 +34,7 @@ const comfortView = t(locale, "text-action-view-comfort");
 const copyLink = t(locale, "text-action-copy-link");
 const fontDecrease = t(locale, "text-action-font-decrease");
 const fontIncrease = t(locale, "text-action-font-increase");
+const fontSerif = t(locale, "text-action-font-serif");
 
 // The steps reach the page's inline script through the bar's own attributes,
 // because an inline script cannot import. Both copies carry the same pair, from
@@ -96,6 +97,21 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   >
     <span class="article-tools-icon" aria-hidden="true">
       <Icon name="textIncrease" />
+    </span>
+  </button>
+  <button
+    class="article-tools-control"
+    type="button"
+    data-face-toggle
+    aria-pressed="false"
+    aria-label={fontSerif}
+    title={fontSerif}
+  >
+    <span class="article-tools-icon" data-face-outline aria-hidden="true">
+      <Icon name="serif" />
+    </span>
+    <span class="article-tools-icon" data-face-filled aria-hidden="true">
+      <Icon name="serifFill" />
     </span>
   </button>
   <button
@@ -239,6 +255,25 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   }
 
   .article-tools-control[data-copied] [data-copy-icon] {
+    display: none;
+  }
+
+  /* The face toggle's two glyphs, decided by the `aria-pressed` the script
+     already sets: the outlined face while the site's sans stack is in use, the
+     filled one while the article is serif. Material Symbols' filled variant is
+     the letter knocked out of a solid tile rather than a bolder letter - the
+     frame's interior goes from 36% to 87% ink - which is what makes the state
+     readable at this size. `format_align_center` has no filled counterpart, so
+     the bar's other toggle shows its state only through `aria-pressed`. */
+  .article-tools-control [data-face-filled] {
+    display: none;
+  }
+
+  .article-tools-control[aria-pressed="true"] [data-face-filled] {
+    display: inline-flex;
+  }
+
+  .article-tools-control[aria-pressed="true"] [data-face-outline] {
     display: none;
   }
 </style>

@@ -285,12 +285,35 @@ const updated = article.data.updated;
         }, COPIED_MS);
       };
 
+      // The face is a third branch of the same handler, and it hides nothing:
+      // the pressed button is still on screen afterwards, so focus stays where
+      // the reader put it. Only the view toggle needs the hand-off above,
+      // because switching it can hide the copy that was pressed.
+      const faceToggles = document.querySelectorAll("[data-face-toggle]");
+
+      const setFace = (serif) => {
+        if (serif) {
+          root.dataset.readingFace = "serif";
+        } else {
+          delete root.dataset.readingFace;
+        }
+
+        for (const toggle of faceToggles) {
+          toggle.setAttribute("aria-pressed", String(serif));
+        }
+      };
+
       document.addEventListener("click", (event) => {
         const target = event.target instanceof Element ? event.target : null;
         if (!target) return;
 
         if (target.closest("[data-copy-link]")) {
           copy();
+          return;
+        }
+
+        if (target.closest("[data-face-toggle]")) {
+          setFace(root.dataset.readingFace !== "serif");
           return;
         }
 
