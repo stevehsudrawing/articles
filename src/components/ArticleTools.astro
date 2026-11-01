@@ -53,6 +53,22 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   data-reading-steps={readingSteps}
   data-reading-default={readingDefault}
 >
+  {/* Both forms of the progress indicator: the ring is the rail's, the line is
+      the dock's, and the placement classes above decide which exists. Each is
+      one animation on a concrete property, which is why there are two nodes
+      rather than one. The ring's box is a control-sized square so it sits in the
+      bar's rhythm; the drawing inside it stays 24 px. */}
+  <div class="article-tools-ring" aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+      <circle
+        class="article-tools-ring-track"
+        cx="12"
+        cy="12"
+        r="11.5"
+      ></circle>
+      <circle class="article-tools-ring-arc" cx="12" cy="12" r="11"></circle>
+    </svg>
+  </div>
   <a
     class="article-tools-control"
     href="#top"
@@ -126,6 +142,7 @@ const readingDefault = String(DEFAULT_READING_SCALE);
       <Icon name="formatAlignCenter" />
     </span>
   </button>
+  <div class="article-tools-line" aria-hidden="true"></div>
 </div>
 
 <style>
@@ -275,5 +292,109 @@ const readingDefault = String(DEFAULT_READING_SCALE);
 
   .article-tools-control[aria-pressed="true"] [data-face-outline] {
     display: none;
+  }
+
+  /* The progress indicator, in the form its placement calls for. The rail gets
+     no line: its `border-top` was removed because nothing passes beneath that
+     bar, so a line there would separate it from nothing - and a progress line is
+     that same line in that same place.
+
+     The ring is what the rail can carry: a control-sized box at the far left of
+     the bar, an empty 24 px drawing inside it. `r=11` with a 2 px stroke puts the
+     stroke's outer edge on the drawing's edge, and the circumference
+     `2π·11 = 69.115` is both the dash length and the offset the arc rests at.
+     `stroke-linecap: butt` because a round cap paints a bead at that offset, and
+     `rotate(-90deg)` because SVG starts a circle at 3 o'clock while progress
+     reads from the top. The track shares the arc's outer edge - `r=11.5` with a
+     1 px stroke covers 11 to 12, inside the arc's 10 to 12 - so the arc hides it
+     completely when the ring is full. A track drawn against the inner edge would
+     still show at 100 %, reading as two concentric rings. */
+  .article-tools-ring {
+    display: none;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-inline-end: auto;
+  }
+
+  .article-tools-ring svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: none;
+    transform: rotate(-90deg);
+  }
+
+  .article-tools-ring-track {
+    stroke: var(--bs-border-color);
+    stroke-width: 1;
+  }
+
+  .article-tools-ring-arc {
+    stroke: var(--bs-primary);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    stroke-dasharray: 69.115;
+    stroke-dashoffset: 69.115;
+    animation-name: article-tools-ring;
+    animation-timing-function: linear;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes article-tools-ring {
+    from {
+      stroke-dashoffset: 69.115;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* The line covers the dock's own border rather than stacking a second hairline
+     beside it: `inset-block-start` is the border's row, and a positioned
+     descendant paints over its containing block's border. It is twice the border
+     so the accent reads at a glance, which puts one of its pixels over the bar's
+     outer edge. The bar is `position: sticky`, which is already a containing
+     block, so no wrapper is added. */
+  .article-tools-line {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: calc(-2 * var(--bs-border-width));
+    height: calc(2 * var(--bs-border-width));
+    display: none;
+    background-color: var(--bs-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation-name: article-tools-line;
+    animation-timing-function: linear;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes article-tools-line {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Which form exists follows the copy, so the breakpoint and the comfortable
+     view need no rule of their own - they already decide the parent's display.
+     The ring is gated as well as the animation, because its track is decoration
+     that only means something under a moving arc: where the browser cannot
+     animate on a scroll timeline the bar has no progress indicator at all,
+     rather than a ring with nothing in it. The line needs no gate - it rests at
+     zero width, so there it is simply invisible. */
+  @supports (animation-timeline: scroll()) {
+    .article-tools--rail .article-tools-ring {
+      display: grid;
+    }
+  }
+
+  .article-tools--dock .article-tools-line {
+    display: block;
   }
 </style>
