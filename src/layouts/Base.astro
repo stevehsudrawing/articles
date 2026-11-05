@@ -144,18 +144,6 @@ const themes = (
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{documentTitle}</title>
     <SiteIcons />
-    {alternates.map((alternate) => (
-      <link
-        rel="alternate"
-        hreflang={alternate.tag}
-        href={absolute(alternate.href)}
-      />
-    ))}
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href={absolute(getRelativeLocaleUrl(defaultLocale, path))}
-    />
     {noindex ? (
       <meta name="robots" content="noindex" />
     ) : (
@@ -163,7 +151,21 @@ const themes = (
         {/* One condition, because the facts share a reader: a page outside the
             index needs neither an address to consolidate nor a description to
             quote, and the 404 answers every unknown path, so a self-canonical
-            would name a URL nobody requested. */}
+            would name a URL nobody requested. `hreflang` joins them because a
+            translation is a page a crawler may index, so an unindexed page
+            names none and no page names it. */}
+        {alternates.map((alternate) => (
+          <link
+            rel="alternate"
+            hreflang={alternate.tag}
+            href={absolute(alternate.href)}
+          />
+        ))}
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={absolute(getRelativeLocaleUrl(defaultLocale, path))}
+        />
         <meta name="robots" content="max-image-preview:large" />
         <meta name="description" content={description} />
         <link rel="canonical" href={canonical} />

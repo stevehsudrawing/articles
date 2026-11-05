@@ -24,6 +24,8 @@ interface Props {
   dark?: string;
   /** The page's path inside its locale, for the language switcher. */
   path?: string;
+  /** Whether the page should stay out of search results. */
+  noindex?: boolean;
   /** The translations this page really has, for `hreflang`. */
   alternates?: { tag: string; href: string }[];
 }
@@ -40,6 +42,7 @@ const {
   light,
   dark,
   path = "",
+  noindex,
   alternates,
 } = Astro.props;
 ---
@@ -51,6 +54,7 @@ const {
   title={title}
   pageNumber={pageNumber}
   path={path}
+  noindex={noindex}
   alternates={alternates}
 >
   <PageHero

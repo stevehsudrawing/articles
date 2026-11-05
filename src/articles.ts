@@ -135,27 +135,30 @@ export function articlePages(locale: Locale) {
 /**
  * The locales that hold a real copy of one article.
  *
- * This is what `hreflang` advertises: a locale whose page is a redirect is not
- * a translation of the article, so it is never listed as one.
+ * This is what `hreflang` advertises, so it asks `published()`: a locale whose
+ * page is a redirect is not a translation of the article, and neither is one
+ * whose file declares `draft` - a draft is a preview, not a translation.
  *
  * @param id - The article's id.
  * @returns The locales holding it, in table order.
  */
 export async function localesWith(id: string): Promise<Locale[]> {
   const held = await Promise.all(
-    localeIdentities.map(async (locale) => {
-      const found = await getCollection(
-        locale,
-        ({ id: entry }) => entry === id,
-      );
-      return found.length > 0 ? locale : undefined;
-    }),
+    localeIdentities.map(async (locale) =>
+      (await published(locale)).some((entry) => entry.id === id)
+        ? locale
+        : undefined,
+    ),
   );
   return held.filter((locale): locale is Locale => locale !== undefined);
 }
 
 /**
  * Where a reader who asked for a missing translation should be sent.
+ *
+ * "Missing" means no file, not "not published": a draft renders at its own URL
+ * so its translator can read the work, which is why this asks the collection
+ * rather than `published()` the way `localesWith()` does.
  *
  * @param id - The article's id.
  * @param locale - The locale whose URL was requested.

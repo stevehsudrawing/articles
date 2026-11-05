@@ -1,11 +1,11 @@
 ---
-import { getRelativeLocaleUrl } from "astro:i18n";
 import ArticleCard from "../../../../../components/ArticleCard.astro";
 import Pagination from "../../../../../components/Pagination.astro";
 import Page from "../../../../../layouts/Page.astro";
 import { t } from "../../../../../i18n/messages";
-import { locales, type Locale } from "../../../../../i18n/locales";
-import { tagPages } from "../../../../../tags";
+import { getLocale, type Locale } from "../../../../../i18n/locales";
+import { isIndexable } from "../../../../../public-pages";
+import { localesTagged, tagPageUrl, tagPages } from "../../../../../tags";
 
 const locale: Locale = "zh-hans";
 
@@ -17,12 +17,11 @@ const { page } = Astro.props;
 const tag = Astro.params.tag!;
 const label = t(locale, `text-tag-${tag}`);
 
-const alternates = locales.map((other) => ({
-  tag: other.tag,
-  href: getRelativeLocaleUrl(
-    other.identity,
-    `tags/${tag}/page/${page.currentPage}/`,
-  ),
+// The tag set is the site's, so this page exists in every locale; only the
+// locales that hold an article carrying the tag are its translations.
+const alternates = (await localesTagged(tag)).map((other) => ({
+  tag: getLocale(other).tag,
+  href: tagPageUrl(other, tag, page.currentPage),
 }));
 ---
 
@@ -34,6 +33,7 @@ const alternates = locales.map((other) => ({
   title={label}
   pageNumber={page.currentPage === 1 ? undefined : page.currentPage}
   path={`tags/${tag}/page/${page.currentPage}/`}
+  noindex={!isIndexable({ articles: page.data.length })}
   alternates={alternates}
 >
   {page.data.map((article) => (
