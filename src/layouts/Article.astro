@@ -10,11 +10,12 @@ import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
 import { DEFAULT_READING_SCALE, readingScalePercent } from "../reading";
 import {
-  absoluteAsset,
   absoluteUrl,
   assertCoverFormat,
   assertCoverSize,
   IMAGES,
+  siteCard,
+  type ShareImage,
 } from "../site-assets";
 import Base from "./Base.astro";
 
@@ -68,10 +69,17 @@ const heroCover = coverPair(article);
 // is never re-encoded here; a 146 KB JPEG used to become a 512 KB PNG for a
 // crawler that may never fetch it. The URL must be absolute because it is read
 // outside any page, and the format checks above are what make "the cover
-// itself" a safe thing to hand a crawler.
-const ogImage = cover
-  ? absoluteUrl(cover.light.src)
-  : absoluteAsset(IMAGES.defaultCoverLight);
+// itself" a safe thing to hand a crawler. The size is the resolved file's own,
+// and the alt names the article the artwork was drawn for; the site's default
+// cover is the site's own artwork, so its alt names the site instead.
+const ogImage: ShareImage = cover
+  ? {
+      url: absoluteUrl(cover.light.src),
+      width: cover.light.width,
+      height: cover.light.height,
+      alt: article.data.title,
+    }
+  : siteCard(IMAGES.defaultCoverLight, t(locale, "text-site-name"));
 
 const license = LICENSES[article.data.license as LicenseId];
 const licenseUrl = article.data.licenseUrl ?? license.url;

@@ -21,7 +21,7 @@ import {
   locales,
   type Locale,
 } from "../i18n/locales";
-import { absoluteAsset, IMAGES } from "../site-assets";
+import { IMAGES, siteCard, type ShareImage } from "../site-assets";
 
 interface Props {
   /** The locale whose language and BCP-47 tag the document carries. */
@@ -50,10 +50,11 @@ interface Props {
   /** Whether the page should stay out of search results. */
   noindex?: boolean;
   /**
-   * The absolute URL of the image a shared link shows. Defaults to the site
-   * card, which is what a page with no artwork of its own advertises.
+   * The image a shared link shows, with the size and description a crawler
+   * needs before it fetches it. Defaults to the site card, which is what a page
+   * with no artwork of its own advertises.
    */
-  ogImage?: string;
+  ogImage?: ShareImage;
   /**
    * What the page is, for `og:type`: an article is a document of its own,
    * every other page is part of the site.
@@ -79,6 +80,9 @@ const {
 
 const entry = getLocale(locale);
 const siteName = t(locale, "text-site-name");
+// The suffix `<title>` uses. The formal name is 18 characters in Chinese and
+// names the site; a search result spends too much of its width on it.
+const shortSiteName = t(locale, "text-site-name-short");
 const absolute = (href: string) => new URL(href, Astro.site).href;
 
 // The composition has one home: the page hands over its own title and, on a
@@ -89,13 +93,15 @@ const documentTitle = !title
   ? siteName
   : pageNumber
     ? t(locale, "text-title-paged", title, String(pageNumber))
-    : `${title} - ${siteName}`;
+    : `${title} - ${shortSiteName}`;
 
 // The page's own address: `Astro.url` carries the path the build rendered and
 // the base in front of it, and making it absolute against the site is what a
 // shared link needs - a crawler reads it outside the page it came from.
 const canonical = absolute(Astro.url.pathname);
-const cardImage = ogImage ?? absoluteAsset(IMAGES.siteCard);
+
+// The site card's alt names the site, because the artwork is the site's.
+const card = ogImage ?? siteCard(IMAGES.siteCard, siteName);
 
 // The list's own URL is its first page: `/page/` exists only as a redirect, and
 // no in-site link should need one. The tag index follows the same shape.
@@ -150,15 +156,30 @@ const themes = (
       hreflang="x-default"
       href={absolute(getRelativeLocaleUrl(defaultLocale, path))}
     />
-    {noindex && <meta name="robots" content="noindex" />}
-    {!noindex && (
+    {noindex ? (
+      <meta name="robots" content="noindex" />
+    ) : (
       <>
+        {/* One condition, because the facts share a reader: a page outside the
+            index needs neither an address to consolidate nor a description to
+            quote, and the 404 answers every unknown path, so a self-canonical
+            would name a URL nobody requested. */}
+        <meta name="robots" content="max-image-preview:large" />
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonical} />
         <meta property="og:site_name" content={siteName} />
         <meta property="og:title" content={documentTitle} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content={cardImage} />
+        <meta property="og:image" content={card.url} />
+        <meta property="og:image:width" content={String(card.width)} />
+        <meta property="og:image:height" content={String(card.height)} />
+        <meta property="og:image:alt" content={card.alt} />
         <meta property="og:url" content={canonical} />
         <meta property="og:type" content={ogType} />
+        {/* The image is named in both namespaces, so a crawler that reads only
+            its own tags and one that reads only Open Graph both find it. */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={card.url} />
       </>
     )}
     <script is:inline>

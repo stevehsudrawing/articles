@@ -83,6 +83,43 @@ export const COVER_WIDTH = 1200;
 export const COVER_HEIGHT = 630;
 
 /**
+ * A share card: the file a crawler fetches and the facts it needs first.
+ *
+ * The URL, its size and its description travel together because they describe
+ * one image. Kept as a string alone, a layout would have to pass the other two
+ * separately, and nothing would stop them from disagreeing with the file.
+ */
+export interface ShareImage {
+  /** The image's absolute URL, since it is read outside any page. */
+  url: string;
+  /** The file's width in pixels. */
+  width: number;
+  /** The file's height in pixels. */
+  height: number;
+  /** What the artwork belongs to, for `og:image:alt`. */
+  alt: string;
+}
+
+/**
+ * A share card built from one of the fixed files under `public/images/`.
+ *
+ * The four files there are 1200x630 PNGs, measured 2026-11-05, so the size is
+ * the cover constants rather than a second number beside the path.
+ *
+ * @param path - A `public/`-relative path, as `IMAGES` holds them.
+ * @param alt - What the artwork belongs to: the site's name for the site's own.
+ * @returns The card a page advertises.
+ */
+export function siteCard(path: string, alt: string): ShareImage {
+  return {
+    url: absoluteAsset(path),
+    width: COVER_WIDTH,
+    height: COVER_HEIGHT,
+    alt,
+  };
+}
+
+/**
  * Fails the build when a declared cover is not the size the card expects.
  *
  * The schema cannot make this check: `image()` hands a refinement a placeholder
