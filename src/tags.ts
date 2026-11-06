@@ -1,9 +1,8 @@
 import type { PaginateFunction } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PER_PAGE, published, type Article } from "./articles";
-import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
+import { defaultLocale, type Locale } from "./i18n/locales";
 import { messagesOf } from "./i18n/messages";
-import { isIndexable } from "./public-pages";
 
 /**
  * Tags, read from the articles that carry them.
@@ -97,29 +96,6 @@ export async function articlesWithTag(
   return (await published(locale)).filter(({ data }) =>
     data.tags?.includes(tag),
   );
-}
-
-/**
- * The locales whose page for one tag holds an article.
- *
- * The tag set is the site's, so every locale serves a page per tag and only
- * some of them fill it. This is what `hreflang` advertises for a tag page: an
- * empty page is `noindex`, and a page outside the index is not a translation of
- * anything. It asks `isIndexable()` rather than testing the count itself, so
- * "this page is indexable" and "this page is a translation" cannot disagree.
- *
- * @param tag - The tag's slug.
- * @returns The locales holding an article with that tag, in table order.
- */
-export async function localesTagged(tag: string): Promise<Locale[]> {
-  const held = await Promise.all(
-    localeIdentities.map(async (locale) =>
-      isIndexable({ articles: (await articlesWithTag(locale, tag)).length })
-        ? locale
-        : undefined,
-    ),
-  );
-  return held.filter((locale): locale is Locale => locale !== undefined);
 }
 
 /**
