@@ -16,6 +16,7 @@ import type { Trail } from "../breadcrumbs";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.vue";
 import SiteIcons from "../components/SiteIcons.astro";
+import { feedUrl } from "../feed";
 import { t } from "../i18n/messages";
 import {
   defaultLocale,
@@ -219,6 +220,15 @@ const themes = (
         <meta name="robots" content="max-image-preview:large" />
         <meta name="description" content={description} />
         <link rel="canonical" href={canonical} />
+        {/* The feed this page belongs to, named for the software that looks for
+            one. It sits in this branch because it is an advertisement like the
+            rest: a page outside the index offers no subscription. */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title={siteName}
+          href={absolute(feedUrl(locale))}
+        />
         <meta property="og:site_name" content={siteName} />
         <meta property="og:title" content={documentTitle} />
         <meta property="og:description" content={description} />

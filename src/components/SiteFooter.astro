@@ -1,4 +1,5 @@
 ---
+import { feedUrl } from "../feed";
 import { t } from "../i18n/messages";
 import { locales, type Locale } from "../i18n/locales";
 import { MAIN_SITE_URL } from "../site";
@@ -9,9 +10,9 @@ interface Props {
   locale: Locale;
   /**
    * Whether the footer is the site's colophon in one line - the copyright and
-   * the site's own name - rather than the banded row that also carries the two
-   * outward links. Only the error page asks for it: it has one exit already,
-   * and a link home here would be a second.
+   * the site's own name - rather than the banded row that also carries the feed
+   * link and the two outward links. Only the error page asks for it: it has one
+   * exit already, and a link home here would be a second.
    */
   minimal?: boolean;
 }
@@ -42,6 +43,9 @@ const language = locales.find((entry) => entry.identity === locale)!.tag;
         </p>
       ) : (
         <>
+          <p class="mb-0">
+            <a href={feedUrl(locale)}>{t(locale, "text-nav-feed")}</a>
+          </p>
           <p class="mb-0">
             <a
               href="https://github.com/stevehsudrawing/articles/blob/main/LICENSE.md"
