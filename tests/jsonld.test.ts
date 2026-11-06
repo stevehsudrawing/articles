@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { Trail } from "../src/breadcrumbs";
 import {
   articleNode,
+  breadcrumbNode,
   pageGraph,
   serializeGraph,
   type LocaleSite,
@@ -172,6 +174,60 @@ describe("articleNode", () => {
     const posting = articleNode({ ...article, license: undefined });
 
     expect(posting).not.toHaveProperty("license");
+  });
+});
+
+const trail: Trail = {
+  label: "Breadcrumb",
+  steps: [
+    { label: "Home", href: "/articles/zh-hans/" },
+    { label: "Articles", href: "/articles/zh-hans/page/1/" },
+    { label: "A post" },
+  ],
+};
+
+describe("breadcrumbNode", () => {
+  it("numbers the steps from one and names each of them", () => {
+    const node = breadcrumbNode(trail, url);
+
+    expect(node.itemListElement.map((step) => step.position)).toEqual([
+      1, 2, 3,
+    ]);
+    expect(node.itemListElement.map((step) => step.name)).toEqual([
+      "Home",
+      "Articles",
+      "A post",
+    ]);
+  });
+
+  it("points at every step but the page's own", () => {
+    const node = breadcrumbNode(trail, url);
+
+    expect(node.itemListElement.map((step) => step.item)).toEqual([
+      "https://stevehsudrawing.github.io/articles/zh-hans/",
+      "https://stevehsudrawing.github.io/articles/zh-hans/page/1/",
+      undefined,
+    ]);
+  });
+
+  it("names itself after the page it describes", () => {
+    expect(breadcrumbNode(trail, url)["@id"]).toBe(`${url}#breadcrumb`);
+  });
+
+  it("joins the graph a page already writes", () => {
+    const graph = pageGraph({
+      ...page,
+      nodes: [articleNode(article), breadcrumbNode(trail, url)],
+    });
+
+    expect(graph["@graph"].map((entry) => entry["@type"])).toEqual([
+      "WebSite",
+      "Person",
+      "WebPage",
+      "BlogPosting",
+      "BreadcrumbList",
+    ]);
+    expect(JSON.parse(serializeGraph(graph))).toEqual(graph);
   });
 });
 

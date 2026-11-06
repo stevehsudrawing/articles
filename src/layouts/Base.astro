@@ -11,6 +11,8 @@ import "../styles/fonts.css";
 import "../styles/base.css";
 import "../styles/syntax.css";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { listUrl } from "../articles";
+import type { Trail } from "../breadcrumbs";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.vue";
 import SiteIcons from "../components/SiteIcons.astro";
@@ -22,12 +24,14 @@ import {
   type Locale,
 } from "../i18n/locales";
 import {
+  breadcrumbNode,
   localeSite,
   pageGraph,
   serializeGraph,
   type JsonLdNode,
 } from "../jsonld";
 import { IMAGES, siteCard, type ShareImage } from "../site-assets";
+import { tagIndexUrl } from "../tags";
 
 interface Props {
   /** The locale whose language and BCP-47 tag the document carries. */
@@ -79,6 +83,12 @@ interface Props {
    * byline. The site's author when the page has none.
    */
   author?: string;
+  /**
+   * Where the page sits, for the kinds that show a trail. The layouts render
+   * it; this one turns it into the graph's `BreadcrumbList`, so no layout
+   * assembles structured data by hand.
+   */
+  trail?: Trail;
 }
 
 const {
@@ -95,6 +105,7 @@ const {
   alternates = [],
   structuredData,
   author,
+  trail,
 } = Astro.props;
 
 const entry = getLocale(locale);
@@ -125,7 +136,8 @@ const card = ogImage ?? siteCard(IMAGES.siteCard, siteName);
 // The page's structured data. It is composed here rather than passed in
 // because the two facts it needs most - the composed title and the canonical
 // address - are this file's, and a layout handing over a whole graph would
-// derive both a second time.
+// derive both a second time. The trail arrives as a page fact and leaves as a
+// node, so no layout has to know `BreadcrumbList` exists.
 const graph = pageGraph({
   site: localeSite(locale),
   url: canonical,
@@ -134,20 +146,23 @@ const graph = pageGraph({
   siteName,
   author: author ?? t(locale, "text-site-author"),
   type: ogType === "article" ? "WebPage" : "CollectionPage",
-  nodes: structuredData,
+  nodes: [
+    ...(structuredData ?? []),
+    ...(trail ? [breadcrumbNode(trail, canonical)] : []),
+  ],
 });
 const jsonLd = serializeGraph(graph);
 
 // The list's own URL is its first page: `/page/` exists only as a redirect, and
-// no in-site link should need one. The tag index follows the same shape.
-const NAV_PATH: Record<"home" | "list" | "tags", string> = {
-  home: "",
-  list: "page/1/",
-  tags: "tags/page/1/",
-};
-
-const nav = (["home", "list", "tags"] as const).map((kind) => ({
-  href: getRelativeLocaleUrl(locale, NAV_PATH[kind]),
+// no in-site link should need one. The tag index follows the same shape, and
+// both paths come from the modules that build them, because the breadcrumb is
+// their third reader.
+const nav = [
+  { kind: "home", href: getRelativeLocaleUrl(locale, "") },
+  { kind: "list", href: listUrl(locale) },
+  { kind: "tags", href: tagIndexUrl(locale) },
+].map(({ kind, href }) => ({
+  href,
   label: t(locale, `text-nav-${kind}`),
   current: page === kind,
 }));

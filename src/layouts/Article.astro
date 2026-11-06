@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import { coverPair } from "../articles";
+import { articleTrail } from "../breadcrumbs";
 import ArticleTools from "../components/ArticleTools.astro";
 import PageHero from "../components/PageHero.astro";
 import TableOfContents from "../components/TableOfContents.astro";
@@ -107,6 +108,10 @@ const structuredData = [
     license: licenseUrl,
   }),
 ];
+
+// The article is filed under the list rather than under a URL of its own, and
+// the same value shows the trail and describes it as a `BreadcrumbList`.
+const trail = articleTrail(locale, article.data.title);
 ---
 
 <Base
@@ -120,12 +125,14 @@ const structuredData = [
   noindex={!isIndexable({ draft: article.data.draft })}
   structuredData={structuredData}
   author={author}
+  trail={trail}
 >
   <PageHero
     title={article.data.title}
     description={article.data.description}
     light={heroCover.light}
     dark={heroCover.dark}
+    trail={trail}
   />
   <div class="container pb-4">
     <div class="article-row row g-4">

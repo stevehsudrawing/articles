@@ -1,4 +1,7 @@
 ---
+import type { Trail } from "../breadcrumbs";
+import Breadcrumbs from "./Breadcrumbs.astro";
+
 interface Props {
   /** The page's heading, rendered as the document's `h1`. */
   title: string;
@@ -8,6 +11,8 @@ interface Props {
   light?: string;
   /** The dark-theme variant, when the page declares a pair. */
   dark?: string;
+  /** Where the page sits, for the kinds that have a trail above the heading. */
+  trail?: Trail;
 }
 
 // A page opens with a heading, an introduction and - for the kinds that have
@@ -21,7 +26,7 @@ interface Props {
 // is why the article layout's row carries a plain `g-4` - its horizontal half is
 // the same 1.5rem as this `gx-4` - and why the two files say so in their own
 // comments: changing one without the other moves the rails out of line.
-const { title, description, light, dark } = Astro.props;
+const { title, description, light, dark, trail } = Astro.props;
 
 // A page's cover is one file or a pair. The pair carries the attributes the
 // toggle in `base.css` keys on, and a lone image carries neither, so a page
@@ -33,6 +38,7 @@ const coverAttrs = { class: "page-hero-cover", alt: "" };
 <div class="page-hero container pb-4">
   <div class="row align-items-center gx-4 gy-4 my-2 my-lg-0">
     <div class:list={["col-12", light ? "col-lg-8" : ""]}>
+      {trail && <Breadcrumbs trail={trail} />}
       <h1>{title}</h1>
       <p class="text-body-secondary mb-0">{description}</p>
     </div>

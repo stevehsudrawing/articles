@@ -1,0 +1,29 @@
+---
+import type { Trail } from "../breadcrumbs";
+
+interface Props {
+  /** The trail to show, ending with the page being read. */
+  trail: Trail;
+}
+
+// A trail is Bootstrap's own list: `.breadcrumb` for the ordered list, one
+// `.breadcrumb-item` per step, and the framework's divider between them. The
+// current page is the step without an href, so it renders as text with
+// `aria-current` - the shape a reader and a screen reader both expect, and the
+// one Google's `BreadcrumbList` rules describe.
+const { trail } = Astro.props;
+const last = trail.steps.length - 1;
+---
+
+<nav aria-label={trail.label}>
+  <ol class="breadcrumb small mb-2">
+    {trail.steps.map((step, index) => (
+      <li
+        class:list={["breadcrumb-item", index === last && "active"]}
+        aria-current={index === last ? "page" : undefined}
+      >
+        {step.href ? <a href={step.href}>{step.label}</a> : step.label}
+      </li>
+    ))}
+  </ol>
+</nav>

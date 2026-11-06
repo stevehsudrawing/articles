@@ -51,6 +51,19 @@ export function articleUrl(locale: Locale, id: string): string {
 }
 
 /**
+ * The URL of a locale's article list, at its first page.
+ *
+ * `/page/` exists only as a redirect, so every link and every trail step aims
+ * at `page/1/` and no reader pays the hop.
+ *
+ * @param locale - The locale whose list to name.
+ * @returns The locale-prefixed URL, with the trailing slash the site uses.
+ */
+export function listUrl(locale: Locale): string {
+  return getRelativeLocaleUrl(locale, "page/1/");
+}
+
+/**
  * The images an article's page and its card show, and the size to declare.
  *
  * The hero and the card ask one question - "which files does this article

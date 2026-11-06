@@ -1,5 +1,6 @@
 ---
 import PageHero from "../components/PageHero.astro";
+import type { Trail } from "../breadcrumbs";
 import type { Locale } from "../i18n/locales";
 import Base from "./Base.astro";
 
@@ -26,6 +27,8 @@ interface Props {
   path?: string;
   /** Whether the page should stay out of search results. */
   noindex?: boolean;
+  /** Where the page sits, for the kinds that show a trail. */
+  trail?: Trail;
   /** The translations this page really has, for `hreflang`. */
   alternates?: { tag: string; href: string }[];
 }
@@ -43,6 +46,7 @@ const {
   dark,
   path = "",
   noindex,
+  trail,
   alternates,
 } = Astro.props;
 ---
@@ -55,6 +59,7 @@ const {
   pageNumber={pageNumber}
   path={path}
   noindex={noindex}
+  trail={trail}
   alternates={alternates}
 >
   <PageHero
@@ -62,6 +67,7 @@ const {
     description={heroDescription}
     light={light}
     dark={dark}
+    trail={trail}
   />
   <div class="container pb-4">
     <div class="row g-2">

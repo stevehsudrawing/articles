@@ -2,6 +2,7 @@
 import ArticleCard from "../../../../../components/ArticleCard.astro";
 import Pagination from "../../../../../components/Pagination.astro";
 import Page from "../../../../../layouts/Page.astro";
+import { tagTrail } from "../../../../../breadcrumbs";
 import { t } from "../../../../../i18n/messages";
 import { getLocale, type Locale } from "../../../../../i18n/locales";
 import { isIndexable } from "../../../../../public-pages";
@@ -34,6 +35,7 @@ const alternates = (await localesTagged(tag)).map((other) => ({
   pageNumber={page.currentPage === 1 ? undefined : page.currentPage}
   path={`tags/${tag}/page/${page.currentPage}/`}
   noindex={!isIndexable({ articles: page.data.length })}
+  trail={tagTrail(locale, tag)}
   alternates={alternates}
 >
   {page.data.map((article) => (

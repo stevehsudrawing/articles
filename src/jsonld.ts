@@ -1,4 +1,5 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
+import type { Trail } from "./breadcrumbs";
 import { getLocale, type Locale } from "./i18n/locales";
 import { MAIN_SITE_URL } from "./site";
 import { absoluteUrl, type ShareImage } from "./site-assets";
@@ -90,8 +91,26 @@ export interface BlogPostingNode {
   mainEntityOfPage: IdRef;
 }
 
+/** One step of a `BreadcrumbList`. */
+export interface ListItemNode {
+  "@type": "ListItem";
+  /** The step's place in the trail, counting from 1. */
+  position: number;
+  name: string;
+  /** Where the step leads: absent on the page's own step. */
+  item?: string;
+}
+
+/** The page's place in the site, as the trail above its heading shows it. */
+export interface BreadcrumbListNode {
+  "@type": "BreadcrumbList";
+  "@id": string;
+  itemListElement: ListItemNode[];
+}
+
 /** Any node a page's graph may hold. */
-export type JsonLdNode = WebSiteNode | PersonNode | PageNode | BlogPostingNode;
+export type JsonLdNode =
+  WebSiteNode | PersonNode | PageNode | BlogPostingNode | BreadcrumbListNode;
 
 /** The document a page writes: one context, one graph. */
 export interface PageGraph {
@@ -284,6 +303,32 @@ export function articleNode(facts: ArticleFacts): BlogPostingNode {
   }
 
   return node;
+}
+
+/**
+ * Builds the `BreadcrumbList` node for the trail a page shows.
+ *
+ * Google's rules, read 2026-11-05: every step needs `position` and `name`, and
+ * `item` on all but the last - there the containing page's own URL is what the
+ * step names, so writing it would only repeat the page. `item` is absolute
+ * because the rest of the graph is, and a relative one would resolve against
+ * the document by luck alone.
+ *
+ * @param trail - The trail the page renders, ending with the page itself.
+ * @param url - The page's absolute URL, which its id is built from.
+ * @returns The node, for the page's graph.
+ */
+export function breadcrumbNode(trail: Trail, url: string): BreadcrumbListNode {
+  return {
+    "@type": "BreadcrumbList",
+    "@id": `${url}#breadcrumb`,
+    itemListElement: trail.steps.map((step, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: step.label,
+      ...(step.href ? { item: absoluteUrl(step.href) } : {}),
+    })),
+  };
 }
 
 /**
