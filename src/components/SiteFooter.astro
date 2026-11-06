@@ -1,6 +1,7 @@
 ---
 import { t } from "../i18n/messages";
 import { locales, type Locale } from "../i18n/locales";
+import { MAIN_SITE_URL } from "../site";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -21,7 +22,6 @@ const siteName = t(locale, "text-site-name");
 
 // The one control that writes the shared `lang`: following it is an explicit
 // act, and the main site reads that key. Visiting this site never writes it.
-const mainSite = "https://stevehsudrawing.github.io/";
 const language = locales.find((entry) => entry.identity === locale)!.tag;
 ---
 
@@ -54,7 +54,7 @@ const language = locales.find((entry) => entry.identity === locale)!.tag;
             </a>
           </p>
           <p class="mb-0">
-            <a href={mainSite} data-main-site data-lang={language}>
+            <a href={MAIN_SITE_URL} data-main-site data-lang={language}>
               {t(locale, "text-nav-main-site")}
               <span class="footer-indicator">
                 <Icon name="arrowOutward" />

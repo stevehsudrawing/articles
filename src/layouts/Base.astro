@@ -21,6 +21,12 @@ import {
   locales,
   type Locale,
 } from "../i18n/locales";
+import {
+  localeSite,
+  pageGraph,
+  serializeGraph,
+  type JsonLdNode,
+} from "../jsonld";
 import { IMAGES, siteCard, type ShareImage } from "../site-assets";
 
 interface Props {
@@ -62,6 +68,17 @@ interface Props {
   ogType?: "website" | "article";
   /** The translations this page really has, for `hreflang`. */
   alternates?: { tag: string; href: string }[];
+  /**
+   * The nodes this page adds to its graph, holding what only the page can
+   * build - an article's `BlogPosting`. Everything else about the page is
+   * already here, so a layout never assembles a graph of its own.
+   */
+  structuredData?: JsonLdNode[];
+  /**
+   * The author this page states, for the graph's `Person`: an article's
+   * byline. The site's author when the page has none.
+   */
+  author?: string;
 }
 
 const {
@@ -76,6 +93,8 @@ const {
   ogImage,
   ogType = "website",
   alternates = [],
+  structuredData,
+  author,
 } = Astro.props;
 
 const entry = getLocale(locale);
@@ -102,6 +121,22 @@ const canonical = absolute(Astro.url.pathname);
 
 // The site card's alt names the site, because the artwork is the site's.
 const card = ogImage ?? siteCard(IMAGES.siteCard, siteName);
+
+// The page's structured data. It is composed here rather than passed in
+// because the two facts it needs most - the composed title and the canonical
+// address - are this file's, and a layout handing over a whole graph would
+// derive both a second time.
+const graph = pageGraph({
+  site: localeSite(locale),
+  url: canonical,
+  name: documentTitle,
+  description,
+  siteName,
+  author: author ?? t(locale, "text-site-author"),
+  type: ogType === "article" ? "WebPage" : "CollectionPage",
+  nodes: structuredData,
+});
+const jsonLd = serializeGraph(graph);
 
 // The list's own URL is its first page: `/page/` exists only as a redirect, and
 // no in-site link should need one. The tag index follows the same shape.
@@ -182,6 +217,12 @@ const themes = (
             its own tags and one that reads only Open Graph both find it. */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content={card.url} />
+        {/* The page describes itself in one graph, and a page outside the
+            index advertises nothing - so this rides the same branch the
+            canonical does. `set:html` writes the JSON verbatim, which is why
+            `serializeGraph()` escapes `<`: a closing tag inside a title would
+            otherwise end this element. */}
+        <script type="application/ld+json" set:html={jsonLd}></script>
       </>
     )}
     <script is:inline>

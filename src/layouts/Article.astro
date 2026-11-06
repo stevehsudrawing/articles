@@ -10,6 +10,7 @@ import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
 import { DEFAULT_READING_SCALE, readingScalePercent } from "../reading";
 import { isIndexable } from "../public-pages";
+import { articleNode, localeSite } from "../jsonld";
 import {
   absoluteUrl,
   assertCoverFormat,
@@ -90,6 +91,22 @@ const license = LICENSES[article.data.license as LicenseId];
 const licenseUrl = article.data.licenseUrl ?? license.url;
 const author = article.data.author;
 const updated = article.data.updated;
+
+// The article's own node. `url` is the same derivation `Base.astro` makes for
+// the canonical, so `mainEntityOfPage` names the id the page node really has;
+// the image is the card the page advertises, which is the file its hero serves.
+const structuredData = [
+  articleNode({
+    site: localeSite(locale),
+    url: absoluteUrl(Astro.url.pathname),
+    headline: article.data.title,
+    description: article.data.description,
+    image: ogImage,
+    datePublished: article.data.date,
+    dateModified: updated,
+    license: licenseUrl,
+  }),
+];
 ---
 
 <Base
@@ -101,6 +118,8 @@ const updated = article.data.updated;
   ogType="article"
   alternates={alternates}
   noindex={!isIndexable({ draft: article.data.draft })}
+  structuredData={structuredData}
+  author={author}
 >
   <PageHero
     title={article.data.title}
