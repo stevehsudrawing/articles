@@ -54,14 +54,14 @@ const coverAttrs = {
         <span>
           {updated ? (
             <>
-              <span class="card-icon">
+              <span class="text-icon card-icon">
                 <Icon name="update" />
               </span>
               <span>{updated}</span>
             </>
           ) : (
             <>
-              <span class="card-icon">
+              <span class="text-icon card-icon">
                 <Icon name="calendarToday" />
               </span>
               <span>{date}</span>
@@ -70,7 +70,7 @@ const coverAttrs = {
         </span>
         {author && author !== t(locale, "text-site-author") && (
           <span>
-            <span class="card-icon">
+            <span class="text-icon card-icon">
               <Icon name="person" />
             </span>
             <span>{author}</span>
@@ -98,17 +98,13 @@ const coverAttrs = {
     object-fit: cover;
   }
 
-  /* A glyph is a `1em` box sitting on the text's baseline, so an inline one
-     leaves a descender's worth of gap under it: `inline-flex` blockifies it and
-     takes the gap away, and `-0.125em` drops the box onto the digits' optical
-     baseline - the same correction `SiteHeader.vue` makes for its own glyphs.
-     The margin is the only space before the value: measured in the 14px card
-     text, the glyph is 14x14, its box bottom sits 1.58px below the digits',
-     and the gap to the first digit is 1.75px, which is the margin alone - the
-     whitespace between the two spans does not survive the template compiler. */
+  /* `.text-icon` in `base.css` blockifies the glyph and puts it on the text's
+     optical baseline. What is left here is the measured space before the value:
+     in the 14px card text the glyph is 14x14, its box bottom sits 1.75px below
+     the baseline - exactly `-0.125em` at 14px - and the gap to the first digit
+     is 1.75px, which is this margin alone; the whitespace between the two spans
+     does not survive the template compiler. */
   .card-icon {
-    display: inline-flex;
-    vertical-align: -0.125em;
     margin-right: 0.125em;
   }
 </style>

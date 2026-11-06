@@ -185,7 +185,10 @@ function localeOf(fileURL: URL | undefined): {
   return { locale: name as Locale, named: true };
 }
 
-/** The wrapper the glyph sits in, so it stays out of the accessibility tree. */
+/**
+ * The alert's half of the glyph wrapper: `.text-icon` in `base.css` puts the
+ * glyph on the title's baseline, and this name is the gap before the title.
+ */
 const ALERT_ICON = "alert-icon";
 
 /**
@@ -277,10 +280,16 @@ export const markdownAlerts = {
         context.removeChildAt(paragraph, at);
       }
       context.setProperty(paragraph, "className", ["alert-title"]);
+      // Two classes on the span: the shared wrapper from `base.css`, and the
+      // alert's own gap. `aria-hidden` keeps the glyph out of the name the
+      // title already states.
       context.prependChild(paragraph, {
         type: "element",
         tagName: "span",
-        properties: { className: [ALERT_ICON], ariaHidden: "true" },
+        properties: {
+          className: ["text-icon", ALERT_ICON],
+          ariaHidden: "true",
+        },
         children: [{ type: "raw", value: ICONS[kind.icon] }],
       });
 

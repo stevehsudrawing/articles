@@ -21,6 +21,7 @@ import lightbulb from "./assets/icons/lightbulb.svg?raw";
 import menu from "./assets/icons/menu.svg?raw";
 import person from "./assets/icons/person.svg?raw";
 import report from "./assets/icons/report.svg?raw";
+import rssFeed from "./assets/icons/rss_feed.svg?raw";
 import serif from "./assets/icons/serif.svg?raw";
 import serifFill from "./assets/icons/serif-fill.svg?raw";
 import settings from "./assets/icons/settings.svg?raw";
@@ -51,6 +52,7 @@ export const ICONS = {
   menu,
   person,
   report,
+  rssFeed,
   serif,
   serifFill,
   settings,

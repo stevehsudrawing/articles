@@ -152,11 +152,7 @@ function setTheme(value: ThemeOption["value"]): void {
           :aria-label="menuLabel"
           @click="navOpen = !navOpen"
         >
-          <span
-            class="site-header-icon"
-            aria-hidden="true"
-            v-html="ICONS.menu"
-          ></span>
+          <span class="text-icon" aria-hidden="true" v-html="ICONS.menu"></span>
         </button>
 
         <a
@@ -188,7 +184,7 @@ function setTheme(value: ThemeOption["value"]): void {
           <BDropdown is-nav :aria-label="languageLabel">
             <template #button-content>
               <span
-                class="site-header-icon me-1"
+                class="text-icon me-1"
                 aria-hidden="true"
                 v-html="ICONS.language"
               ></span>
@@ -209,7 +205,7 @@ function setTheme(value: ThemeOption["value"]): void {
           <BDropdown is-nav>
             <template #button-content>
               <span
-                class="site-header-icon me-1"
+                class="text-icon me-1"
                 aria-hidden="true"
                 v-html="ICONS[current.icon]"
               ></span>
@@ -222,7 +218,7 @@ function setTheme(value: ThemeOption["value"]): void {
               @click="setTheme(option.value)"
             >
               <span
-                class="site-header-icon me-2"
+                class="text-icon me-2"
                 aria-hidden="true"
                 v-html="ICONS[option.icon]"
               ></span>
@@ -240,7 +236,7 @@ function setTheme(value: ThemeOption["value"]): void {
           @click="settingsOpen = !settingsOpen"
         >
           <span
-            class="site-header-icon"
+            class="text-icon"
             aria-hidden="true"
             v-html="ICONS.settings"
           ></span>
@@ -319,7 +315,7 @@ function setTheme(value: ThemeOption["value"]): void {
           @click="setTheme(option.value)"
         >
           <span
-            class="site-header-icon me-2"
+            class="text-icon me-2"
             aria-hidden="true"
             v-html="ICONS[option.icon]"
           ></span>
@@ -408,21 +404,16 @@ function setTheme(value: ThemeOption["value"]): void {
   align-items: center;
 }
 
-/* A glyph sits on the text's baseline box and takes its size from the font. The
-   span is inline-flex so the same class serves a button, where the glyph is the
-   whole content, and a menu item, where it sits before a label. */
-.site-header-icon {
-  display: inline-flex;
-  vertical-align: -0.125em;
-}
-
 .site-header-mark :deep(svg) {
   display: block;
   width: 1em;
   height: 1em;
 }
 
-.site-header-icon :deep(svg) {
+/* The baseline correction every glyph here needs is `.text-icon` in `base.css`,
+   which the cards, the alerts and the footer share. What the header adds is the
+   size: a hair larger than the text the glyph sits beside. */
+.text-icon :deep(svg) {
   display: block;
   width: 1.1em;
   height: 1.1em;

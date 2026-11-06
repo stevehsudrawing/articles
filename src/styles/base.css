@@ -213,6 +213,22 @@ a:active {
   border-left: 2px solid rgba(var(--bs-body-color-rgb), 0.5);
 }
 
+/* --- Glyphs beside text ---
+   A glyph from the extraction tool is a `1em` box standing on the text's
+   baseline, so an inline one leaves a descender's worth of gap under it:
+   `inline-flex` blockifies it and takes the gap away, and `-0.125em` drops the
+   box onto the text's optical baseline. Both halves are the same wherever a
+   glyph sits beside text - a card's metadata, an alert's title, the header's
+   menus, the footer's feed link - so they are written once here.
+
+   The gap is not shared. Each caller knows its own font size and its own
+   measured space, so it adds a margin of its own or a `me-*` utility. */
+
+.text-icon {
+  display: inline-flex;
+  vertical-align: -0.125em;
+}
+
 /* --- Alerts ---
    `markdownAlerts` rewrites `> [!NOTE]` into a blockquote carrying
    `.alert`, `alert-<variant>` and `data-alert-kind="note"`. The variant is one
@@ -264,13 +280,10 @@ a:active {
   margin-bottom: 0;
 }
 
-/* The glyph is a `1em` box from the extraction tool, so it follows the title's
-   font size; the wrapper takes an inline image's descender gap away the way
-   `.card-icon` does, and its margin is the whole space before the label. */
+/* The alert's half of the wrapper: `.text-icon` puts the glyph on the title's
+   baseline and this is the whole space between it and the title. */
 
 .alert-icon {
-  display: inline-flex;
-  vertical-align: -0.125em;
   margin-right: 0.375em;
 }
 

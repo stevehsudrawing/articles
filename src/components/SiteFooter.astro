@@ -44,7 +44,12 @@ const language = locales.find((entry) => entry.identity === locale)!.tag;
       ) : (
         <>
           <p class="mb-0">
-            <a href={feedUrl(locale)}>{t(locale, "text-nav-feed")}</a>
+            <a href={feedUrl(locale)}>
+              <span class="text-icon me-1" aria-hidden="true">
+                <Icon name="rssFeed" />
+              </span>
+              {t(locale, "text-nav-feed")}
+            </a>
           </p>
           <p class="mb-0">
             <a
