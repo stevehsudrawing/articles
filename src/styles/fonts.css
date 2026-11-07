@@ -18,8 +18,8 @@
   --shar-font-emoji:
     "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
-  --shar-font-sans-serif-en: "Inter Variable";
-  --shar-font-monospace-en: "Roboto Mono Variable";
+  --shar-font-sans-serif-en: "Inter Variable", "Inter";
+  --shar-font-monospace-en: "Roboto Mono Variable", "Roboto Mono";
 
   --shar-font-sans-serif-ja:
     "更紗ゴシック J", "Sarasa Gothic J", "ヒラギノ角ゴシック",
