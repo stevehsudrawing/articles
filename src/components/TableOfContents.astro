@@ -314,21 +314,30 @@ const timelineStyle = [
          while there is nothing to scroll the timeline is inactive, the animation
          is not in effect, and the base transparent border shows; once the list
          can scroll the animation applies and holds one color. Nothing moves,
-         which is why it needs no reduced-motion guard, and where
-         `animation-timeline` is unsupported the line is simply absent. At the
-         box's maximum height its bottom edge is the bar's top edge, so the line
-         lands exactly where the list is cut off.
+         which is why it needs no reduced-motion guard, and the gate below is
+         what makes the line absent where `animation-timeline` is unsupported.
+         At the box's maximum height its bottom edge is the bar's top edge, so
+         the line lands exactly where the list is cut off.
 
          Longhands, never the `animation` shorthand: the CSS minifier folds the
          shorthand and `animation-timeline` into one `animation` value, which is
          not grammar the browser accepts, and the whole declaration then
          disappears - measured, `animationName` came back `none`. */
       border-bottom: var(--bs-border-width) solid transparent;
-      animation-name: toc-overflow-edge;
-      animation-duration: 0s;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: scroll(self block);
+    }
+
+    /* The gate is what the paragraph above promises: with no timeline the
+       declared 0s duration and `both` fill paint the end frame on their own,
+       measured as the border at `rgb(222, 226, 230)` under a list that does not
+       overflow. Only the animation moves inside, so the reserved border stays. */
+    @supports (animation-timeline: scroll()) {
+      .table-of-contents {
+        animation-name: toc-overflow-edge;
+        animation-duration: 0s;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(self block);
+      }
     }
   }
 
