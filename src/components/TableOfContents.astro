@@ -17,32 +17,97 @@ interface Props {
 const { locale, headings } = Astro.props;
 const entries = tableOfContents(headings);
 const skipToArticle = t(locale, "text-action-skip-to-article");
+
+/**
+ * The name an entry's heading declares its view timeline under.
+ *
+ * The index is the entry's own, so the list and the names are one array read
+ * twice and a name cannot drift from the heading it belongs to.
+ *
+ * @param index - The entry's position in `entries`.
+ * @returns A custom ident, valid wherever a timeline name is expected.
+ */
+function timelineName(index: number): string {
+  return `--shar-toc-${index + 1}`;
+}
+
+/**
+ * The timeline names one entry's two animations read, as inline data.
+ *
+ * `--toc-off` aims at the next heading at the entry's own depth or shallower,
+ * so a chapter stays marked while one of its sections is read, and the last
+ * chapter has nothing to turn it off.
+ *
+ * @param index - The entry's position in `entries`.
+ * @returns Declarations for the entry's `style` attribute.
+ */
+function entryNames(index: number): string {
+  const { depth } = entries[index];
+  const off = entries.findIndex(
+    (heading, next) => next > index && heading.depth <= depth,
+  );
+  const own = `--toc-own: ${timelineName(index)}`;
+  return off === -1 ? own : `${own}; --toc-off: ${timelineName(off)}`;
+}
+
+// One rule per heading, plus the scope that lets the rail use the names from its
+// own column. `timeline-scope: all` is not a value the engine has (measured:
+// `CSS.supports` answers false in Chromium 150), so the names are listed; they
+// are listed on `:root` rather than on the row because the row is another
+// component's element. The names cannot be attached by the markdown step
+// instead: the renderer assigns a heading's id after the user's steps have run
+// (measured in `@astrojs/markdown-satteri` 0.4.3), so the slug is not on the
+// node yet.
+//
+// The 3px on the inset and the 2px the range spans below are one fact, so they
+// are stated together: `exit-crossing` starts where the heading's top edge meets
+// the reading line, and both numbers move relative to it. With the inset equal to
+// the header's height, a heading an anchor jump lands at `scroll-padding-top`
+// sits exactly on the crossing - progress 0 - and is not marked until the reader
+// scrolls. Three pixels of room put the crossing above that position, and the
+// 2px switch below it finishes 1px before the heading gets there. The main site's
+// scrollspy adds 16px to its offset for the same reason.
+const timelineStyle = [
+  `:root {
+    timeline-scope: ${entries.map((_, index) => timelineName(index)).join(", ")}
+  }`,
+  ...entries.map(
+    (heading, index) =>
+      `[id="${heading.slug}"] {
+        view-timeline-name: ${timelineName(index)};
+        view-timeline-inset: calc(var(--shar-header-height) + 3px) 0
+      }`,
+  ),
+].join("\n");
 ---
 
 {entries.length > 0 && (
-  <nav class="table-of-contents" aria-labelledby="toc-label">
-    {/* The label and the link share one line. The link sits outside the `h2`,
+  <>
+    {/* Outside the `nav`: these rules are about the page, not the landmark. */}
+    <style is:inline set:html={timelineStyle} />
+    <nav class="table-of-contents" aria-labelledby="toc-label">
+      {/* The label and the link share one line. The link sits outside the `h2`,
         because `aria-labelledby` names the landmark with that heading's text. */}
-    <div class="toc-head">
-      <h2 class="h6 text-uppercase mb-0" id="toc-label">
-        {t(locale, "text-nav-toc")}
-      </h2>
-      <a class="toc-skip" href="#article-body">
-        {skipToArticle}
-      </a>
-    </div>
-    <ul class="list-unstyled mb-0">
-      {entries.map((heading) => (
-        <li
-          class:list={["toc-item", "font-tnum", `toc-depth-${heading.depth}`]}
-        >
-          <a class="link-secondary" href={`#${heading.slug}`}>
-            {heading.text}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+      <div class="toc-head">
+        <h2 class="h6 text-uppercase mb-0" id="toc-label">
+          {t(locale, "text-nav-toc")}
+        </h2>
+        <a class="toc-skip" href="#article-body">
+          {skipToArticle}
+        </a>
+      </div>
+      <ul class="list-unstyled mb-0">
+        {entries.map((heading, index) => (
+          <li
+            class:list={["toc-item", "font-tnum", `toc-depth-${heading.depth}`]}
+            style={entryNames(index)}
+          >
+            <a href={`#${heading.slug}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </>
 )}
 
 <style>
@@ -55,13 +120,13 @@ const skipToArticle = t(locale, "text-action-skip-to-article");
   }
 
   /* The label and the link on one line: the heading's own bottom margin becomes
-     the row's, so the gap above the list stays 0.5rem. */
+     the row's, so the gap above the list stays 0.6rem. */
   .toc-head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
 
   /* Shown wherever the contents sits above the article - below `xl` and at every
@@ -73,13 +138,161 @@ const skipToArticle = t(locale, "text-action-skip-to-article");
     }
   }
 
-  .toc-item {
-    margin-bottom: 0.25rem;
+  /* The entry is a block, so a reader can follow one column down the list and
+     the marked entry is a segment of it rather than a spur, and its rule runs
+     the box's whole height - which is why the pitch is its `padding-block`
+     rather than a margin on the item: consecutive rules have to touch.
+
+     `width: fit-content` keeps the target the text's own width, so the empty
+     rest of the rail is not a link. The resting color is named here because the
+     off keyframe has to paint the same value; `--bs-link-opacity` and
+     `--bs-link-underline-opacity` are Bootstrap's own, read the way its
+     `.link-secondary` read them, so the resting look is what it was.
+
+     The gutter is as wide as the rule ever gets: the current state thickens the
+     strip by 1px, and that pixel has to come out of padding rather than out of
+     where the text sits. */
+  .toc-item > a {
+    --toc-indent: 0.5rem;
+    --toc-rest-color: rgba(var(--bs-secondary-rgb), var(--bs-link-opacity, 1));
+    position: relative;
+    display: block;
+    width: fit-content;
+    padding-block: 0.2rem;
+    padding-inline-start: calc(var(--toc-indent) + 2px);
+    color: var(--toc-rest-color);
+    text-decoration-color: rgba(
+      var(--bs-secondary-rgb),
+      var(--bs-link-underline-opacity)
+    );
   }
 
-  /* An `h3` entry is indented under the `h2` it belongs to. */
-  .toc-depth-3 {
-    padding-left: 1rem;
+  /* The rule is painted rather than bordered, because a border is layout: one
+     that grew by a pixel would push its own text by a pixel, which is the shift
+     this strip exists to avoid. It shares its left edge with the current state
+     and thickens inward, which is the progress ring's own construction - a 1px
+     track in `--bs-border-color` under a 2px arc in `--bs-primary`. */
+  .toc-item > a::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 1px;
+    background-color: var(--bs-border-color);
+  }
+
+  /* The states `.link-secondary` supplied, restated because that class's own
+     `color` is `!important` - and an `!important` declaration beats a CSS
+     animation, so the mark could never take on a link that carries it. These
+     two keep theirs for the opposite reason: they have to beat the animation,
+     which is what makes a hover land on the marked entry as well. */
+  .toc-item > a:focus,
+  .toc-item > a:hover {
+    color: var(--shar-secondary-hover) !important;
+    text-decoration-color: var(--shar-secondary-hover) !important;
+  }
+
+  .toc-item > a:active {
+    color: var(--shar-secondary-active) !important;
+    text-decoration-color: var(--shar-secondary-active) !important;
+  }
+
+  /* An `h3` entry's text is indented under the `h2` it belongs to; the rule is
+     not, because a second column of rules would read as a second list. */
+  .toc-depth-3 > a {
+    --toc-indent: calc(0.5rem + 1rem);
+  }
+
+  /* Which entry is the current one, with no script and with no entry that knows
+     where any other is. Every heading declares a view timeline; an entry's own
+     heading turns its mark on, and the next heading at its depth or shallower
+     turns it off. Two animations on one property: the later one wins while it is
+     in effect, and `forwards` is what keeps it in effect from its range onwards -
+     so the two are a difference, not a trail of everything already passed.
+
+     `exit-crossing` starts where the heading's top edge reaches the reading line,
+     which the generated `view-timeline-inset` puts 3px above the header's bottom
+     edge - so an anchored heading arrives already marked - and the switch is the
+     2px after it. A fixed 2px rather than a percentage of the heading's height:
+     the length of a switch is a property of the reader's scrolling, not of how
+     tall a heading happens to be, and it is what pairs with the 3px - the switch
+     completes 1px before an anchored heading arrives. The range is written once
+     so that both animations read it: a comma would hand the first animation
+     `0%`, which expands to the whole crossing and takes the switch with it.
+
+     The `@supports` is load-bearing rather than polite. Where a timeline name is
+     never resolved the animation is reported finished at progress 1, so
+     `forwards` paints its end value: without the gate a browser that lacks
+     `animation-timeline` would put these on the document timeline and mark the
+     entries for good. An *inactive* view timeline is the safe case - a page that
+     does not scroll marks nothing. */
+  @supports (animation-timeline: view()) and (timeline-scope: --shar-toc) {
+    @media (min-width: 1200px) {
+      :root:not([data-reading-view="comfort"]) .toc-item > a,
+      :root:not([data-reading-view="comfort"]) .toc-item > a::before {
+        animation-fill-mode: forwards;
+        animation-timeline: var(--toc-own), var(--toc-off);
+        animation-range: exit-crossing 0px exit-crossing 2px;
+      }
+
+      /* The mark carries "you are here", so the underline is one more line on a
+         list of eleven and goes - but only here, where the mark exists. The
+         hover and the focus below bring it back, which is why they keep their
+         `!important`. */
+      :root:not([data-reading-view="comfort"]) .toc-item > a {
+        text-decoration-color: transparent;
+        animation-name: toc-current-on, toc-current-off;
+      }
+
+      :root:not([data-reading-view="comfort"]) .toc-item > a::before {
+        animation-name: toc-rule-current-on, toc-rule-current-off;
+      }
+
+      /* The last section has no successor to turn it off, so it carries one
+         animation. An empty `--toc-off` would make the whole declaration
+         invalid and hand both animations the document timeline. */
+      :root:not([data-reading-view="comfort"]) .toc-item:last-child > a {
+        animation-name: toc-current-on;
+        animation-timeline: var(--toc-own);
+      }
+
+      :root:not([data-reading-view="comfort"])
+        .toc-item:last-child
+        > a::before {
+        animation-name: toc-rule-current-on;
+        animation-timeline: var(--toc-own);
+      }
+    }
+  }
+
+  /* Endpoints only: a `from` equal to the base value would be a second copy of
+     the resting color, and the implicit one is already it. */
+  @keyframes toc-current-on {
+    to {
+      color: var(--bs-link-color);
+    }
+  }
+
+  @keyframes toc-current-off {
+    to {
+      color: var(--toc-rest-color);
+    }
+  }
+
+  /* The strip's own state, on the same two timelines: the accent, and the one
+     extra pixel the gutter holds for it. */
+  @keyframes toc-rule-current-on {
+    to {
+      width: 2px;
+      background-color: var(--bs-primary);
+    }
+  }
+
+  @keyframes toc-rule-current-off {
+    to {
+      width: 1px;
+      background-color: var(--bs-border-color);
+    }
   }
 
   /* Sticky through CSS alone, offset by the header height so it never slides
