@@ -27,6 +27,12 @@ interface Props {
 //
 // The component holds no script: it is rendered twice, so the behavior belongs
 // to `Article.astro`, which renders both copies.
+//
+// Five of the six controls write document state or the clipboard, so without a
+// script they are buttons that do nothing: they ship `hidden` and the page's
+// script reveals every `[data-needs-script]`. The two that carry neither need no
+// script - the anchor's `#top` fragment resolves to the document top with no
+// element named for it, and the progress indicator is a scroll-driven animation.
 const { locale, placement } = Astro.props;
 
 const backToTop = t(locale, "text-action-back-to-top");
@@ -83,6 +89,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     class="article-tools-control"
     type="button"
     data-copy-link
+    data-needs-script
+    hidden
     aria-label={copyLink}
     title={copyLink}
   >
@@ -97,6 +105,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     class="article-tools-control"
     type="button"
     data-reading-step="-1"
+    data-needs-script
+    hidden
     aria-label={fontDecrease}
     title={fontDecrease}
   >
@@ -108,6 +118,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     class="article-tools-control"
     type="button"
     data-reading-step="1"
+    data-needs-script
+    hidden
     aria-label={fontIncrease}
     title={fontIncrease}
   >
@@ -119,6 +131,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     class="article-tools-control"
     type="button"
     data-face-toggle
+    data-needs-script
+    hidden
     aria-pressed="false"
     aria-label={fontSerif}
     title={fontSerif}
@@ -134,6 +148,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     class="article-tools-control"
     type="button"
     data-view-toggle
+    data-needs-script
+    hidden
     aria-pressed="false"
     aria-label={comfortView}
     title={comfortView}

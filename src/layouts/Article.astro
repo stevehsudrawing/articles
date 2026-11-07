@@ -236,6 +236,17 @@ const trail = articleTrail(locale, article.data.title);
       const root = document.documentElement;
       if (!bar) return;
 
+      // The five controls that write document state or the clipboard are the
+      // script's, so the markup ships them hidden and this is what shows them.
+      // The anchor to the document top and the scroll-driven progress indicator
+      // need no script and are not marked, so a reader without one keeps a bar
+      // with those two rather than five buttons that do nothing. The bar is
+      // still rendered, which is why its height, `scroll-padding-bottom` and the
+      // contents' `max-height` stay true either way.
+      for (const control of document.querySelectorAll("[data-needs-script]")) {
+        control.hidden = false;
+      }
+
       const steps = bar.dataset.readingSteps.split(" ").map(Number);
       const fallback = steps.indexOf(Number(bar.dataset.readingDefault));
 
