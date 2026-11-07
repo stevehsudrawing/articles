@@ -80,11 +80,6 @@ interface Props {
    */
   structuredData?: JsonLdNode[];
   /**
-   * The author this page states, for the graph's `Person`: an article's
-   * byline. The site's author when the page has none.
-   */
-  author?: string;
-  /**
    * Where the page sits, for the kinds that show a trail. The layouts render
    * it; this one turns it into the graph's `BreadcrumbList`, so no layout
    * assembles structured data by hand.
@@ -105,7 +100,6 @@ const {
   ogType = "website",
   alternates = [],
   structuredData,
-  author,
   trail,
 } = Astro.props;
 
@@ -145,7 +139,7 @@ const graph = pageGraph({
   name: documentTitle,
   description,
   siteName,
-  author: author ?? t(locale, "text-site-author"),
+  siteAuthor: t(locale, "text-site-author"),
   type: ogType === "article" ? "WebPage" : "CollectionPage",
   nodes: [
     ...(structuredData ?? []),

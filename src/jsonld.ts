@@ -1,7 +1,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import type { Trail } from "./breadcrumbs";
 import { getLocale, type Locale } from "./i18n/locales";
-import { MAIN_SITE_URL } from "./site";
+import { AUTHOR_EMAIL, MAIN_SITE_URL } from "./site";
 import { absoluteUrl, type ShareImage } from "./site-assets";
 
 /**
@@ -56,12 +56,23 @@ export interface WebSiteNode {
   inLanguage: string;
 }
 
-/** The person who writes it. */
+/** The person who writes it, defined once per document and referenced by id. */
 export interface PersonNode {
   "@type": "Person";
   "@id": string;
   name: string;
   url: string;
+  email: string;
+}
+
+/**
+ * A person named where the article mentions them, for a byline the site's
+ * author is not: no `@id`, because an id promises a node this graph defines,
+ * and there is nothing else to say about a guest - no url, no address.
+ */
+export interface BylinedPerson {
+  "@type": "Person";
+  name: string;
 }
 
 /** The page itself, whatever kind it is. */
@@ -84,7 +95,7 @@ export interface BlogPostingNode {
   image: ImageObject;
   datePublished: string;
   dateModified?: string;
-  author: IdRef;
+  author: IdRef | BylinedPerson;
   inLanguage: string;
   license?: string;
   isPartOf: IdRef;
@@ -193,8 +204,8 @@ export interface PageFacts {
   description: string;
   /** The site's formal name, which the home page's heading shows. */
   siteName: string;
-  /** The author this page states: its byline, or the site's author. */
-  author: string;
+  /** The site's own author, which the graph's `Person` node describes. */
+  siteAuthor: string;
   /** A document of its own, or one of a collection. */
   type: "WebPage" | "CollectionPage";
   /** The nodes only the page can build, appended after its own. */
@@ -228,8 +239,9 @@ export function pageGraph(facts: PageFacts): PageGraph {
       {
         "@type": "Person",
         "@id": personId(site),
-        name: facts.author,
+        name: facts.siteAuthor,
         url: MAIN_SITE_URL,
+        email: AUTHOR_EMAIL,
       },
       {
         "@type": facts.type,
@@ -243,6 +255,38 @@ export function pageGraph(facts: PageFacts): PageGraph {
       ...(facts.nodes ?? []),
     ],
   };
+}
+
+/** What a byline resolves to in the graph. */
+export interface BylineFacts {
+  /** The name the page shows as the article's author. */
+  byline: string;
+  /** The site's own author, which `#person` describes. */
+  siteAuthor: string;
+  /** The locale's site. */
+  site: LocaleSite;
+}
+
+/**
+ * Who a page's byline names, as `BlogPosting.author` writes it.
+ *
+ * The site's author is one entity, defined once per document with an id, a url
+ * and an address; a byline that names someone else is a different person, and
+ * writing this address for them would misattribute it. So a differing byline is
+ * named in place, with no `@id` for the graph to promise a node it does not
+ * define.
+ *
+ * The arguments travel as one object because `byline` and `siteAuthor` are both
+ * bare names, and a swapped pair would silently make a guest the site's author.
+ *
+ * @param facts - The byline the page shows and the author the site is.
+ * @returns A reference to `#person`, or the byline named in place.
+ */
+export function authorNode(facts: BylineFacts): IdRef | BylinedPerson {
+  if (facts.byline === facts.siteAuthor) {
+    return { "@id": personId(facts.site) };
+  }
+  return { "@type": "Person", name: facts.byline };
 }
 
 /** What an article contributes to the graph of the page that renders it. */
@@ -261,6 +305,8 @@ export interface ArticleFacts {
   datePublished: string;
   /** The frontmatter's `updated`, written only when it differs. */
   dateModified?: string;
+  /** Who wrote it, from `authorNode()`: `#person`, or a byline in place. */
+  author: IdRef | BylinedPerson;
   /** The license's URL, when the article's license has a document to point at. */
   license?: string;
 }
@@ -289,7 +335,7 @@ export function articleNode(facts: ArticleFacts): BlogPostingNode {
       height: facts.image.height,
     },
     datePublished: facts.datePublished,
-    author: { "@id": personId(facts.site) },
+    author: facts.author,
     inLanguage: facts.site.tag,
     isPartOf: { "@id": webSiteId(facts.site) },
     mainEntityOfPage: { "@id": webPageId(facts.url) },

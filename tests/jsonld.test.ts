@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Trail } from "../src/breadcrumbs";
 import {
   articleNode,
+  authorNode,
   breadcrumbNode,
   pageGraph,
   serializeGraph,
@@ -24,7 +25,7 @@ const page = {
   name: "A post - Steve Hsu (什五)",
   description: "What the post is about.",
   siteName: "Steve Hsu (什五) 的文章",
-  author: "Steve Hsu (什五)",
+  siteAuthor: "Steve Hsu (什五)",
   type: "WebPage" as const,
 };
 
@@ -43,6 +44,7 @@ const article = {
   image,
   datePublished: "2026-01-01",
   dateModified: "2026-02-02",
+  author: { "@id": "https://example.com/articles/#person" },
   license: "https://creativecommons.org/licenses/by/4.0/",
 };
 
@@ -79,7 +81,7 @@ describe("pageGraph", () => {
       graph,
       0,
     );
-    const person = node<{ name: string; url: string }>(graph, 1);
+    const person = node<{ name: string; url: string; email: string }>(graph, 1);
 
     expect(webSite).toMatchObject({
       name: "Steve Hsu (什五) 的文章",
@@ -89,6 +91,7 @@ describe("pageGraph", () => {
     expect(person).toMatchObject({
       name: "Steve Hsu (什五)",
       url: "https://stevehsudrawing.github.io/",
+      email: "stevehsudrawing@outlook.com",
     });
   });
 
@@ -116,6 +119,49 @@ describe("pageGraph", () => {
       "WebPage",
       "BlogPosting",
     ]);
+  });
+
+  it("describes the site's author alone, whatever a byline says", () => {
+    const graph = pageGraph({
+      ...page,
+      nodes: [
+        articleNode({
+          ...article,
+          author: { "@type": "Person", name: "Regula Felix" },
+        }),
+      ],
+    });
+    const people = graph["@graph"].filter(
+      (entry) => entry["@type"] === "Person",
+    );
+
+    expect(people).toHaveLength(1);
+    expect(people[0]).toMatchObject({
+      name: "Steve Hsu (什五)",
+      email: "stevehsudrawing@outlook.com",
+    });
+  });
+});
+
+describe("authorNode", () => {
+  it("references the site's author while the byline is theirs", () => {
+    const author = authorNode({
+      byline: "Steve Hsu (什五)",
+      siteAuthor: "Steve Hsu (什五)",
+      site,
+    });
+
+    expect(author).toEqual({ "@id": "https://example.com/articles/#person" });
+  });
+
+  it("names a differing byline in place, with no id to resolve", () => {
+    const author = authorNode({
+      byline: "Regula Felix",
+      siteAuthor: "Steve Hsu (什五)",
+      site,
+    });
+
+    expect(author).toEqual({ "@type": "Person", name: "Regula Felix" });
   });
 });
 
@@ -155,6 +201,18 @@ describe("articleNode", () => {
     });
     expect(posting.mainEntityOfPage).toEqual({
       "@id": "https://example.com/articles/zh-hans/2026-01-01-post/#webpage",
+    });
+  });
+
+  it("writes the author it is given rather than always the site's", () => {
+    const posting = articleNode({
+      ...article,
+      author: { "@type": "Person", name: "Regula Felix" },
+    });
+
+    expect(posting.author).toEqual({
+      "@type": "Person",
+      name: "Regula Felix",
     });
   });
 

@@ -3,9 +3,9 @@
  *
  * Each is written once because each has more than one reader: the main site's
  * address reaches the footer's outward link and the graph's `Person` node, and
- * the author's address reaches the feed's `<managingEditor>`. `src/site-assets.ts`
- * is the other kind of fact: the files under `public/` and the URLs that reach
- * them.
+ * the author's address reaches the feed's `<managingEditor>` and that same
+ * `Person` node. `src/site-assets.ts` is the other kind of fact: the files under
+ * `public/` and the URLs that reach them.
  */
 
 /**
@@ -20,7 +20,8 @@ export const MAIN_SITE_URL = "https://stevehsudrawing.github.io/";
  * The address the site's author can be written to.
  *
  * Public: the main site's about card links it as `mailto:`. The feed gives it
- * as the channel's editorial contact, which is the site's own address rather
- * than any article's - a byline may name someone else.
+ * as the channel's editorial contact, and the graph's `Person` node as its
+ * address. Both describe the site's author rather than any article's - a byline
+ * may name someone else, and that person is named in the graph without it.
  */
 export const AUTHOR_EMAIL = "stevehsudrawing@outlook.com";
