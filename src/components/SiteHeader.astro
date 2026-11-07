@@ -39,6 +39,8 @@ interface ThemeOption {
   value: "auto" | "light" | "dark";
   label: string;
   icon: IconName;
+  /** Whether this is the choice the page starts with, which a script may change. */
+  current: boolean;
 }
 
 interface Props {
@@ -141,6 +143,9 @@ const currentLanguage =
                 <Icon name="language" />
               </span>
               <span>{currentLanguage.name}</span>
+              <span class="site-menu-caret text-icon" aria-hidden="true">
+                <Icon name="arrowDropDown" />
+              </span>
             </summary>
             <ul class="dropdown-menu">
               {languages.map((language) => (
@@ -171,12 +176,15 @@ const currentLanguage =
                   <span>{option.label}</span>
                 </span>
               ))}
+              <span class="site-menu-caret text-icon" aria-hidden="true">
+                <Icon name="arrowDropDown" />
+              </span>
             </summary>
             <ul class="dropdown-menu">
               {themes.map((option) => (
                 <li>
                   <button
-                    class="dropdown-item"
+                    class:list={["dropdown-item", { active: option.current }]}
                     type="button"
                     data-theme-option={option.value}
                   >
@@ -184,9 +192,6 @@ const currentLanguage =
                       <Icon name={option.icon} />
                     </span>
                     {option.label}
-                    <span class="site-menu-check text-icon" aria-hidden="true">
-                      <Icon name="check" />
-                    </span>
                   </button>
                 </li>
               ))}
@@ -234,7 +239,7 @@ const currentLanguage =
               {themes.map((option) => (
                 <li class="nav-item">
                   <button
-                    class="nav-link"
+                    class:list={["nav-link", { active: option.current }]}
                     type="button"
                     data-theme-option={option.value}
                   >
@@ -242,9 +247,6 @@ const currentLanguage =
                       <Icon name={option.icon} />
                     </span>
                     {option.label}
-                    <span class="site-menu-check text-icon" aria-hidden="true">
-                      <Icon name="check" />
-                    </span>
                   </button>
                 </li>
               ))}
@@ -409,6 +411,18 @@ const currentLanguage =
     color: var(--bs-link-hover-color);
   }
 
+  /* The caret says what a wide trigger does. It turns while the menu is open -
+     `rotate` rather than a `transform`, so nothing else on the summary is
+     touched - and it carries no transition, because the header is flat. */
+  .site-menu-caret {
+    margin-inline-start: 0.25rem;
+    opacity: 0.75;
+  }
+
+  .site-menu[open] > summary .site-menu-caret {
+    rotate: 180deg;
+  }
+
   .site-header-brand {
     display: flex;
     align-items: center;
@@ -461,10 +475,16 @@ const currentLanguage =
   }
 
   .site-panel {
+    /* Bootstrap's `--bs-offcanvas-padding-*` are declared inside `.offcanvas`,
+       which no page renders any more - and a `var()` with no value makes the
+       whole `padding` shorthand invalid, which computes to 0. The panel owns
+       its own number, and its headings and rows read it. */
+    --site-panel-padding: 1rem;
+
     z-index: 2;
     inline-size: min(320px, 85vw);
     overflow-y: auto;
-    padding: var(--bs-offcanvas-padding-y) 0;
+    padding: var(--site-panel-padding) 0;
     background-color: var(--bs-body-bg);
   }
 
@@ -479,14 +499,14 @@ const currentLanguage =
   }
 
   .site-panel .site-panel-group {
-    padding: 0 var(--bs-offcanvas-padding-x);
+    padding: 0 var(--site-panel-padding);
   }
 
   .site-panel .nav-link {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: var(--bs-nav-link-padding-y) var(--bs-offcanvas-padding-x);
+    padding: var(--bs-nav-link-padding-y) var(--site-panel-padding);
   }
 
   .site-panel .nav-link.active {
@@ -511,18 +531,13 @@ const currentLanguage =
     display: block;
   }
 
-  /* The trigger shows the chosen theme's glyph and label, and the menu marks the
-     chosen item. Both are CSS reading one attribute, so neither needs a render:
-     `auto` is what the markup shows until the theme script says otherwise, and
-     `auto` is the default choice. */
+  /* The trigger shows the chosen theme's glyph and label, which is CSS reading
+     one attribute: `auto` is what the markup shows until the theme script says
+     otherwise, and `auto` is the default choice. The mark inside the menu is
+     `.active`, which the same script writes. */
   .site-theme-option {
     display: none;
     align-items: center;
-  }
-
-  .site-menu-check {
-    margin-inline-start: auto;
-    visibility: hidden;
   }
 
   html[data-theme-choice="light"] .site-theme-option[data-for="light"],
@@ -530,14 +545,6 @@ const currentLanguage =
   html:not([data-theme-choice="light"]):not([data-theme-choice="dark"])
     .site-theme-option[data-for="auto"] {
     display: inline-flex;
-  }
-
-  html[data-theme-choice="light"] [data-theme-option="light"] .site-menu-check,
-  html[data-theme-choice="dark"] [data-theme-option="dark"] .site-menu-check,
-  html:not([data-theme-choice="light"]):not([data-theme-choice="dark"])
-    [data-theme-option="auto"]
-    .site-menu-check {
-    visibility: visible;
   }
 
   .dropdown-item[data-theme-option] {

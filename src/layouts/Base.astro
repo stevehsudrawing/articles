@@ -186,6 +186,9 @@ const themes = (
   value,
   icon,
   label: t(locale, `text-action-theme-${value}`),
+  // `auto` is the theme script's default, so the markup marks the same item a
+  // scriptless page would be showing; the script corrects it on load.
+  current: value === "auto",
 }));
 ---
 
@@ -286,7 +289,9 @@ const themes = (
           // Runs before the body exists when it is called from the head, so it
           // finds nothing then and is called again once the markup is there.
           for (const item of document.querySelectorAll("[data-theme-option]")) {
-            if (item.dataset.themeOption === choice) {
+            const selected = item.dataset.themeOption === choice;
+            item.classList.toggle("active", selected);
+            if (selected) {
               item.setAttribute("aria-current", "true");
             } else {
               item.removeAttribute("aria-current");

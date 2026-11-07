@@ -1,6 +1,7 @@
 // The extracted Material Symbols glyphs, imported once so every component reads
 // the same set. `?raw` keeps the SVG's `currentColor` fill, which is the whole
 // reason the glyphs are inlined rather than served as files.
+import arrowDropDown from "./assets/icons/arrow_drop_down.svg?raw";
 import arrowOutward from "./assets/icons/arrow_outward.svg?raw";
 import arrowUpward from "./assets/icons/arrow_upward.svg?raw";
 import calendarToday from "./assets/icons/calendar_today.svg?raw";
@@ -32,6 +33,7 @@ import warning from "./assets/icons/warning.svg?raw";
 
 /** The glyphs the site uses, by the name the extraction tool wrote. */
 export const ICONS = {
+  arrowDropDown,
   arrowOutward,
   arrowUpward,
   calendarToday,
