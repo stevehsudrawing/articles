@@ -64,6 +64,22 @@ export function listUrl(locale: Locale): string {
 }
 
 /**
+ * The URL of an article's markdown copy in one locale.
+ *
+ * `index.md` beside `index.html` is the derivation llms.txt v2 names for a
+ * directory-style URL, and it is composed from `articleUrl()` rather than
+ * looked up: `getRelativeLocaleUrl(locale, "<id>/index.md")` appends a slash
+ * under `trailingSlash: "always"`, the way it did for the feed's `rss.xml`.
+ *
+ * @param locale - The locale the copy is written in.
+ * @param id - The article's id, which is its folder's name.
+ * @returns The locale-prefixed path of the copy, with no trailing slash.
+ */
+export function mirrorUrl(locale: Locale, id: string): string {
+  return `${articleUrl(locale, id)}index.md`;
+}
+
+/**
  * The images an article's page and its card show, and the size to declare.
  *
  * The hero and the card ask one question - "which files does this article

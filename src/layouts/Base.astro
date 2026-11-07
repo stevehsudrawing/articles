@@ -31,6 +31,7 @@ import {
   serializeGraph,
   type JsonLdNode,
 } from "../jsonld";
+import { llmsUrl } from "../llms";
 import { IMAGES, siteCard, type ShareImage } from "../site-assets";
 import { tagIndexUrl } from "../tags";
 
@@ -80,6 +81,11 @@ interface Props {
    */
   structuredData?: JsonLdNode[];
   /**
+   * The page's markdown copy, when it has one - an article's `index.md`. It is
+   * the layout's to name because the article is the only page kind with a copy.
+   */
+  markdown?: string;
+  /**
    * Where the page sits, for the kinds that show a trail. The layouts render
    * it; this one turns it into the graph's `BreadcrumbList`, so no layout
    * assembles structured data by hand.
@@ -100,6 +106,7 @@ const {
   ogType = "website",
   alternates = [],
   structuredData,
+  markdown,
   trail,
 } = Astro.props;
 
@@ -223,6 +230,17 @@ const themes = (
           title={siteName}
           href={absolute(feedUrl(locale))}
         />
+        {/* The page's copy in the author's own markdown, where it has one, and
+            the file that lists every page - both the relations llms.txt v2
+            recommends, and both advertisements like the feed's. */}
+        {markdown && (
+          <link
+            rel="alternate"
+            type="text/markdown"
+            href={absolute(markdown)}
+          />
+        )}
+        <link rel="describedby" href={absolute(llmsUrl())} />
         <meta property="og:site_name" content={siteName} />
         <meta property="og:title" content={documentTitle} />
         <meta property="og:description" content={description} />
