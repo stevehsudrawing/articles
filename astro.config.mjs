@@ -3,13 +3,14 @@ import vue from "@astrojs/vue";
 import { satteri } from "@astrojs/markdown-satteri";
 import { defaultLocale, localeIdentities } from "./src/i18n/locales.ts";
 import { markdownAlerts, markdownStep } from "./src/markdown.ts";
+import { BASE, SITE } from "./site.config.mjs";
 
-// `site` and `base` are the single home of the deployment location: every URL
-// and asset URL is built from them, and no absolute site URL is written
-// anywhere else.
+// `site` and `base` come from `site.config.mjs`, the single home of the
+// deployment location: every URL and asset URL is built from them, and no
+// absolute site URL is written anywhere else.
 export default defineConfig({
-  site: "https://stevehsudrawing.github.io",
-  base: "/articles",
+  site: SITE,
+  base: BASE,
   trailingSlash: "always",
   // The interaction layer: Vue renders the shell's one island. `vue()` takes no
   // `appEntrypoint`, because the plugin that option exists for registers no

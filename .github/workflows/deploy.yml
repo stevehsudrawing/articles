@@ -57,10 +57,15 @@ jobs:
       - name: Build the site
         run: pnpm build
 
-      # Late on purpose: the four checks report on their own before anything
-      # reads the Pages configuration, and a repository whose Pages is
-      # misconfigured fails here by name rather than with the deploy action's
-      # generic error.
+      # After the build because it reads `dist/`, and before the Pages step
+      # because a broken promise in the output should fail on its own terms
+      # rather than as somebody else's error.
+      - name: Audit the built output
+        run: pnpm audit:dist
+
+      # Late on purpose: the checks report on their own before anything reads
+      # the Pages configuration, and a repository whose Pages is misconfigured
+      # fails here by name rather than with the deploy action's generic error.
       - name: Read the Pages configuration
         uses: actions/configure-pages@v6
 

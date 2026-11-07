@@ -10,7 +10,8 @@
     "typecheck": "astro check && vue-tsc --noEmit",
     "format": "prettier . --write",
     "prepare": "husky",
-    "test": "vitest run"
+    "test": "vitest run",
+    "audit:dist": "node scripts/audit-dist.mjs"
   },
   "lint-staged": {
     "**/*": [
