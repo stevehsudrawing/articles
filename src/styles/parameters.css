@@ -29,15 +29,14 @@
      nothing that matters. */
   --shar-z-header: 1030;
 
-  /* The tools bar's layer: above page content, below the header, the offcanvas
-     backdrop and the panels, so an open panel dims the bar with the page
+  /* The tools bar's layer: above page content and below the header, which is
+     one stacking context, so an open panel's scrim dims this bar with the page
      instead of the bar floating over it. */
   --shar-z-tools: 1020;
 
-  /* The skip link's layer: above the header it skips, below Bootstrap's
-     offcanvas backdrop at 1040 and the panel at 1045 - a panel traps focus
-     while it is open, so a link over its backdrop would be a control nobody
-     can reach. */
+  /* The skip link's layer: above the header it skips, which includes the
+     header's own scrim and panel - those sit in the header's context at 1030,
+     and a link whose job is to skip the header belongs above all of it. */
   --shar-z-skip: 1035;
 
   /* The focus ring is a hard outline, never a shadow. */

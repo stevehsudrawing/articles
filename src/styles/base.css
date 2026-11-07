@@ -28,6 +28,16 @@ html {
   }
 }
 
+/* A narrow panel holds the page still while it is open. The lock lives inside
+   the breakpoint because the panel only exists below it: a panel left open
+   across the breakpoint is `display: none`, and a lock outside the query would
+   leave a page that cannot scroll with nothing on screen to release it. */
+@media (max-width: 767.98px) {
+  html:has(.site-menu-panel[open]) {
+    overflow: hidden;
+  }
+}
+
 /* --- Bootstrap variable overrides --- */
 
 :root {
@@ -506,48 +516,6 @@ pre code {
   --bs-dropdown-link-active-bg: var(--bs-primary);
   --bs-dropdown-link-active-color: var(--shar-primary-contrast);
   box-shadow: var(--bs-box-shadow);
-}
-
-/* --- Offcanvas --- */
-
-.offcanvas-header {
-  padding-bottom: 0;
-}
-
-.offcanvas-body {
-  padding: var(--bs-offcanvas-padding-y) 0;
-}
-
-.offcanvas-body > .site-panel-group {
-  padding: 0 var(--bs-offcanvas-padding-x);
-}
-
-.offcanvas-body .nav-link {
-  width: 100%;
-  text-align: left;
-  padding: var(--bs-nav-link-padding-y) var(--bs-offcanvas-padding-x);
-}
-
-.offcanvas-body .nav-link.active {
-  background-color: var(--bs-tertiary-bg);
-}
-
-/* --- Backdrops --- */
-
-.offcanvas-backdrop {
-  --bs-backdrop-bg: var(--bs-body-bg);
-  --bs-backdrop-bg-rgb: var(--bs-body-bg-rgb);
-  --bs-backdrop-opacity: 0.75;
-  background-color: rgba(var(--bs-backdrop-bg-rgb), 0);
-  transition:
-    background-color 0.15s linear,
-    backdrop-filter 0.15s linear;
-}
-
-.offcanvas-backdrop.show {
-  background-color: rgba(var(--bs-backdrop-bg-rgb), var(--bs-backdrop-opacity));
-  opacity: 1;
-  backdrop-filter: blur(0.5rem);
 }
 
 /* --- Pagination ---

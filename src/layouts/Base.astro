@@ -14,7 +14,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import { listUrl } from "../articles";
 import type { Trail } from "../breadcrumbs";
 import SiteFooter from "../components/SiteFooter.astro";
-import SiteHeader from "../components/SiteHeader.vue";
+import SiteHeader from "../components/SiteHeader.astro";
 import SiteIcons from "../components/SiteIcons.astro";
 import { feedUrl } from "../feed";
 import { t } from "../i18n/messages";
@@ -44,7 +44,7 @@ interface Props {
    * Whether the page renders the site's minimal chrome: no header, and a
    * one-line colophon instead of the banded footer. The error page is the only
    * caller - it is reached on a wrong address and offers one way back, so it
-   * neither needs the navigation nor should pay an island for it.
+   * needs neither the navigation nor the theme control that rides with it.
    */
   minimal?: boolean;
   /** The page's introduction: the hero's lede, and the card's text. */
@@ -266,8 +266,13 @@ const themes = (
       // The theme has to be a concrete value before the first paint: Bootstrap
       // ships no automatic dark mode, so `auto` is resolved here and a system
       // change is followed while the page is open. This script owns the theme -
-      // the header island only writes the stored choice and fires `shar:theme` -
+      // the stored choice is written here, the resolved one is applied here -
       // so the rule lives in one place rather than in two.
+      //
+      // `data-theme-choice` is the choice itself, which the header's markup
+      // reads to show the chosen theme's glyph and label, and `data-bs-theme`
+      // is what the page renders in. They differ while `auto` resolves to a
+      // side of the system preference, which is why both are written.
       (() => {
         const system = matchMedia("(prefers-color-scheme: dark)");
         const apply = () => {
@@ -276,10 +281,29 @@ const themes = (
             stored === "light" || stored === "dark" ? stored : "auto";
           document.documentElement.dataset.bsTheme =
             choice === "auto" ? (system.matches ? "dark" : "light") : choice;
+          document.documentElement.dataset.themeChoice = choice;
+
+          // Runs before the body exists when it is called from the head, so it
+          // finds nothing then and is called again once the markup is there.
+          for (const item of document.querySelectorAll("[data-theme-option]")) {
+            if (item.dataset.themeOption === choice) {
+              item.setAttribute("aria-current", "true");
+            } else {
+              item.removeAttribute("aria-current");
+            }
+          }
         };
         apply();
+        document.addEventListener("DOMContentLoaded", apply);
         system.addEventListener("change", apply);
-        document.addEventListener("shar:theme", apply);
+        document.addEventListener("click", (event) => {
+          const chosen = event.target.closest("[data-theme-option]");
+          if (!chosen) return;
+
+          localStorage.setItem("theme", chosen.dataset.themeOption);
+          chosen.closest("details").open = false;
+          apply();
+        });
       })();
     </script>
   </head>
@@ -301,13 +325,11 @@ const themes = (
         {t(locale, "text-action-skip-to-content")}
       </a>
     )}
-    {/* The header is the site's one island, so it is the whole reason any page
-        carries JavaScript: the minimal chrome is a page that ships none.
-        Measured on the error page - 41 KB gzip with the island, 1.6 KB
-        without. */}
+    {/* The header is markup, not an island: it is rendered here and needs
+        nothing in the browser, so a page's only script is the theme's, inlined
+        in the head above. The minimal chrome leaves the header out entirely. */}
     {!minimal && (
       <SiteHeader
-        client:idle
         siteName={siteName}
         nav={nav}
         languages={languages}
@@ -315,7 +337,6 @@ const themes = (
         themeLabel={t(locale, "text-action-theme")}
         menuLabel={t(locale, "text-action-menu")}
         settingsLabel={t(locale, "text-action-settings")}
-        closeLabel={t(locale, "text-action-close")}
         themes={themes}
       />
     )}

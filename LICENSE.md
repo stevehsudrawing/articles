@@ -27,27 +27,14 @@ documentation in this repository, except for the material excluded in
   it, served from `public/licenses/`. Every other dependency is a build-time
   tool whose output is a file in the build, never code in it.
 
-| Work                                                               | Use                                                                                                              | License                   | Copyright                                           |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------- |
-| [Astro](public/licenses/astro-LICENSE.txt)                         | The island loader inlined into every page that has one, and `@astrojs/vue`'s client renderer                     | MIT                       | Copyright (c) 2021 Fred K. Schott                   |
-| [Bootstrap](public/licenses/bootstrap-LICENSE.txt)                 | The compiled CSS: Reboot, the grid and the utilities                                                             | MIT                       | Copyright (c) 2011-2025 The Bootstrap Authors       |
-| [BootstrapVueNext](public/licenses/bootstrap-vue-next-LICENSE.txt) | The header island's dropdowns and offcanvas                                                                      | MIT                       | Copyright (c) BootstrapVueNext                      |
-| [Floating UI](public/licenses/floating-ui-LICENSE.txt)             | The positioning engine, inside BootstrapVueNext's own bundle: `core`, `dom`, `utils` and `vue`                   | MIT                       | Copyright (c) 2021-present Floating UI contributors |
-| [focus-trap](public/licenses/focus-trap-LICENSE.txt)               | The focus trap that keeps a keyboard inside the open offcanvas                                                   | MIT                       | Copyright (c) 2015-2016 David Clark                 |
-| [Prism](public/licenses/prism-themes-LICENSE.txt)                  | The fenced-code syntax theme in `src/styles/syntax.css`, adapted from prism-themes' One Light and One Dark       | MIT                       | Copyright (c) 2015 PrismJS                          |
-| [tabbable](public/licenses/tabbable-LICENSE.txt)                   | The tabbable-node walk the trap is built on                                                                      | MIT                       | Copyright (c) 2015 David Clark                      |
-| [Vue](public/licenses/vue-LICENSE.txt)                             | The island's runtime: the DOM renderer, the reactive core and the hydrator                                       | MIT                       | Copyright (c) 2018-present, Yuxi (Evan) You         |
-| [VueUse](public/licenses/vueuse-LICENSE.txt)                       | The key, click-outside, breakpoint and DOM helpers, inside that same bundle: `core`, `shared` and `integrations` | MIT                       | Copyright (c) 2019-present Anthony Fu               |
-| [Inter](public/licenses/inter-LICENSE.txt)                         | The Latin webfonts for prose, and the `@font-face` rules that serve them                                         | SIL Open Font License 1.1 | Copyright (c) 2016 The Inter Project Authors        |
-| [Roboto Mono](public/licenses/roboto-mono-LICENSE.txt)             | The Latin webfonts for code, and the `@font-face` rules that serve them                                          | SIL Open Font License 1.1 | Copyright (c) 2015 The Roboto Mono Project Authors  |
-| [Source Serif 4](public/licenses/source-serif-4-LICENSE.txt)       | The Latin webfonts for the article's serif face, and the `@font-face` rules that serve them                      | SIL Open Font License 1.1 | Copyright 2014 The Source Serif 4 Project Authors   |
-| [Material Symbols](public/licenses/material-symbols-LICENSE.txt)   | The icon SVGs in `src/assets/icons/`, extracted from the Sharp font as glyph outlines                            | Apache License 2.0        | Copyright Google LLC                                |
-
-Six of those arrive through another work's bundle rather than through this
-repository's dependencies: BootstrapVueNext publishes Floating UI's, VueUse's,
-focus-trap's and tabbable's code inside its own, and Astro's loader is written
-into the page instead of being served from `_astro/`. They are listed separately
-because they are separate works, and each ships its own license text.
+| Work                                                             | Use                                                                                                        | License                   | Copyright                                          |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------------------------------- |
+| [Bootstrap](public/licenses/bootstrap-LICENSE.txt)               | The compiled CSS: Reboot, the grid and the utilities                                                       | MIT                       | Copyright (c) 2011-2025 The Bootstrap Authors      |
+| [Prism](public/licenses/prism-themes-LICENSE.txt)                | The fenced-code syntax theme in `src/styles/syntax.css`, adapted from prism-themes' One Light and One Dark | MIT                       | Copyright (c) 2015 PrismJS                         |
+| [Inter](public/licenses/inter-LICENSE.txt)                       | The Latin webfonts for prose, and the `@font-face` rules that serve them                                   | SIL Open Font License 1.1 | Copyright (c) 2016 The Inter Project Authors       |
+| [Roboto Mono](public/licenses/roboto-mono-LICENSE.txt)           | The Latin webfonts for code, and the `@font-face` rules that serve them                                    | SIL Open Font License 1.1 | Copyright (c) 2015 The Roboto Mono Project Authors |
+| [Source Serif 4](public/licenses/source-serif-4-LICENSE.txt)     | The Latin webfonts for the article's serif face, and the `@font-face` rules that serve them                | SIL Open Font License 1.1 | Copyright 2014 The Source Serif 4 Project Authors  |
+| [Material Symbols](public/licenses/material-symbols-LICENSE.txt) | The icon SVGs in `src/assets/icons/`, extracted from the Sharp font as glyph outlines                      | Apache License 2.0        | Copyright Google LLC                               |
 
 ## 3. Permitted Use
 

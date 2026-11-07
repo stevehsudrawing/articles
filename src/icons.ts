@@ -1,7 +1,6 @@
-// The extracted Material Symbols glyphs, imported once so both an Astro
-// component and the header island read the same set. `?raw` keeps the SVG's
-// `currentColor` fill, which is the whole reason the glyphs are inlined rather
-// than served as files.
+// The extracted Material Symbols glyphs, imported once so every component reads
+// the same set. `?raw` keeps the SVG's `currentColor` fill, which is the whole
+// reason the glyphs are inlined rather than served as files.
 import arrowOutward from "./assets/icons/arrow_outward.svg?raw";
 import arrowUpward from "./assets/icons/arrow_upward.svg?raw";
 import calendarToday from "./assets/icons/calendar_today.svg?raw";

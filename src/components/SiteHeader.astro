@@ -1,0 +1,547 @@
+---
+// The header is markup: the bar, the navigation and the two controls, built
+// from Bootstrap's classes and `<details>` rather than from components. A
+// `<summary>` is a disclosure control the platform already has - it is
+// keyboard-operable and it carries its own expanded state - so the page ships
+// no script for any of this, and the one script at the end of the file only
+// adds the closing gestures the element does not have.
+//
+// Wide: one row - the mark, the navigation, then the two dropdowns.
+// Narrow: the same 64 px row with the mark centered, a menu button on the left
+// and a settings button on the right, so the navigation and the two settings
+// live in two panels. A panel rather than a list that grows the bar, because
+// `--shar-header-height` is what the sticky header, the article's sidebar and
+// `scroll-padding-top` all read, and a list that grew the header would make
+// every one of them wrong while it was open.
+import mark from "../assets/brand/mark.svg?raw";
+import type { IconName } from "../icons";
+import Icon from "./Icon.astro";
+
+/** One link in the header's navigation. */
+interface NavLink {
+  href: string;
+  label: string;
+  current: boolean;
+}
+
+/** One entry in the language switcher. */
+interface LanguageLink {
+  /** The BCP-47 tag, for `hreflang`. */
+  tag: string;
+  /** The language's own name. */
+  name: string;
+  href: string;
+  current: boolean;
+}
+
+/** One theme choice. */
+interface ThemeOption {
+  value: "auto" | "light" | "dark";
+  label: string;
+  icon: IconName;
+}
+
+interface Props {
+  /** The site's name, which titles the navigation panel. */
+  siteName: string;
+  /** The navigation's links, in order. */
+  nav: NavLink[];
+  /** The same page in every locale. */
+  languages: LanguageLink[];
+  /** The language control's name, in the dropdown and in the panel. */
+  languageLabel: string;
+  /** The theme group's name inside the settings panel. */
+  themeLabel: string;
+  /** The narrow-screen menu button's accessible name. */
+  menuLabel: string;
+  /** The settings button's accessible name, and the panel's title. */
+  settingsLabel: string;
+  /** The three theme choices, in the main site's order. */
+  themes: ThemeOption[];
+}
+
+const {
+  siteName,
+  nav,
+  languages,
+  languageLabel,
+  themeLabel,
+  menuLabel,
+  settingsLabel,
+  themes,
+} = Astro.props;
+
+const currentLanguage =
+  languages.find((entry) => entry.current) ?? languages[0];
+---
+
+<header class="site-header sticky-top bg-body">
+  <nav class="navbar navbar-expand-md">
+    {/* Below `md` this is a grid: the two buttons take the outer columns and
+        the mark takes the middle one. At `md` it is Bootstrap's flex row. */}
+    <div class="container site-header-row d-grid d-md-flex align-items-center">
+      <details
+        class="site-menu site-menu-panel site-menu-nav d-md-none"
+        id="site-nav"
+        name="site-menu"
+      >
+        <summary class="site-header-control" aria-label={menuLabel}>
+          <span class="text-icon" aria-hidden="true">
+            <Icon name="menu" />
+          </span>
+        </summary>
+        <div class="site-panel-scrim" data-menu-scrim aria-hidden="true"></div>
+        <div class="site-panel">
+          <h6 class="site-panel-group">{siteName}</h6>
+          <ul class="navbar-nav">
+            {nav.map((link) => (
+              <li class="nav-item">
+                <a
+                  class:list={["nav-link", { active: link.current }]}
+                  href={link.href}
+                  aria-current={link.current ? "page" : undefined}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
+
+      <a
+        class="navbar-brand site-header-brand m-0"
+        href={nav[0].href}
+        aria-label={siteName}
+      >
+        <span class="site-header-mark" aria-hidden="true">
+          <Fragment set:html={mark} />
+        </span>
+      </a>
+
+      <ul class="navbar-nav d-none d-md-flex me-auto ms-2">
+        {nav.map((link) => (
+          <li class="nav-item">
+            <a
+              class:list={["nav-link", { active: link.current }]}
+              href={link.href}
+              aria-current={link.current ? "page" : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <ul class="navbar-nav d-none d-md-flex">
+        <li class="nav-item dropdown">
+          <details class="site-menu">
+            <summary class="nav-link">
+              <span class="text-icon me-1" aria-hidden="true">
+                <Icon name="language" />
+              </span>
+              <span>{currentLanguage.name}</span>
+            </summary>
+            <ul class="dropdown-menu">
+              {languages.map((language) => (
+                <li>
+                  <a
+                    class:list={["dropdown-item", { active: language.current }]}
+                    href={language.href}
+                    lang={language.tag}
+                    hreflang={language.tag}
+                    aria-current={language.current ? "true" : undefined}
+                  >
+                    {language.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </li>
+
+        <li class="nav-item dropdown" data-theme-group hidden>
+          <details class="site-menu">
+            <summary class="nav-link">
+              {themes.map((option) => (
+                <span class="site-theme-option" data-for={option.value}>
+                  <span class="text-icon me-1" aria-hidden="true">
+                    <Icon name={option.icon} />
+                  </span>
+                  <span>{option.label}</span>
+                </span>
+              ))}
+            </summary>
+            <ul class="dropdown-menu">
+              {themes.map((option) => (
+                <li>
+                  <button
+                    class="dropdown-item"
+                    type="button"
+                    data-theme-option={option.value}
+                  >
+                    <span class="text-icon me-2" aria-hidden="true">
+                      <Icon name={option.icon} />
+                    </span>
+                    {option.label}
+                    <span class="site-menu-check text-icon" aria-hidden="true">
+                      <Icon name="check" />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </li>
+      </ul>
+
+      <details
+        class="site-menu site-menu-panel site-menu-settings d-md-none"
+        id="site-settings"
+        name="site-menu"
+      >
+        <summary class="site-header-control" aria-label={settingsLabel}>
+          <span class="text-icon" aria-hidden="true">
+            <Icon name="settings" />
+          </span>
+        </summary>
+        <div class="site-panel-scrim" data-menu-scrim aria-hidden="true"></div>
+        <div class="site-panel">
+          <h6 class="site-panel-group" id="site-settings-language">
+            {languageLabel}
+          </h6>
+          <ul class="navbar-nav" aria-labelledby="site-settings-language">
+            {languages.map((language) => (
+              <li class="nav-item">
+                <a
+                  class:list={["nav-link", { active: language.current }]}
+                  href={language.href}
+                  lang={language.tag}
+                  hreflang={language.tag}
+                  aria-current={language.current ? "true" : undefined}
+                >
+                  {language.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <div data-theme-group hidden>
+            <h6 class="site-panel-group mt-3" id="site-settings-theme">
+              {themeLabel}
+            </h6>
+            <ul class="navbar-nav" aria-labelledby="site-settings-theme">
+              {themes.map((option) => (
+                <li class="nav-item">
+                  <button
+                    class="nav-link"
+                    type="button"
+                    data-theme-option={option.value}
+                  >
+                    <span class="text-icon me-2" aria-hidden="true">
+                      <Icon name={option.icon} />
+                    </span>
+                    {option.label}
+                    <span class="site-menu-check text-icon" aria-hidden="true">
+                      <Icon name="check" />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </details>
+    </div>
+  </nav>
+</header>
+
+<script is:inline>
+  // A `<details>` opens and closes from its own summary and from nothing else,
+  // so the three closing gestures a reader expects from a menu are added here:
+  // Escape, a click on the scrim behind a panel, and a click outside a wide
+  // dropdown. Inline rather than bundled, because a bundled script is a file
+  // every page downloads.
+  (() => {
+    // A theme choice cannot work without script, so the control it would drive
+    // is rendered with `hidden` and appears only once a script has run. This is
+    // the earliest such script, so nothing flashes.
+    for (const group of document.querySelectorAll("[data-theme-group]")) {
+      group.hidden = false;
+    }
+
+    const openMenus = () =>
+      document.querySelectorAll("details.site-menu[open]");
+
+    // `name` already makes the four menus exclusive in current browsers; this
+    // is the same rule for the ones that predate the attribute.
+    for (const menu of document.querySelectorAll("details.site-menu")) {
+      menu.addEventListener("toggle", () => {
+        if (!menu.open) return;
+
+        for (const other of openMenus()) {
+          if (other !== menu) other.open = false;
+        }
+      });
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+
+      for (const menu of openMenus()) {
+        menu.open = false;
+        menu.querySelector("summary").focus();
+      }
+    });
+
+    // A click inside a menu is that menu's own business - on its summary it
+    // toggles, on a link it navigates. A click on the scrim or outside closes.
+    document.addEventListener("click", (event) => {
+      for (const menu of openMenus()) {
+        if (menu.contains(event.target)) {
+          if (!event.target.closest("[data-menu-scrim]")) continue;
+        }
+
+        menu.open = false;
+      }
+    });
+  })();
+</script>
+
+<style scoped>
+  /* The header's own layer and its height come from `parameters.css`, so the
+     sticky offset, the sidebar's offset and `scroll-padding-top` cannot drift
+     apart - which is why the narrow layout is a panel rather than something that
+     grows the bar. */
+  .site-header {
+    height: var(--shar-header-height);
+    z-index: var(--shar-z-header);
+
+    /* The seam under the bar, drawn once the page is scrolled. The border is
+       always there at its final width and only its color moves, so the bar's
+       height never changes and `--shar-header-height` stays the one number the
+       sticky offset, the contents' `max-height` and `scroll-padding-top` read.
+
+       `animation-range: 0 1px` compresses the whole timeline into the page's
+       first pixel, which makes "scrolled past the top" and "progress 100%" the
+       same fact; `fill: both` holds it for the rest of the scroll. A 0s duration
+       with a single `to` keyframe would instead say "this page can scroll" - it
+       draws the line at the top of a long page, where the header is still in flow
+       and nothing is under it, and it keeps the line after a viewport resize
+       makes the page stop overflowing.
+
+       Longhands, never the `animation` shorthand: folding it together with
+       `animation-timeline` produces grammar the browser rejects and the whole
+       declaration disappears. And no `transition`: an animation in effect
+       outranks one on the same property, so it would never run - which is also
+       why nothing here needs a reduced-motion guard. */
+    border-bottom: var(--bs-border-width) solid transparent;
+    animation-name: shar-header-edge;
+    animation-duration: auto;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 1px;
+  }
+
+  @keyframes shar-header-edge {
+    from {
+      border-bottom-color: transparent;
+    }
+
+    to {
+      border-bottom-color: var(--bs-border-color);
+    }
+  }
+
+  .site-header .navbar,
+  .site-header-row {
+    height: 100%;
+  }
+
+  /* Below `md` the two buttons take the outer columns, so the mark in the middle
+     one is centered whatever width the glyphs happen to have. Bootstrap's own
+     `-md` breakpoint is `max-width: 767.98px`. */
+  @media (max-width: 767.98px) {
+    .site-header-row {
+      grid-template-columns: 1fr auto 1fr;
+    }
+  }
+
+  /* A `summary` is a control, so it takes the bar button's box rather than a
+     list item's: the marker goes, and the glyph and the label share a row. */
+  .site-header-control {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 1.5rem;
+    padding: 0;
+    border: 0;
+    line-height: 1;
+    color: rgba(var(--bs-body-color-rgb), 0.8);
+    background-color: transparent;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .site-header-control::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The settings button is the row's last column, so its glyph sits against the
+     right edge whatever the grid's fractions are. */
+  .site-menu-settings {
+    justify-self: end;
+  }
+
+  .site-menu > summary.nav-link {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .site-menu > summary.nav-link::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The open state is what Bootstrap's `.show` said, said by the element itself. */
+  .site-menu[open] > summary {
+    color: var(--bs-link-hover-color);
+  }
+
+  .site-header-brand {
+    display: flex;
+    align-items: center;
+  }
+
+  .site-header-mark {
+    font-size: 2rem;
+    color: var(--bs-primary);
+  }
+
+  /* `set:html` output carries no scope attribute, so the mark's own element is
+     named globally - the wrapper is what limits it to this component. */
+  .site-header-mark :global(svg) {
+    display: block;
+    width: 1em;
+    height: 1em;
+  }
+
+  /* The baseline correction every glyph here needs is `.text-icon` in `base.css`,
+     which the cards, the alerts and the footer share. What the header adds is the
+     size: a hair larger than the text the glyph sits beside. */
+  .text-icon :global(svg) {
+    display: block;
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  /* Below `md` the mark is the whole brand and stands alone in the bar; at `md`
+     it sits beside the navigation and takes the text's size. */
+  @media (min-width: 768px) {
+    .site-header-mark {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* The panel begins where the bar ends: its summary is its only close control,
+     so the bar has to stay reachable. Being out of the flow is also what keeps
+     the bar's height a fact while a panel is open. */
+  .site-panel,
+  .site-panel-scrim {
+    position: fixed;
+    inset-block: var(--shar-header-height) 0;
+  }
+
+  .site-panel-scrim {
+    inset-inline: 0;
+    z-index: 1;
+    background-color: rgba(var(--bs-body-bg-rgb), 0.75);
+    backdrop-filter: blur(0.5rem);
+  }
+
+  .site-panel {
+    z-index: 2;
+    inline-size: min(320px, 85vw);
+    overflow-y: auto;
+    padding: var(--bs-offcanvas-padding-y) 0;
+    background-color: var(--bs-body-bg);
+  }
+
+  .site-menu-nav > .site-panel {
+    inset-inline-start: 0;
+    border-inline-end: var(--shar-border);
+  }
+
+  .site-menu-settings > .site-panel {
+    inset-inline-end: 0;
+    border-inline-start: var(--shar-border);
+  }
+
+  .site-panel .site-panel-group {
+    padding: 0 var(--bs-offcanvas-padding-x);
+  }
+
+  .site-panel .nav-link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: var(--bs-nav-link-padding-y) var(--bs-offcanvas-padding-x);
+  }
+
+  .site-panel .nav-link.active {
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  .site-panel-group {
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* `display: none` is Bootstrap's own value for a closed dropdown, so the open
+     state is one rule rather than a second component. */
+  .site-menu > .dropdown-menu {
+    inset-block-start: 100%;
+    inset-inline-start: 0;
+  }
+
+  .site-menu[open] > .dropdown-menu {
+    display: block;
+  }
+
+  /* The trigger shows the chosen theme's glyph and label, and the menu marks the
+     chosen item. Both are CSS reading one attribute, so neither needs a render:
+     `auto` is what the markup shows until the theme script says otherwise, and
+     `auto` is the default choice. */
+  .site-theme-option {
+    display: none;
+    align-items: center;
+  }
+
+  .site-menu-check {
+    margin-inline-start: auto;
+    visibility: hidden;
+  }
+
+  html[data-theme-choice="light"] .site-theme-option[data-for="light"],
+  html[data-theme-choice="dark"] .site-theme-option[data-for="dark"],
+  html:not([data-theme-choice="light"]):not([data-theme-choice="dark"])
+    .site-theme-option[data-for="auto"] {
+    display: inline-flex;
+  }
+
+  html[data-theme-choice="light"] [data-theme-option="light"] .site-menu-check,
+  html[data-theme-choice="dark"] [data-theme-option="dark"] .site-menu-check,
+  html:not([data-theme-choice="light"]):not([data-theme-choice="dark"])
+    [data-theme-option="auto"]
+    .site-menu-check {
+    visibility: visible;
+  }
+
+  .dropdown-item[data-theme-option] {
+    display: flex;
+    align-items: center;
+  }
+</style>

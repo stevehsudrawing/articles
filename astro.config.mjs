@@ -1,5 +1,4 @@
 import { defineConfig } from "astro/config";
-import vue from "@astrojs/vue";
 import { satteri } from "@astrojs/markdown-satteri";
 import { defaultLocale, localeIdentities } from "./src/i18n/locales.ts";
 import { markdownAlerts, markdownStep } from "./src/markdown.ts";
@@ -12,10 +11,6 @@ export default defineConfig({
   site: SITE,
   base: BASE,
   trailingSlash: "always",
-  // The interaction layer: Vue renders the shell's one island. `vue()` takes no
-  // `appEntrypoint`, because the plugin that option exists for registers no
-  // components - BootstrapVueNext is imported by the component that uses it.
-  integrations: [vue()],
   i18n: {
     defaultLocale,
     locales: localeIdentities,
