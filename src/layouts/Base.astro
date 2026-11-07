@@ -11,19 +11,13 @@ import "../styles/fonts.css";
 import "../styles/base.css";
 import "../styles/syntax.css";
 import { getRelativeLocaleUrl } from "astro:i18n";
-import { listUrl } from "../articles";
 import type { Trail } from "../breadcrumbs";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteIcons from "../components/SiteIcons.astro";
 import { feedUrl } from "../feed";
 import { t } from "../i18n/messages";
-import {
-  defaultLocale,
-  getLocale,
-  locales,
-  type Locale,
-} from "../i18n/locales";
+import { defaultLocale, getLocale, type Locale } from "../i18n/locales";
 import {
   breadcrumbNode,
   localeSite,
@@ -33,7 +27,6 @@ import {
 } from "../jsonld";
 import { llmsUrl } from "../llms";
 import { IMAGES, siteCard, type ShareImage } from "../site-assets";
-import { tagIndexUrl } from "../tags";
 
 interface Props {
   /** The locale whose language and BCP-47 tag the document carries. */
@@ -154,42 +147,6 @@ const graph = pageGraph({
   ],
 });
 const jsonLd = serializeGraph(graph);
-
-// The list's own URL is its first page: `/page/` exists only as a redirect, and
-// no in-site link should need one. The tag index follows the same shape, and
-// both paths come from the modules that build them, because the breadcrumb is
-// their third reader.
-const nav = [
-  { kind: "home", href: getRelativeLocaleUrl(locale, "") },
-  { kind: "list", href: listUrl(locale) },
-  { kind: "tags", href: tagIndexUrl(locale) },
-].map(({ kind, href }) => ({
-  href,
-  label: t(locale, `text-nav-${kind}`),
-  current: page === kind,
-}));
-
-const languages = locales.map((other) => ({
-  tag: other.tag,
-  name: other.name,
-  href: getRelativeLocaleUrl(other.identity, path),
-  current: other.identity === locale,
-}));
-
-const themes = (
-  [
-    ["auto", "contrast"],
-    ["light", "lightMode"],
-    ["dark", "darkMode"],
-  ] as const
-).map(([value, icon]) => ({
-  value,
-  icon,
-  label: t(locale, `text-action-theme-${value}`),
-  // `auto` is the theme script's default, so the markup marks the same item a
-  // scriptless page would be showing; the script corrects it on load.
-  current: value === "auto",
-}));
 ---
 
 <!doctype html>
@@ -333,18 +290,7 @@ const themes = (
     {/* The header is markup, not an island: it is rendered here and needs
         nothing in the browser, so a page's only script is the theme's, inlined
         in the head above. The minimal chrome leaves the header out entirely. */}
-    {!minimal && (
-      <SiteHeader
-        siteName={siteName}
-        nav={nav}
-        languages={languages}
-        languageLabel={t(locale, "text-action-language")}
-        themeLabel={t(locale, "text-action-theme")}
-        menuLabel={t(locale, "text-action-menu")}
-        settingsLabel={t(locale, "text-action-settings")}
-        themes={themes}
-      />
-    )}
+    {!minimal && <SiteHeader locale={locale} page={page} path={path} />}
     {/* `d-flex flex-column` is what lets a page's own bottom strip - the
         pagination band `Page.astro` renders - park itself with `mt-auto`. */}
     <main id="page-content" class="flex-grow-1 d-flex flex-column">

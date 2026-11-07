@@ -13,8 +13,13 @@
 // `--shar-header-height` is what the sticky header, the article's sidebar and
 // `scroll-padding-top` all read, and a list that grew the header would make
 // every one of them wrong while it was open.
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { listUrl } from "../articles";
 import mark from "../assets/brand/mark.svg?raw";
+import { locales, type Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
 import type { IconName } from "../icons";
+import { tagIndexUrl } from "../tags";
 import Icon from "./Icon.astro";
 
 /** One link in the header's navigation. */
@@ -44,34 +49,61 @@ interface ThemeOption {
 }
 
 interface Props {
-  /** The site's name, which titles the navigation panel. */
-  siteName: string;
-  /** The navigation's links, in order. */
-  nav: NavLink[];
-  /** The same page in every locale. */
-  languages: LanguageLink[];
-  /** The language control's name, in the dropdown and in the panel. */
-  languageLabel: string;
-  /** The theme group's name inside the settings panel. */
-  themeLabel: string;
-  /** The narrow-screen menu button's accessible name. */
-  menuLabel: string;
-  /** The settings button's accessible name, and the panel's title. */
-  settingsLabel: string;
-  /** The three theme choices, in the main site's order. */
-  themes: ThemeOption[];
+  /** The locale the page is written in; every label and link follows it. */
+  locale: Locale;
+  /**
+   * Which of the header's items this page is, for `aria-current`. A page kind
+   * declares it, because the address does not answer it: a tag page's URL is
+   * `/tags/<tag>/`, and it still marks the tag index.
+   */
+  page?: "home" | "list" | "tags";
+  /**
+   * The page's own path inside its locale, which the language links keep. Every
+   * locale serves the same shape, so the switcher never has to know which of
+   * them holds a translation.
+   */
+  path?: string;
 }
 
-const {
-  siteName,
-  nav,
-  languages,
-  languageLabel,
-  themeLabel,
-  menuLabel,
-  settingsLabel,
-  themes,
-} = Astro.props;
+const { locale, page, path = "" } = Astro.props;
+
+const siteName = t(locale, "text-site-name");
+
+// The list's own URL is its first page: `/page/` exists only as a redirect, and
+// no in-site link should need one. The tag index follows the same shape, and
+// both paths come from the modules that build them, because the breadcrumb is
+// their third reader.
+const nav: NavLink[] = [
+  { kind: "home", href: getRelativeLocaleUrl(locale, "") },
+  { kind: "list", href: listUrl(locale) },
+  { kind: "tags", href: tagIndexUrl(locale) },
+].map(({ kind, href }) => ({
+  href,
+  label: t(locale, `text-nav-${kind}`),
+  current: page === kind,
+}));
+
+const languages: LanguageLink[] = locales.map((other) => ({
+  tag: other.tag,
+  name: other.name,
+  href: getRelativeLocaleUrl(other.identity, path),
+  current: other.identity === locale,
+}));
+
+const themes: ThemeOption[] = (
+  [
+    ["auto", "contrast"],
+    ["light", "lightMode"],
+    ["dark", "darkMode"],
+  ] as const
+).map(([value, icon]) => ({
+  value,
+  icon,
+  label: t(locale, `text-action-theme-${value}`),
+  // `auto` is the theme script's default, so the markup marks the same item a
+  // scriptless page would be showing; the script corrects it on load.
+  current: value === "auto",
+}));
 
 const currentLanguage =
   languages.find((entry) => entry.current) ?? languages[0];
@@ -87,7 +119,10 @@ const currentLanguage =
         id="site-nav"
         name="site-menu"
       >
-        <summary class="site-header-control" aria-label={menuLabel}>
+        <summary
+          class="site-header-control"
+          aria-label={t(locale, "text-action-menu")}
+        >
           <span class="text-icon" aria-hidden="true">
             <Icon name="menu" />
           </span>
@@ -205,7 +240,10 @@ const currentLanguage =
         id="site-settings"
         name="site-menu"
       >
-        <summary class="site-header-control" aria-label={settingsLabel}>
+        <summary
+          class="site-header-control"
+          aria-label={t(locale, "text-action-settings")}
+        >
           <span class="text-icon" aria-hidden="true">
             <Icon name="settings" />
           </span>
@@ -213,7 +251,7 @@ const currentLanguage =
         <div class="site-panel-scrim" data-menu-scrim aria-hidden="true"></div>
         <div class="site-panel">
           <h6 class="site-panel-group" id="site-settings-language">
-            {languageLabel}
+            {t(locale, "text-action-language")}
           </h6>
           <ul class="navbar-nav" aria-labelledby="site-settings-language">
             {languages.map((language) => (
@@ -233,7 +271,7 @@ const currentLanguage =
 
           <div data-theme-group hidden>
             <h6 class="site-panel-group mt-3" id="site-settings-theme">
-              {themeLabel}
+              {t(locale, "text-action-theme")}
             </h6>
             <ul class="navbar-nav" aria-labelledby="site-settings-theme">
               {themes.map((option) => (
