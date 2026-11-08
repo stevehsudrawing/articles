@@ -96,7 +96,7 @@ export interface ShareImage {
   width: number;
   /** The file's height in pixels. */
   height: number;
-  /** What the artwork belongs to, for `og:image:alt`. */
+  /** What the image shows, for `og:image:alt`. */
   alt: string;
 }
 
@@ -107,7 +107,7 @@ export interface ShareImage {
  * the cover constants rather than a second number beside the path.
  *
  * @param path - A `public/`-relative path, as `IMAGES` holds them.
- * @param alt - What the artwork belongs to: the site's name for the site's own.
+ * @param alt - What the image shows: a description, not a caption.
  * @returns The card a page advertises.
  */
 export function siteCard(path: string, alt: string): ShareImage {

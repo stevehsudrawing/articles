@@ -7,6 +7,9 @@ updated: "2026-10-24"
 description: "[INFO @unyLogger] Watched subjects added: observer @you"
 cover:
   light: ./cover.jpg
+  alt: >-
+    Steve Hsu (什五)'s eyes are covered by blue-black garbled code in the dark,
+    in a stylized Constructivist illustration.
 tags:
   - sci-fi
   - worldview

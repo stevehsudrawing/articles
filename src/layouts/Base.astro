@@ -125,8 +125,10 @@ const documentTitle = !title
 // shared link needs - a crawler reads it outside the page it came from.
 const canonical = absolute(Astro.url.pathname);
 
-// The site card's alt names the site, because the artwork is the site's.
-const card = ogImage ?? siteCard(IMAGES.siteCard, siteName);
+// The site card's alt describes the artwork rather than naming the site - the
+// name is already `og:site_name`, and the protocol asks what is in the picture.
+const card =
+  ogImage ?? siteCard(IMAGES.siteCard, t(locale, "text-alt-site-card"));
 
 // The page's structured data. It is composed here rather than passed in
 // because the two facts it needs most - the composed title and the canonical

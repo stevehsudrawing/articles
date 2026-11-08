@@ -7,6 +7,7 @@ updated: "2026-10-24"
 description: "[INFO @unyLogger] 已新增關注對象：觀察者 @you"
 cover:
   light: ./cover.jpg
+  alt: 構成主義風格的插畫：黑暗中，什五的眼睛被藍黑相間的亂碼覆蓋。
 tags:
   - sci-fi
   - worldview

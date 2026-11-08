@@ -49,6 +49,10 @@
   "text-hero-description-tags": "依標籤瀏覽站內的所有文章。",
   "text-hero-description-tag": "帶有「%1」標籤的所有文章。",
 
+  "text-alt-default-cover": "Steve Hsu (什五) 的文章：灰色的標誌，一支斜置的筆與一條橫線。",
+  "text-alt-home-cover": "Steve Hsu (什五) 的文章：淺綠的標誌，一支斜置的筆與一條橫線。",
+  "text-alt-site-card": "Steve Hsu (什五) 的文章：白底上綠色的標誌，一支斜置的筆與一條橫線。",
+
   "text-label-author": "作者",
   "text-label-font-scale": "字級",
   "text-label-license": "授權條款",

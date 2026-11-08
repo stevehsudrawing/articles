@@ -24,6 +24,10 @@ const author = article.data.author;
 // the same deferral the card's single image already had. The attributes are the
 // ones the toggle in `base.css` keys on; a card whose article has no dark twin
 // writes neither, and keeps its light cover in both themes.
+//
+// `alt` is empty because the link around the image is `aria-hidden` and takes
+// no focus: the card's accessible name is the title link below it, so the
+// thumbnail is a second copy of that name rather than a picture to describe.
 const coverAttrs = {
   class: "card-img-top article-card-cover border-bottom",
   width,

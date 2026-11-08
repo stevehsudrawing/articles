@@ -23,6 +23,8 @@ interface Props {
   /** The cover's URL, for the page kinds that have one. */
   light?: string;
   dark?: string;
+  /** What that cover shows, when it is the page's own artwork. */
+  alt?: string;
   /** The page's path inside its locale, for the language switcher. */
   path?: string;
   /** Whether the page should stay out of search results. */
@@ -44,6 +46,7 @@ const {
   pageNumber,
   light,
   dark,
+  alt,
   path = "",
   noindex,
   trail,
@@ -67,6 +70,7 @@ const {
     description={heroDescription}
     light={light}
     dark={dark}
+    alt={alt}
     trail={trail}
   />
   <div class="container pb-4">

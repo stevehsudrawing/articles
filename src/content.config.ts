@@ -66,6 +66,19 @@ const RESERVED_TAG = "page";
 const QUOTED_DATE = 'Write the date in quotes, as "YYYY-MM-DD".';
 
 /**
+ * The message a declared cover without a description gets.
+ *
+ * A cover is artwork, and it is the only source of what `og:image:alt` says, so
+ * the field is required rather than falling back to the article's title - which
+ * names the article instead of the picture.
+ */
+const COVER_ALT_REQUIRED =
+  "A cover needs an alt: describe what the picture shows, in this file's language.";
+
+/** How long a cover's alt may be: a label rather than a caption. */
+const COVER_ALT_MAX = 120;
+
+/**
  * Rejects a frontmatter date that YAML parsed as a `Date` object.
  *
  * `date: 2026-10-11` is not the string `2026-10-11` but a date, which cannot be
@@ -197,7 +210,19 @@ export function articleSchema(locale: Locale) {
           .optional(),
         draft: z.boolean().default(false),
         cover: z
-          .object({ light: image(), dark: image().optional() })
+          .object({
+            light: image(),
+            dark: image().optional(),
+            // One description for the artwork, which both halves show, so a
+            // dark twin never has to describe itself twice.
+            alt: z
+              .string({ error: COVER_ALT_REQUIRED })
+              .min(1, COVER_ALT_REQUIRED)
+              .max(
+                COVER_ALT_MAX,
+                `Keep a cover's alt under ${COVER_ALT_MAX} characters: it is a label, not a caption.`,
+              ),
+          })
           .optional(),
         licenseUrl: z
           .url("Write licenseUrl as a full URL, including its scheme.")

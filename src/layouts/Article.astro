@@ -72,17 +72,22 @@ const heroCover = coverPair(article);
 // is never re-encoded here; a 146 KB JPEG used to become a 512 KB PNG for a
 // crawler that may never fetch it. The URL must be absolute because it is read
 // outside any page, and the format checks above are what make "the cover
-// itself" a safe thing to hand a crawler. The size is the resolved file's own,
-// and the alt names the article the artwork was drawn for; the site's default
-// cover is the site's own artwork, so its alt names the site instead.
+// itself" a safe thing to hand a crawler. The size is the resolved file's own.
+//
+// The description is the cover's `alt` or, for an article that declares none,
+// the site's default artwork described; both are one value because the card
+// advertises whichever file the hero serves. The hero itself passes only
+// `cover?.alt`: the default pair stands beside a heading that already names the
+// article, so in-page it is decoration.
+const coverAlt = cover?.alt ?? t(locale, "text-alt-default-cover");
 const ogImage: ShareImage = cover
   ? {
       url: absoluteUrl(cover.light.src),
       width: cover.light.width,
       height: cover.light.height,
-      alt: article.data.title,
+      alt: coverAlt,
     }
-  : siteCard(IMAGES.defaultCoverLight, t(locale, "text-site-name"));
+  : siteCard(IMAGES.defaultCoverLight, coverAlt);
 
 // A draft renders so its translator can read the work, and stays out of every
 // index while it does. The layout decides rather than the route because the
@@ -138,6 +143,7 @@ const trail = articleTrail(locale, article.data.title);
     description={article.data.description}
     light={heroCover.light}
     dark={heroCover.dark}
+    alt={cover?.alt}
     trail={trail}
   />
   <div class="container pb-4">

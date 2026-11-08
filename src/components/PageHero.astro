@@ -11,6 +11,13 @@ interface Props {
   light?: string;
   /** The dark-theme variant, when the page declares a pair. */
   dark?: string;
+  /**
+   * What the artwork shows, when it is the page's own.
+   *
+   * Omitted for the site's default artwork: that picture is a placeholder
+   * beside a heading which already names the page, so it stays decorative.
+   */
+  alt?: string;
   /** Where the page sits, for the kinds that have a trail above the heading. */
   trail?: Trail;
 }
@@ -26,13 +33,15 @@ interface Props {
 // is why the article layout's row carries a plain `g-4` - its horizontal half is
 // the same 1.5rem as this `gx-4` - and why the two files say so in their own
 // comments: changing one without the other moves the rails out of line.
-const { title, description, light, dark, trail } = Astro.props;
+const { title, description, light, dark, alt = "", trail } = Astro.props;
 
 // A page's cover is one file or a pair. The pair carries the attributes the
 // toggle in `base.css` keys on, and a lone image carries neither, so a page
 // whose artwork reads on both themes cannot be half-hidden by mistake. Where
-// the toggle lives, and why it is `!important`, is written there.
-const coverAttrs = { class: "page-hero-cover", alt: "" };
+// the toggle lives, and why it is `!important`, is written there. Both halves
+// take one description: the hidden one is `display: none`, so it is never
+// announced twice.
+const coverAttrs = { class: "page-hero-cover", alt };
 ---
 
 <div class="page-hero container pb-4">

@@ -144,7 +144,7 @@ describe("articleSchema", () => {
       updated: "2026-12-01",
       draft: true,
       tags: ["design", "seed-article"],
-      cover: { light: "./cover-light.png" },
+      cover: { light: "./cover-light.png", alt: "一支斜置的笔与一条横线。" },
       licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
     });
 
@@ -153,6 +153,7 @@ describe("articleSchema", () => {
     expect(data.tags).toEqual(["design", "seed-article"]);
     expect(data.draft).toBe(true);
     expect(data.cover?.light.width).toBe(1200);
+    expect(data.cover?.alt).toBe("一支斜置的笔与一条横线。");
     expect(data.licenseUrl).toBe(
       "https://creativecommons.org/licenses/by/4.0/",
     );
@@ -161,10 +162,30 @@ describe("articleSchema", () => {
   it("rejects a cover without a light variant", () => {
     const result = schema.safeParse({
       ...frontmatter,
-      cover: { dark: "./cover-dark.png" },
+      cover: { dark: "./cover-dark.png", alt: "一支斜置的笔与一条横线。" },
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it("rejects a cover with no alt, and says what to write", () => {
+    const result = schema.safeParse({
+      ...frontmatter,
+      cover: { light: "./cover-light.png" },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toMatch(/needs an alt/);
+  });
+
+  it("rejects an alt that grew into a caption", () => {
+    const result = schema.safeParse({
+      ...frontmatter,
+      cover: { light: "./cover-light.png", alt: "x".repeat(121) },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toMatch(/under 120 characters/);
   });
 
   it("rejects a license outside the vocabulary", () => {

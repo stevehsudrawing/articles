@@ -49,6 +49,10 @@
   "text-hero-description-tags": "Browse every article on the site by tag.",
   "text-hero-description-tag": "Every article tagged \"%1\".",
 
+  "text-alt-default-cover": "Steve Hsu (什五)'s Articles: the site's mark in gray, a slanted pen above a line.",
+  "text-alt-home-cover": "Steve Hsu (什五)'s Articles: the site's mark in pale green, a slanted pen above a line.",
+  "text-alt-site-card": "Steve Hsu (什五)'s Articles: the site's mark in green on white, a slanted pen above a line.",
+
   "text-label-author": "Author",
   "text-label-font-scale": "Text size",
   "text-label-license": "License",
