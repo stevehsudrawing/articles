@@ -368,6 +368,87 @@ pre code {
   font-feature-settings: "kern", "tnum";
 }
 
+/* --- Heading permalinks ---
+   The renderer puts a link beside every heading, inside a wrapper: a child's
+   accessible name is appended to the heading's own, so beside it is the only
+   placement that leaves both names alone. The wrapper is positioned and nothing
+   else - no `overflow`, no `display` - so the heading's margins still collapse
+   through it and the page's rhythm is the same as before.
+
+   The link is out of flow, hung at the heading's left edge and as tall as the
+   heading, so no heading box grows and no line wraps around it. Its width is the
+   gutter that exists at every width: the column's own 12px padding, with
+   `.container`'s auto margin beyond it. Below `sm` only those 12px exist, so the
+   box is 12px wide there and 1rem above it, where the margin absorbs the extra
+   4px (measured left of the container: 10.33px at 576, 16.33px at 768, 52.33px
+   at 1440, so the box starts at 6.33px on the narrowest of the three).
+
+   The glyph does not shrink with the box. A 12px render of a 1.3px stroke is the
+   smudge the favicon work measured at 16px, and it does not have to: `link_2`'s
+   ink spans x 3..21 of the 24-unit grid, which at a 1rem render is exactly the
+   12px the narrow gutter holds. So the box narrows and the glyph does not, and
+   what is left over is empty grid on both sides - the ink lands flush with the
+   box's left edge instead of 2px inside it, which is what `place-items`'
+   clamping would do (`center` puts an oversized item at the start edge, measured
+   at 375: 0..16 for the glyph against a 12px box, 2px of ink over the heading).
+   The half-difference below is zero as soon as the box is a glyph wide.
+
+   `font-size` is stated rather than inherited: the reading scale sets the
+   article body's size, and a control does not grow with the prose it sits
+   beside. */
+
+.heading-with-anchor {
+  position: relative;
+}
+
+.heading-anchor {
+  --heading-anchor-size: 12px;
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 100%;
+  display: grid;
+  place-items: center start;
+  inline-size: var(--heading-anchor-size);
+  font-size: 1rem;
+  color: var(--bs-secondary-color);
+}
+
+.heading-anchor > * {
+  margin-inline-start: calc((var(--heading-anchor-size) - 1rem) / 2);
+}
+
+.heading-anchor:hover,
+.heading-anchor:focus-visible {
+  color: var(--bs-link-color);
+}
+
+@media (min-width: 576px) {
+  .heading-anchor {
+    --heading-anchor-size: 1rem;
+  }
+}
+
+/* Above `xl` the glyph is a hover affordance; below it there is no cursor to
+   discover one with, so it is always there - a touch reader taps the heading,
+   which is a hover for as long as it takes to tap the glyph.
+
+   `opacity` only, never `visibility` or `display`: both of those take the
+   element out of the tab order, so `:focus-visible` could never bring it back
+   and the link would be unreachable by keyboard. At zero opacity it is still
+   focusable, and focusing it both reveals it and draws the ring every other
+   control gets. */
+@media (min-width: 1200px) {
+  .heading-anchor {
+    opacity: 0;
+    transition: opacity var(--shar-duration-fast) ease;
+  }
+
+  .heading-with-anchor:hover .heading-anchor,
+  .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+}
+
 /* --- Article reading size ---
    The tools bar sets `--shar-reading-scale` and `data-reading-scale` on the
    document, and only `.article-body` reads them: the hero, the contents, the bar

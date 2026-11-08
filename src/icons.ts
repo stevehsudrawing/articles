@@ -18,6 +18,7 @@ import language from "./assets/icons/language.svg?raw";
 import lastPage from "./assets/icons/last_page.svg?raw";
 import lightMode from "./assets/icons/light_mode.svg?raw";
 import lightbulb from "./assets/icons/lightbulb.svg?raw";
+import link2 from "./assets/icons/link_2.svg?raw";
 import menu from "./assets/icons/menu.svg?raw";
 import person from "./assets/icons/person.svg?raw";
 import report from "./assets/icons/report.svg?raw";
@@ -50,6 +51,7 @@ export const ICONS = {
   lastPage,
   lightMode,
   lightbulb,
+  link2,
   menu,
   person,
   report,

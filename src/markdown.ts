@@ -24,6 +24,7 @@
 // elements named in `filter` are handed across - so the walk costs nothing on
 // the rest of the document.
 
+import { satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import { ALERT_KINDS, parseAlertMarker } from "./alerts";
 import { ICONS } from "./icons";
 import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
@@ -98,6 +99,107 @@ export const markdownStep = {
         return;
       }
       context.setProperty(node, "tabIndex", 0);
+    },
+  },
+};
+
+/** An element with children, as `wrapNode` takes one. */
+interface HastParentElement {
+  type: "element";
+  tagName: string;
+  properties: Record<string, unknown>;
+  children: unknown[];
+}
+
+/** The heading step's context, as much of it as it uses. */
+interface HeadingVisitorContext {
+  /** The file being rendered, for the language the link is named in. */
+  readonly fileURL: URL | undefined;
+  /**
+   * The text of one element's descendants, as a screen reader would read it.
+   *
+   * @param node - The element to read.
+   * @returns Its text without markup.
+   */
+  textContent(node: Readonly<HastElement>): string;
+  /**
+   * Wraps one node in a parent, placing the parent's own children after it.
+   *
+   * @param node - The node to wrap.
+   * @param parent - The element it becomes the first child of.
+   */
+  wrapNode(node: Readonly<HastElement>, parent: HastParentElement): void;
+}
+
+/** The wrapper a heading and its permalink share, and the permalink's class. */
+const HEADING_WRAPPER = "heading-with-anchor";
+const HEADING_ANCHOR = "heading-anchor";
+
+/**
+ * Puts a link back to a section beside every heading in the article body.
+ *
+ * The link is a **sibling** of the heading inside a wrapper, never a child: a
+ * child's accessible name is appended to the heading's own, and an `aria-hidden`
+ * child would be a focusable link with no name at all. Beside it, the heading
+ * keeps its name and its text content - which is also what the slug and the
+ * table of contents are computed from - and the link carries its own.
+ *
+ * Two headings are left alone. The renderer's footnote label is `sr-only` and
+ * absolutely positioned, so an anchor hooked to it would hang over the article
+ * at that spot; and a heading with no `id` has nothing to link to.
+ *
+ * The glyph is the whole affordance, so the label names the section rather than
+ * describing the picture.
+ */
+export const markdownHeadings = {
+  name: "articles/heading-anchors",
+  element: {
+    filter: ["h2", "h3", "h4", "h5", "h6"],
+    /**
+     * Wraps one heading and appends its permalink.
+     *
+     * @param node - The heading, whose `id` the anchor points at.
+     * @param context - The visitor's context.
+     */
+    visit(node: Readonly<HastElement>, context: HeadingVisitorContext): void {
+      const id = node.properties?.id;
+      if (typeof id !== "string") {
+        return;
+      }
+      const classes = node.properties?.className;
+      if (Array.isArray(classes) && classes.includes("sr-only")) {
+        return;
+      }
+
+      const { locale } = localeOf(context.fileURL);
+      context.wrapNode(node, {
+        type: "element",
+        tagName: "div",
+        properties: { className: [HEADING_WRAPPER] },
+        children: [
+          {
+            type: "element",
+            tagName: "a",
+            properties: {
+              className: [HEADING_ANCHOR],
+              href: `#${id}`,
+              ariaLabel: t(
+                locale,
+                "text-action-permalink",
+                context.textContent(node),
+              ),
+            },
+            children: [
+              {
+                type: "element",
+                tagName: "span",
+                properties: { ariaHidden: "true" },
+                children: [{ type: "raw", value: ICONS.link2 }],
+              },
+            ],
+          },
+        ],
+      });
     },
   },
 };
@@ -304,6 +406,22 @@ export const markdownAlerts = {
     },
   },
 };
+
+/**
+ * The steps `astro.config.mjs` installs, in the order they have to run.
+ *
+ * `satteriHeadingIdsPlugin()` comes first for one reason: the processor pushes
+ * its own copy of that plugin after every user plugin, so a step here that needs
+ * a heading's `id` would otherwise find none. Its later run finds an `id`
+ * already set and adopts it, so one slug stands behind both the permalinks and
+ * the table of contents.
+ */
+export const markdownPlugins = [
+  satteriHeadingIdsPlugin(),
+  markdownHeadings,
+  markdownStep,
+  markdownAlerts,
+];
 
 /** A heading, as `render()` reports it and the table of contents consumes. */
 export interface Heading {
