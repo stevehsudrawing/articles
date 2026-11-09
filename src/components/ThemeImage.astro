@@ -1,0 +1,106 @@
+---
+import { Picture } from "astro:assets";
+import type { PictureSource } from "../site-assets";
+
+interface Props {
+  /** The light half, which is the only half a lone image needs. */
+  light?: PictureSource;
+  /** The dark twin, when the artwork has one. */
+  dark?: PictureSource;
+  /**
+   * What the picture shows.
+   *
+   * Empty for artwork the site repeats on a page whose heading already names it,
+   * where a description would announce the same thing twice.
+   */
+  alt?: string;
+  /** The consumer's box: its crop, its width caps and its margins. */
+  class?: string;
+  /** How wide that box is at each breakpoint, so the browser picks a variant. */
+  sizes?: string;
+  /** Whether this picture is the page's largest paint, which is fetched first. */
+  priority?: boolean;
+}
+
+// An image with a dark twin is two elements carrying `data-theme-image="light"`
+// and `"dark"`, and the two rules in `base.css` are the only place that decides
+// which is shown. Nothing else may key on the attribute, and a lone image writes
+// neither - which is what keeps the home page's transparent cover visible in
+// both themes.
+//
+// Both halves are one `<Picture>`, so the pair costs one component's markup
+// rather than two. `Picture` emits `<source>` elements for AVIF and WebP and
+// falls back to the source's own format, which for a JPEG cover stays a JPEG -
+// so a browser that takes neither newer format still shows the picture.
+//
+// A `public/` file is the exception, and it is the only reason this file has a
+// second branch: `astro:assets` treats a path starting with `/` as a remote
+// image, so it would neither transform it nor put the base in front of it.
+// `publicImage()` gives such a file the same shape, and the branch draws it.
+//
+// The props this component does not consume are spread onto the element it
+// renders, which is what carries a consumer's `data-astro-cid-*` through to its
+// `<img>` - a scoped rule in the consumer therefore still matches, so the hero
+// and the card keep their own crop and loading rules here rather than behind a
+// `:global()`.
+const {
+  light,
+  dark,
+  alt = "",
+  class: className,
+  sizes,
+  priority = false,
+  ...rest
+} = Astro.props;
+
+// One step per box the site actually gives a cover, so the browser never has to
+// climb to a width twice what it needs: 440 is the widest hero and the widest
+// card, 520 the single-column card, 880 either of them doubled for a 2x reader,
+// and 1200 the covers' own width.
+const WIDTHS = [440, 520, 880, 1200];
+
+const halves = [
+  ...(light ? [{ source: light, theme: "light" as const }] : []),
+  ...(dark ? [{ source: dark, theme: "dark" as const }] : []),
+];
+
+// A lone image answers to no theme, so it carries no attribute for one to hide.
+const themed = halves.length > 1;
+---
+
+{halves.map(({ source, theme }) =>
+  "format" in source ? (
+    <Picture
+      {...rest}
+      src={source}
+      formats={["avif", "webp"]}
+      widths={WIDTHS}
+      sizes={sizes}
+      alt={alt}
+      class={className}
+      priority={priority}
+      data-theme-image={themed ? theme : undefined}
+    />
+  ) : (
+    <img
+      {...rest}
+      src={source.src}
+      width={source.width}
+      height={source.height}
+      alt={alt}
+      class={className}
+      loading={priority ? "eager" : "lazy"}
+      decoding={priority ? "sync" : "async"}
+      fetchpriority={priority ? "high" : undefined}
+      data-theme-image={themed ? theme : undefined}
+    />
+  ),
+)}
+
+<style>
+  /* A `<picture>` is inline, so it would add a line box around the block image
+     inside it and push the consumers' layout down by a few pixels. */
+  picture {
+    display: block;
+  }
+</style>

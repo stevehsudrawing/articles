@@ -1,5 +1,5 @@
 /**
- * The site's own files under `public/`, and the two URLs that reach them.
+ * The site's own files: four images it draws, and the icons it is known by.
  *
  * A project site publishes under a base path, so a `public/` file cannot be
  * named by its path alone: a page's `src`/`href` needs the base in front of it,
@@ -8,12 +8,16 @@
  * a moved file is a one-line change.
  */
 
+import type { ImageMetadata } from "astro";
+
 /**
  * The shared images under `public/images/`, as paths relative to `public/`.
  *
- * These four are served unchanged: `og:image` wants a stable URL, and the
- * default covers need no processing. An article's own cover is the opposite -
- * it sits beside the article and goes through `astro:assets`.
+ * A `public/` path cannot go through `astro:assets` - it is treated as a remote
+ * image, so it is neither transformed nor given the base - so these four are
+ * served exactly as they are, and {@link publicImage} is how one reaches a
+ * `<picture>`. An article's own cover is the opposite: it sits beside the
+ * article and the build reads its dimensions.
  */
 export const IMAGES = {
   /** The site card a page advertises when it has no artwork of its own. */
@@ -81,6 +85,47 @@ export const COVER_WIDTH = 1200;
 
 /** The height an article cover must have, in pixels. */
 export const COVER_HEIGHT = 630;
+
+/**
+ * An image's own file and the size the build read from it.
+ *
+ * The shape a `<picture>` needs: the URL it serves, and the dimensions it writes
+ * on the `<img>` so the box is reserved before the file arrives. An
+ * {@link ImageMetadata} satisfies it, which is why a declared cover - already
+ * resolved by `image()` - is handed over untouched.
+ */
+export interface ImageSource {
+  /** The file's URL, with the site's base in front of it. */
+  src: string;
+  /** The file's width in pixels. */
+  width: number;
+  /** The file's height in pixels. */
+  height: number;
+}
+
+/**
+ * An image the site can show: one the build resolved, or one it copies.
+ *
+ * The difference is what `astro:assets` can do with it. A resolved file can be
+ * emitted at other widths, so a page draws a variant; a `public/` file is served
+ * exactly as it is, so a page draws the file itself.
+ */
+export type PictureSource = ImageSource | ImageMetadata;
+
+/**
+ * Describes one of the fixed files under `public/images/` as a source.
+ *
+ * The four files there are 1200x630 PNGs, which is what makes them usable both
+ * as a card and as an in-page cover, so their size is the cover constants
+ * rather than a second reading of each file. Adding one of a different size
+ * would need this to become a measurement.
+ *
+ * @param path - A `public/`-relative path, as `IMAGES` holds them.
+ * @returns The source to hand a `<picture>`.
+ */
+export function publicImage(path: string): ImageSource {
+  return { src: asset(path), width: COVER_WIDTH, height: COVER_HEIGHT };
+}
 
 /**
  * A share card: the file a crawler fetches and the facts it needs first.

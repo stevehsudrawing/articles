@@ -1,16 +1,18 @@
 ---
 import type { Trail } from "../breadcrumbs";
+import type { PictureSource } from "../site-assets";
 import Breadcrumbs from "./Breadcrumbs.astro";
+import ThemeImage from "./ThemeImage.astro";
 
 interface Props {
   /** The page's heading, rendered as the document's `h1`. */
   title: string;
   /** The page's introduction, under the heading. */
   description: string;
-  /** The cover's URL, when the page kind has one. */
-  light?: string;
+  /** The cover, when the page kind has one. */
+  light?: PictureSource;
   /** The dark-theme variant, when the page declares a pair. */
-  dark?: string;
+  dark?: PictureSource;
   /**
    * What the artwork shows, when it is the page's own.
    *
@@ -35,13 +37,11 @@ interface Props {
 // comments: changing one without the other moves the rails out of line.
 const { title, description, light, dark, alt = "", trail } = Astro.props;
 
-// A page's cover is one file or a pair. The pair carries the attributes the
-// toggle in `base.css` keys on, and a lone image carries neither, so a page
-// whose artwork reads on both themes cannot be half-hidden by mistake. Where
-// the toggle lives, and why it is `!important`, is written there. Both halves
-// take one description: the hidden one is `display: none`, so it is never
-// announced twice.
-const coverAttrs = { class: "page-hero-cover", alt };
+// The cover's box, breakpoint by breakpoint, measured on this page: a third of
+// the container less its column's padding, so 416 at the widest. The browser
+// picks a variant from this rather than from the column it sits in.
+const COVER_SIZES =
+  "(min-width: 1400px) 416px, (min-width: 1200px) 356px, (min-width: 992px) 296px, 320px";
 ---
 
 <div class="page-hero container pb-4">
@@ -53,12 +53,14 @@ const coverAttrs = { class: "page-hero-cover", alt };
     </div>
     {light && (
       <div class="page-hero-cover-column col-12 col-lg-4 order-first order-lg-last">
-        <img
-          {...coverAttrs}
-          src={light}
-          data-theme-image={dark ? "light" : undefined}
+        <ThemeImage
+          light={light}
+          dark={dark}
+          alt={alt}
+          class="page-hero-cover"
+          sizes={COVER_SIZES}
+          priority
         />
-        {dark && <img {...coverAttrs} src={dark} data-theme-image="dark" />}
       </div>
     )}
   </div>
@@ -70,6 +72,21 @@ const coverAttrs = { class: "page-hero-cover", alt };
   .page-hero {
     min-height: 12rem;
     display: flex;
+  }
+
+  /* The row states its width because a flex item is sized by its content, not
+     by its parent: without this, the row took whatever its two columns'
+     intrinsic widths added up to, and the columns' own percentages then
+     resolved against that instead of against the container. The cover is what
+     made it visible - a `<picture>` contributes its own small intrinsic width,
+     and the hero's third went from 440 to 322.
+
+     The extra gutter is what a row in a block container gets for free: its
+     negative margins cancel the container's padding, so it is `--bs-gutter-x`
+     wider than the content box. Stated here, the hero's third stays the same
+     width as the article page's table of contents below it. */
+  .page-hero > .row {
+    width: calc(100% + var(--bs-gutter-x));
   }
 
   hr {
@@ -96,6 +113,10 @@ const coverAttrs = { class: "page-hero-cover", alt };
     max-width: 320px;
     aspect-ratio: 4 / 3;
     object-fit: cover;
+    /* The `<img>` carries the file's own `height` as a presentational hint, and
+       an explicit height beats `aspect-ratio` - without this the box would be
+       416x630 instead of 4:3. The card's cover says the same thing. */
+    height: auto;
   }
 
   @media (min-width: 992px) {
