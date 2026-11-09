@@ -1,12 +1,12 @@
 ---
 import { Picture } from "astro:assets";
-import type { PictureSource } from "../site-assets";
+import type { ImageMetadata } from "astro";
 
 interface Props {
   /** The light half, which is the only half a lone image needs. */
-  light?: PictureSource;
+  light?: ImageMetadata;
   /** The dark twin, when the artwork has one. */
-  dark?: PictureSource;
+  dark?: ImageMetadata;
   /**
    * What the picture shows.
    *
@@ -32,11 +32,6 @@ interface Props {
 // rather than two. `Picture` emits `<source>` elements for AVIF and WebP and
 // falls back to the source's own format, which for a JPEG cover stays a JPEG -
 // so a browser that takes neither newer format still shows the picture.
-//
-// A `public/` file is the exception, and it is the only reason this file has a
-// second branch: `astro:assets` treats a path starting with `/` as a remote
-// image, so it would neither transform it nor put the base in front of it.
-// `publicImage()` gives such a file the same shape, and the branch draws it.
 //
 // The props this component does not consume are spread onto the element it
 // renders, which is what carries a consumer's `data-astro-cid-*` through to its
@@ -68,34 +63,19 @@ const halves = [
 const themed = halves.length > 1;
 ---
 
-{halves.map(({ source, theme }) =>
-  "format" in source ? (
-    <Picture
-      {...rest}
-      src={source}
-      formats={["avif", "webp"]}
-      widths={WIDTHS}
-      sizes={sizes}
-      alt={alt}
-      class={className}
-      priority={priority}
-      data-theme-image={themed ? theme : undefined}
-    />
-  ) : (
-    <img
-      {...rest}
-      src={source.src}
-      width={source.width}
-      height={source.height}
-      alt={alt}
-      class={className}
-      loading={priority ? "eager" : "lazy"}
-      decoding={priority ? "sync" : "async"}
-      fetchpriority={priority ? "high" : undefined}
-      data-theme-image={themed ? theme : undefined}
-    />
-  ),
-)}
+{halves.map(({ source, theme }) => (
+  <Picture
+    {...rest}
+    src={source}
+    formats={["avif", "webp"]}
+    widths={WIDTHS}
+    sizes={sizes}
+    alt={alt}
+    class={className}
+    priority={priority}
+    data-theme-image={themed ? theme : undefined}
+  />
+))}
 
 <style>
   /* A `<picture>` is inline, so it would add a line box around the block image

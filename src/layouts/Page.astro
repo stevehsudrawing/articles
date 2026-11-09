@@ -2,7 +2,7 @@
 import PageHero from "../components/PageHero.astro";
 import type { Trail } from "../breadcrumbs";
 import type { Locale } from "../i18n/locales";
-import type { PictureSource } from "../site-assets";
+import type { ImageMetadata } from "astro";
 import Base from "./Base.astro";
 
 interface Props {
@@ -22,8 +22,8 @@ interface Props {
   /** The list's page number, folded into the document title. */
   pageNumber?: number;
   /** The cover, for the page kinds that have one. */
-  light?: PictureSource;
-  dark?: PictureSource;
+  light?: ImageMetadata;
+  dark?: ImageMetadata;
   /** What that cover shows, when it is the page's own artwork. */
   alt?: string;
   /** The page's path inside its locale, for the language switcher. */

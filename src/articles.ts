@@ -1,8 +1,8 @@
 import { getCollection, type CollectionEntry } from "astro:content";
-import type { PaginateFunction } from "astro";
+import type { ImageMetadata, PaginateFunction } from "astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
-import { IMAGES, publicImage, type PictureSource } from "./site-assets";
+import { IMAGES } from "./site-assets";
 
 /** One article, as the collection hands it over. */
 export type Article = CollectionEntry<Locale>;
@@ -86,28 +86,27 @@ export function mirrorUrl(locale: Locale, id: string): string {
  * show?" - and used to answer it separately. An article with a cover shows its
  * own light file and its optional dark twin; an article without one shows the
  * site's default pair, so a coverless page and a coverless card follow the
- * theme too. Each half carries the file's size, because a `<picture>` writes it
- * on the `<img>` and the box is then reserved before anything loads; a declared
- * cover's have already passed `assertCoverSize()`.
+ * theme too. A declared cover's dimensions have already passed
+ * `assertCoverSize()`; the default pair's are the files' own, read at import.
  *
  * `dark` is absent, not empty, when there is no twin: the attribute that marks
  * a pair must not appear on a lone image, which is the whole rule the toggle
  * rests on.
  *
  * @param article - The article, as the collection hands it over.
- * @returns The sources to show.
+ * @returns The images to show.
  */
 export function coverPair(article: Article): {
-  light: PictureSource;
-  dark?: PictureSource;
+  light: ImageMetadata;
+  dark?: ImageMetadata;
 } {
   const cover = article.data.cover;
   if (cover) {
     return { light: cover.light, dark: cover.dark };
   }
   return {
-    light: publicImage(IMAGES.defaultCoverLight),
-    dark: publicImage(IMAGES.defaultCoverDark),
+    light: IMAGES.defaultCoverLight,
+    dark: IMAGES.defaultCoverDark,
   };
 }
 

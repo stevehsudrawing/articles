@@ -1,5 +1,11 @@
 /**
- * The site's own files: four images it draws, and the icons it is known by.
+ * The site's own files: four images the build emits, and the icons it is known
+ * by.
+ *
+ * An image is imported, so the build reads its dimensions and can emit it at
+ * other widths - which is what a page drawing it at 416 px needs. The icons
+ * cannot take that route and would not gain by it: they are linked, not drawn,
+ * and the reader's browser picks the size it needs from the `<link>`.
  *
  * A project site publishes under a base path, so a `public/` file cannot be
  * named by its path alone: a page's `src`/`href` needs the base in front of it,
@@ -10,25 +16,28 @@
 
 import type { ImageMetadata } from "astro";
 
+import defaultCoverDark from "./assets/images/default-cover-dark.png";
+import defaultCoverLight from "./assets/images/default-cover-light.png";
+import indexCover from "./assets/images/index-cover.png";
+import ogImage from "./assets/images/og-image.png";
+
 /**
- * The shared images under `public/images/`, as paths relative to `public/`.
+ * The four images the site owns, imported so the build emits them.
  *
- * A `public/` path cannot go through `astro:assets` - it is treated as a remote
- * image, so it is neither transformed nor given the base - so these four are
- * served exactly as they are, and {@link publicImage} is how one reaches a
- * `<picture>`. An article's own cover is the opposite: it sits beside the
- * article and the build reads its dimensions.
+ * Each is a 1200x630 PNG, read from the file rather than declared: a page that
+ * draws one asks for a width, and a crawler that is handed one gets the file's
+ * own bytes. Neither re-encodes, and neither has to be watched for.
  */
 export const IMAGES = {
   /** The site card a page advertises when it has no artwork of its own. */
-  siteCard: "images/og-image.png",
+  siteCard: ogImage,
   /** The home page's hero cover: transparent artwork, so never an `og:image`. */
-  homeCover: "images/index-cover.png",
+  homeCover: indexCover,
   /** The light half of the default pair, and the `og:image` of a coverless article. */
-  defaultCoverLight: "images/default-cover-light.png",
+  defaultCoverLight,
   /** The dark half of the default pair: the dark theme's card and hero artwork, never advertised. */
-  defaultCoverDark: "images/default-cover-dark.png",
-} as const;
+  defaultCoverDark,
+};
 
 /**
  * The icon set under `public/favicons/`, as paths relative to `public/`.
@@ -48,7 +57,7 @@ export const ICONS = {
 /**
  * Turns a `public/` path into the URL a page puts in `src` or `href`.
  *
- * @param path - A `public/`-relative path, as `IMAGES` and `ICONS` hold them.
+ * @param path - A `public/`-relative path, as `ICONS` holds them.
  * @returns The path under the site's base, with its leading slash.
  */
 export function asset(path: string): string {
@@ -60,8 +69,8 @@ export function asset(path: string): string {
  *
  * `og:image` is read outside any page: a social crawler gets the URL out of the
  * markup and fetches it directly, so a base-relative one cannot be resolved.
- * This is the primitive - it takes a URL that already carries the base, such as
- * one the build wrote for an asset it emitted.
+ * It takes a URL that already carries the base, such as the one an import
+ * resolved to.
  *
  * @param path - A site-relative URL, with its leading slash.
  * @returns The file's absolute URL.
@@ -70,62 +79,11 @@ export function absoluteUrl(path: string): string {
   return new URL(path, import.meta.env.SITE).href;
 }
 
-/**
- * Turns a `public/` path into the absolute URL a crawler needs.
- *
- * @param path - A `public/`-relative path, as `IMAGES` and `ICONS` hold them.
- * @returns The file's absolute URL.
- */
-export function absoluteAsset(path: string): string {
-  return absoluteUrl(asset(path));
-}
-
 /** The width an article cover must have, in pixels. */
 export const COVER_WIDTH = 1200;
 
 /** The height an article cover must have, in pixels. */
 export const COVER_HEIGHT = 630;
-
-/**
- * An image's own file and the size the build read from it.
- *
- * The shape a `<picture>` needs: the URL it serves, and the dimensions it writes
- * on the `<img>` so the box is reserved before the file arrives. An
- * {@link ImageMetadata} satisfies it, which is why a declared cover - already
- * resolved by `image()` - is handed over untouched.
- */
-export interface ImageSource {
-  /** The file's URL, with the site's base in front of it. */
-  src: string;
-  /** The file's width in pixels. */
-  width: number;
-  /** The file's height in pixels. */
-  height: number;
-}
-
-/**
- * An image the site can show: one the build resolved, or one it copies.
- *
- * The difference is what `astro:assets` can do with it. A resolved file can be
- * emitted at other widths, so a page draws a variant; a `public/` file is served
- * exactly as it is, so a page draws the file itself.
- */
-export type PictureSource = ImageSource | ImageMetadata;
-
-/**
- * Describes one of the fixed files under `public/images/` as a source.
- *
- * The four files there are 1200x630 PNGs, which is what makes them usable both
- * as a card and as an in-page cover, so their size is the cover constants
- * rather than a second reading of each file. Adding one of a different size
- * would need this to become a measurement.
- *
- * @param path - A `public/`-relative path, as `IMAGES` holds them.
- * @returns The source to hand a `<picture>`.
- */
-export function publicImage(path: string): ImageSource {
-  return { src: asset(path), width: COVER_WIDTH, height: COVER_HEIGHT };
-}
 
 /**
  * A share card: the file a crawler fetches and the facts it needs first.
@@ -146,20 +104,22 @@ export interface ShareImage {
 }
 
 /**
- * A share card built from one of the fixed files under `public/images/`.
+ * A share card built from one of the images the site owns.
  *
- * The four files there are 1200x630 PNGs, measured 2026-11-05, so the size is
- * the cover constants rather than a second number beside the path.
+ * The size is the file's own, taken from the metadata the import resolved, so a
+ * card cannot describe a file it did not measure. The URL is that same
+ * metadata's `src` made absolute, which is the file the build emitted - the
+ * source's own bytes, never a re-encode.
  *
- * @param path - A `public/`-relative path, as `IMAGES` holds them.
+ * @param image - One of `IMAGES`, or an article's declared cover.
  * @param alt - What the image shows: a description, not a caption.
  * @returns The card a page advertises.
  */
-export function siteCard(path: string, alt: string): ShareImage {
+export function siteCard(image: ImageMetadata, alt: string): ShareImage {
   return {
-    url: absoluteAsset(path),
-    width: COVER_WIDTH,
-    height: COVER_HEIGHT,
+    url: absoluteUrl(image.src),
+    width: image.width,
+    height: image.height,
     alt,
   };
 }

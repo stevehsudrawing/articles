@@ -5,7 +5,7 @@ import Page from "../../layouts/Page.astro";
 import { assertArticles, published } from "../../articles";
 import { t } from "../../i18n/messages";
 import { locales, type Locale } from "../../i18n/locales";
-import { IMAGES, publicImage } from "../../site-assets";
+import { IMAGES } from "../../site-assets";
 
 const locale: Locale = "zh-hans";
 
@@ -33,7 +33,7 @@ const alternates = locales.map((other) => ({
   page="home"
   heroTitle={t(locale, "text-hero-title-home")}
   heroDescription={t(locale, "text-hero-description-home")}
-  light={publicImage(IMAGES.homeCover)}
+  light={IMAGES.homeCover}
   alt={t(locale, "text-alt-home-cover")}
   alternates={alternates}
 >

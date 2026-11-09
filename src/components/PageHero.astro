@@ -1,6 +1,6 @@
 ---
 import type { Trail } from "../breadcrumbs";
-import type { PictureSource } from "../site-assets";
+import type { ImageMetadata } from "astro";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import ThemeImage from "./ThemeImage.astro";
 
@@ -10,9 +10,9 @@ interface Props {
   /** The page's introduction, under the heading. */
   description: string;
   /** The cover, when the page kind has one. */
-  light?: PictureSource;
+  light?: ImageMetadata;
   /** The dark-theme variant, when the page declares a pair. */
-  dark?: PictureSource;
+  dark?: ImageMetadata;
   /**
    * What the artwork shows, when it is the page's own.
    *
