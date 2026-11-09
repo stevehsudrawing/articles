@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
+import {
+  createSatteriMarkdownProcessor,
+  type SatteriProcessorOptions,
+} from "@astrojs/markdown-satteri";
 import { parseAlertMarker } from "../src/alerts";
 import {
   markdownAlerts,
+  markdownFootnotes,
   markdownHeadings,
   markdownPlugins,
   markdownStep,
@@ -193,13 +198,199 @@ describe("markdownHeadings", () => {
   });
 });
 
+/** A node the footnote step reads, for the fixtures below. */
+interface FixtureNode {
+  type: string;
+  tagName?: string;
+  value?: string;
+  properties?: Record<string, unknown>;
+  children?: FixtureNode[];
+}
+
+/**
+ * One notes section as the renderer writes it: a label, two notes, and the
+ * first one cited twice.
+ *
+ * @returns A fresh tree for each call.
+ */
+function notesSection(): FixtureNode {
+  const backref = (href: string, label: string): FixtureNode => ({
+    type: "element",
+    tagName: "a",
+    properties: {
+      href,
+      dataFootnoteBackref: "",
+      ariaLabel: label,
+      className: ["data-footnote-backref"],
+    },
+    children: [{ type: "text", value: "↩" }],
+  });
+  const note = (id: string, ...links: FixtureNode[]): FixtureNode => ({
+    type: "element",
+    tagName: "li",
+    properties: { id },
+    children: [
+      {
+        type: "element",
+        tagName: "p",
+        properties: {},
+        children: [{ type: "text", value: "The note. " }, ...links],
+      },
+    ],
+  });
+
+  return {
+    type: "element",
+    tagName: "section",
+    properties: { dataFootnotes: "", className: ["footnotes"] },
+    children: [
+      {
+        type: "element",
+        tagName: "h2",
+        properties: { className: ["sr-only"], id: "footnote-label" },
+        children: [{ type: "text", value: "Footnotes" }],
+      },
+      {
+        type: "element",
+        tagName: "ol",
+        properties: {},
+        children: [
+          note(
+            "user-content-fn-a",
+            backref("#user-content-fnref-a", "Back to reference 1"),
+            backref("#user-content-fnref-a-2", "Back to reference 1-2"),
+          ),
+          note(
+            "user-content-fn-b",
+            backref("#user-content-fnref-b", "Back to reference 2"),
+          ),
+        ],
+      },
+    ],
+  };
+}
+
+/**
+ * Runs the footnote step over one section, the way the processor does.
+ *
+ * @param section - The tree to hand it.
+ * @param file - The document's URL, which names the locale.
+ * @returns What the step asked to replace and to set.
+ */
+function runFootnotes(
+  section: FixtureNode,
+  file = "file:///content/2026-10-11-seed/zh-hans.md",
+) {
+  const replaced: { node: unknown; newNode: unknown }[] = [];
+  const patches: { node: unknown; key: string; value: unknown }[] = [];
+
+  markdownFootnotes.element.visit(section, {
+    fileURL: new URL(file),
+    replaceNode: (node, newNode) => {
+      replaced.push({ node, newNode });
+    },
+    setProperty: (node, key, value) => {
+      patches.push({ node, key, value });
+    },
+  });
+
+  return { replaced, patches };
+}
+
+describe("markdownFootnotes", () => {
+  it("filters for the section the notes live in", () => {
+    expect(markdownFootnotes.element.filter).toEqual(["section"]);
+    expect(markdownFootnotes.name).toBe("articles/footnotes");
+  });
+
+  it("replaces the renderer's label with the file's own word", () => {
+    const { replaced } = runFootnotes(notesSection());
+
+    expect(replaced).toHaveLength(1);
+    expect(replaced[0].newNode).toEqual({ type: "text", value: "脚注" });
+    expect(replaced[0].node).toMatchObject({
+      type: "text",
+      value: "Footnotes",
+    });
+  });
+
+  it("names each back reference after the citation it returns to", () => {
+    const { patches } = runFootnotes(notesSection());
+
+    expect(patches.map((patch) => patch.value)).toEqual([
+      "返回引用 1",
+      "返回引用 1-2",
+      "返回引用 2",
+    ]);
+    expect(patches.every((patch) => patch.key === "ariaLabel")).toBe(true);
+  });
+
+  it("speaks the other locales too", () => {
+    const hant = runFootnotes(notesSection(), "file:///x/zh-hant.md");
+    const en = runFootnotes(notesSection(), "file:///x/en.md");
+
+    expect(hant.replaced[0].newNode).toEqual({ type: "text", value: "腳注" });
+    expect(hant.patches[0].value).toBe("返回引用 1");
+    expect(en.replaced[0].newNode).toEqual({
+      type: "text",
+      value: "Footnotes",
+    });
+    expect(en.patches[2].value).toBe("Back to reference 2");
+  });
+
+  it("leaves a section that is not the notes' alone", () => {
+    const section = notesSection();
+    section.properties = {};
+
+    expect(runFootnotes(section)).toEqual({ replaced: [], patches: [] });
+  });
+
+  it("replaces the label even when the section lists no note", () => {
+    const section = notesSection();
+    section.children = (section.children ?? []).slice(0, 1);
+
+    const { replaced, patches } = runFootnotes(section);
+
+    expect(replaced).toHaveLength(1);
+    expect(patches).toEqual([]);
+  });
+});
+
+describe("the rendered pipeline", () => {
+  it("localizes a footnote's label and its back reference", async () => {
+    const processor = await createSatteriMarkdownProcessor({
+      // Each step declares the part of the visitor context it reads, which is
+      // narrower than the processor's own contract, so the list is cast where it
+      // crosses into that contract.
+      hastPlugins:
+        markdownPlugins as unknown as SatteriProcessorOptions["hastPlugins"],
+    });
+    const source = "正文[^a]与再次引用[^a]。\n\n[^a]: 注释。\n";
+    const render = (locale: string) =>
+      processor.render(source, {
+        fileURL: new URL(`file:///content/post/${locale}.md`),
+      });
+
+    const zh = await render("zh-hans");
+    const en = await render("en");
+
+    expect(zh.code).toContain('id="footnote-label">脚注</h2>');
+    expect(zh.code).toContain('aria-label="返回引用 1"');
+    expect(zh.code).toContain('aria-label="返回引用 1-2"');
+    expect(zh.code).not.toContain("Back to reference");
+    expect(en.code).toContain('id="footnote-label">Footnotes</h2>');
+    expect(en.code).not.toContain("返回引用");
+  });
+});
+
 describe("markdownPlugins", () => {
   it("runs the heading ids before the permalinks that point at them", () => {
-    expect(markdownPlugins).toHaveLength(4);
+    expect(markdownPlugins).toHaveLength(5);
     expect(typeof markdownPlugins[0]).toBe("function");
     expect(markdownPlugins[1]).toBe(markdownHeadings);
-    expect(markdownPlugins[2]).toBe(markdownStep);
-    expect(markdownPlugins[3]).toBe(markdownAlerts);
+    expect(markdownPlugins[2]).toBe(markdownFootnotes);
+    expect(markdownPlugins[3]).toBe(markdownStep);
+    expect(markdownPlugins[4]).toBe(markdownAlerts);
   });
 });
 

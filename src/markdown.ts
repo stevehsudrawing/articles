@@ -14,8 +14,12 @@
 //   3. `tabindex="0"` on every `<pre>`. A fenced block scrolls horizontally,
 //      and a scrollable box that cannot take focus cannot be scrolled by
 //      keyboard. Shiki's output carried the attribute; Prism's does not.
-//   4. A GitHub alert's marker turned into an alert block, with a title in the
+//   4. A link back to a section beside every heading - see `markdownHeadings`
+//      below.
+//   5. A GitHub alert's marker turned into an alert block, with a title in the
 //      article's own language - see `markdownAlerts` below.
+//   6. The renderer's two English footnote strings renamed in the article's
+//      own language - see `markdownFootnotes` below.
 //
 // The Astro 7 processor is Sätteri, so the hook is a Sätteri hast visitor and
 // not a unified plugin: `markdown.rehypePlugins` is the legacy path and needs
@@ -204,13 +208,13 @@ export const markdownHeadings = {
   },
 };
 
-/** An element or a text node, as much of it as the alert step reads. */
-interface AlertNode {
+/** An element or a text node, as much of it as the steps below read. */
+interface TreeNode {
   type: string;
   tagName?: string;
   value?: string;
   properties?: Record<string, unknown>;
-  children?: readonly AlertNode[];
+  children?: readonly TreeNode[];
 }
 
 /** The alert step's context, as much of it as it uses. */
@@ -229,14 +233,14 @@ interface AlertVisitorContext {
    * @param node - The parent.
    * @param index - The child's position.
    */
-  removeChildAt(node: Readonly<AlertNode>, index: number): void;
+  removeChildAt(node: Readonly<TreeNode>, index: number): void;
   /**
    * Inserts a node as an element's first child.
    *
    * @param node - The parent.
    * @param child - The node to insert.
    */
-  prependChild(node: Readonly<AlertNode>, child: unknown): void;
+  prependChild(node: Readonly<TreeNode>, child: unknown): void;
   /**
    * Sets one property on one node.
    *
@@ -244,7 +248,7 @@ interface AlertVisitorContext {
    * @param key - The property's name, in hast's camelCase form (`className`).
    * @param value - The value; an array becomes a space-separated attribute.
    */
-  setProperty(node: Readonly<AlertNode>, key: string, value: unknown): void;
+  setProperty(node: Readonly<TreeNode>, key: string, value: unknown): void;
   /**
    * Records a diagnostic for the build to print.
    *
@@ -323,7 +327,7 @@ export const markdownAlerts = {
      * @param node - The blockquote.
      * @param context - The visitor's context.
      */
-    visit(node: Readonly<AlertNode>, context: AlertVisitorContext): void {
+    visit(node: Readonly<TreeNode>, context: AlertVisitorContext): void {
       // The tree keeps the newlines between blocks, so the first child is
       // usually a whitespace text node; the marker lives in the first element.
       const paragraph = (node.children ?? []).find(
@@ -407,6 +411,129 @@ export const markdownAlerts = {
   },
 };
 
+/** The id the renderer gives the notes' own heading, and what a reference points at. */
+const FOOTNOTE_LABEL_ID = "footnote-label";
+
+/** The footnote step's context, as much of it as it uses. */
+interface FootnoteVisitorContext {
+  /**
+   * The file being rendered, as the processor was told it.
+   *
+   * An article file is named after its locale, so this is where the label
+   * learns which language to speak; `undefined` when the caller gave no URL.
+   */
+  readonly fileURL: URL | undefined;
+  /**
+   * Puts one node in another's place.
+   *
+   * @param node - The node to replace.
+   * @param newNode - What takes its place.
+   */
+  replaceNode(node: Readonly<TreeNode>, newNode: unknown): void;
+  /**
+   * Sets one property on one node.
+   *
+   * @param node - The node to change.
+   * @param key - The property's name, in hast's camelCase form (`ariaLabel`).
+   * @param value - The value; an array becomes a space-separated attribute.
+   */
+  setProperty(node: Readonly<TreeNode>, key: string, value: unknown): void;
+}
+
+/**
+ * The back references inside one note, in document order.
+ *
+ * @param node - The note's list item.
+ * @returns Its links, outermost first.
+ */
+function footnoteBackReferences(node: Readonly<TreeNode>): TreeNode[] {
+  const found: TreeNode[] = [];
+  for (const child of node.children ?? []) {
+    if (child.type !== "element") {
+      continue;
+    }
+    if (
+      child.tagName === "a" &&
+      "dataFootnoteBackref" in (child.properties ?? {})
+    ) {
+      found.push(child);
+    } else {
+      found.push(...footnoteBackReferences(child));
+    }
+  }
+  return found;
+}
+
+/**
+ * Speaks the renderer's two footnote strings in the article's own language.
+ *
+ * The notes' heading and every back reference's label are the renderer's own
+ * text, and the one option that carries both - Sätteri's
+ * `features.gfm.footnotes` - is read once when the processor is built, so it
+ * can serve only one language per build. The file's name is the locale here,
+ * exactly as it is for the alert titles.
+ *
+ * The reference a back reference returns to is rebuilt rather than read out of
+ * the English label: the item's position among the notes answers which note,
+ * and the link's position inside it answers which citation - the `n` and `n-k`
+ * the renderer substitutes into its own label.
+ */
+export const markdownFootnotes = {
+  name: "articles/footnotes",
+  element: {
+    filter: ["section"],
+    /**
+     * Renames the label and every back reference in one notes section.
+     *
+     * @param node - The section, when it is the notes' own.
+     * @param context - The visitor's context.
+     */
+    visit(node: Readonly<TreeNode>, context: FootnoteVisitorContext): void {
+      if (!("dataFootnotes" in (node.properties ?? {}))) {
+        return;
+      }
+      const { locale } = localeOf(context.fileURL);
+      let note = 0;
+
+      for (const child of node.children ?? []) {
+        if (child.type !== "element") {
+          continue;
+        }
+        if (child.tagName === "h2") {
+          const text = child.children?.[0];
+          if (
+            child.properties?.id === FOOTNOTE_LABEL_ID &&
+            text?.type === "text"
+          ) {
+            context.replaceNode(text, {
+              type: "text",
+              value: t(locale, "text-heading-footnotes"),
+            });
+          }
+          continue;
+        }
+        if (child.tagName !== "ol") {
+          continue;
+        }
+        for (const item of child.children ?? []) {
+          if (item.type !== "element" || item.tagName !== "li") {
+            continue;
+          }
+          note += 1;
+          footnoteBackReferences(item).forEach((link, index) => {
+            const reference = index === 0 ? `${note}` : `${note}-${index + 1}`;
+            context.setProperty(
+              link,
+              "ariaLabel",
+              t(locale, "text-action-footnote-backref", reference),
+            );
+          });
+        }
+      }
+    },
+  },
+};
+
 /**
  * The steps `astro.config.mjs` installs, in the order they have to run.
  *
@@ -419,6 +546,7 @@ export const markdownAlerts = {
 export const markdownPlugins = [
   satteriHeadingIdsPlugin(),
   markdownHeadings,
+  markdownFootnotes,
   markdownStep,
   markdownAlerts,
 ];
@@ -453,6 +581,6 @@ export function tableOfContents(headings: readonly Heading[]): Heading[] {
     (heading) =>
       heading.depth >= SHALLOWEST &&
       heading.depth <= DEEPEST &&
-      heading.slug !== "footnote-label",
+      heading.slug !== FOOTNOTE_LABEL_ID,
   );
 }

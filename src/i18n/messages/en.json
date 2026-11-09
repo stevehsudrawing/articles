@@ -21,6 +21,7 @@
   "text-action-font-decrease": "Decrease text size",
   "text-action-font-increase": "Increase text size",
   "text-action-font-serif": "Serif font",
+  "text-action-footnote-backref": "Back to reference %1",
   "text-action-home": "Go to the home page",
   "text-action-language": "Language",
   "text-action-menu": "Menu",
@@ -39,6 +40,8 @@
   "text-alert-note": "Note",
   "text-alert-tip": "Tip",
   "text-alert-warning": "Warning",
+
+  "text-heading-footnotes": "Footnotes",
 
   "text-hero-title-home": "Steve Hsu (什五)'s Articles",
   "text-hero-description-home": "Essays · Stories · Drawing · Design · Skills",
