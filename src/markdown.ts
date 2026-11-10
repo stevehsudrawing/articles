@@ -19,7 +19,8 @@
 //   5. A GitHub alert's marker turned into an alert block, with a title in the
 //      article's own language - see `markdownAlerts` below.
 //   6. The renderer's two English footnote strings renamed in the article's
-//      own language - see `markdownFootnotes` below.
+//      own language, and its back-reference mark redrawn - see
+//      `markdownFootnotes` below.
 //
 // The Astro 7 processor is Sätteri, so the hook is a Sätteri hast visitor and
 // not a unified plugin: `markdown.rehypePlugins` is the legacy path and needs
@@ -465,6 +466,20 @@ function footnoteBackReferences(node: Readonly<TreeNode>): TreeNode[] {
 }
 
 /**
+ * The mark a back reference shows in place of the renderer's `↩`.
+ *
+ * @returns A fresh node, because one is inserted per back reference.
+ */
+function footnoteBackReferenceMark(): TreeNode {
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: ["text-icon"], ariaHidden: "true" },
+    children: [{ type: "raw", value: ICONS.keyboardReturn }],
+  };
+}
+
+/**
  * Speaks the renderer's two footnote strings in the article's own language.
  *
  * The notes' heading and every back reference's label are the renderer's own
@@ -477,6 +492,11 @@ function footnoteBackReferences(node: Readonly<TreeNode>): TreeNode[] {
  * the English label: the item's position among the notes answers which note,
  * and the link's position inside it answers which citation - the `n` and `n-k`
  * the renderer substitutes into its own label.
+ *
+ * The mark itself is redrawn for a reason of its own: `↩` is a character the
+ * site's webfont does not cover, so its shape would be the platform's choice -
+ * and on Android the color emoji font's. It becomes the site's own glyph, in
+ * the same `1em` `currentColor` box as every other inline icon.
  */
 export const markdownFootnotes = {
   name: "articles/footnotes",
@@ -527,6 +547,12 @@ export const markdownFootnotes = {
               "ariaLabel",
               t(locale, "text-action-footnote-backref", reference),
             );
+            const arrow = (link.children ?? []).find(
+              (child) => child.type === "text",
+            );
+            if (arrow) {
+              context.replaceNode(arrow, footnoteBackReferenceMark());
+            }
           });
         }
       }

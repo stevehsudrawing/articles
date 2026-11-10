@@ -4,6 +4,7 @@ import {
   type SatteriProcessorOptions,
 } from "@astrojs/markdown-satteri";
 import { parseAlertMarker } from "../src/alerts";
+import { ICONS } from "../src/icons";
 import {
   markdownAlerts,
   markdownFootnotes,
@@ -305,13 +306,29 @@ describe("markdownFootnotes", () => {
 
   it("replaces the renderer's label with the file's own word", () => {
     const { replaced } = runFootnotes(notesSection());
+    const labels = replaced.filter(
+      (entry) => (entry.node as FixtureNode).value === "Footnotes",
+    );
 
-    expect(replaced).toHaveLength(1);
-    expect(replaced[0].newNode).toEqual({ type: "text", value: "脚注" });
-    expect(replaced[0].node).toMatchObject({
-      type: "text",
-      value: "Footnotes",
-    });
+    expect(labels).toHaveLength(1);
+    expect(labels[0].newNode).toEqual({ type: "text", value: "脚注" });
+  });
+
+  it("redraws every back reference's mark", () => {
+    const { replaced } = runFootnotes(notesSection());
+    const marks = replaced.filter(
+      (entry) => (entry.node as FixtureNode).value === "↩",
+    );
+
+    expect(marks).toHaveLength(3);
+    for (const mark of marks) {
+      expect(mark.newNode).toEqual({
+        type: "element",
+        tagName: "span",
+        properties: { className: ["text-icon"], ariaHidden: "true" },
+        children: [{ type: "raw", value: ICONS.keyboardReturn }],
+      });
+    }
   });
 
   it("names each back reference after the citation it returns to", () => {
@@ -378,6 +395,10 @@ describe("the rendered pipeline", () => {
     expect(zh.code).toContain('aria-label="返回引用 1"');
     expect(zh.code).toContain('aria-label="返回引用 1-2"');
     expect(zh.code).not.toContain("Back to reference");
+    expect(zh.code).not.toContain("↩");
+    expect(zh.code).toContain(
+      'aria-hidden="true"><!-- Material Symbols: keyboard_return -->',
+    );
     expect(en.code).toContain('id="footnote-label">Footnotes</h2>');
     expect(en.code).not.toContain("返回引用");
   });

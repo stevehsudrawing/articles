@@ -14,6 +14,7 @@ import darkMode from "./assets/icons/dark_mode.svg?raw";
 import firstPage from "./assets/icons/first_page.svg?raw";
 import formatAlignCenter from "./assets/icons/format_align_center.svg?raw";
 import info from "./assets/icons/info.svg?raw";
+import keyboardReturn from "./assets/icons/keyboard_return.svg?raw";
 import language from "./assets/icons/language.svg?raw";
 import lastPage from "./assets/icons/last_page.svg?raw";
 import lightMode from "./assets/icons/light_mode.svg?raw";
@@ -47,6 +48,7 @@ export const ICONS = {
   firstPage,
   formatAlignCenter,
   info,
+  keyboardReturn,
   language,
   lastPage,
   lightMode,

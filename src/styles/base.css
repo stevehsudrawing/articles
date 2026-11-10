@@ -556,6 +556,25 @@ pre code {
   margin-bottom: 0.3rem;
 }
 
+/* The renderer's `↩` was text, so its link's underline ran beneath it. A glyph
+   in a `1em` box is an atomic inline, and `text-decoration` does not reach into
+   one: measured, `text-decoration-line: underline` on the box paints nothing at
+   any font size. The line is therefore a border, in the color the link's own
+   underline uses - named rather than taken from `currentColor`, which is the
+   full accent at rest where every other underline is half. The two states read
+   `currentColor` for the opposite reason: the anchor's color is what `a:hover`
+   and `a:active` already moved. */
+
+.footnotes a[data-footnote-backref] > .text-icon {
+  border-bottom: 1px solid
+    rgba(var(--bs-primary-rgb), var(--bs-link-underline-opacity));
+}
+
+.footnotes a[data-footnote-backref]:hover > .text-icon,
+.footnotes a[data-footnote-backref]:active > .text-icon {
+  border-bottom-color: currentColor;
+}
+
 /* --- Buttons ---
    Flat surfaces: Bootstrap's decorative button shadows are removed. */
 
