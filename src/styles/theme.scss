@@ -6,6 +6,12 @@
    than to a hex value.
    ========================================================================== */
 
+/* The gray twins below read Bootstrap's own map, so the two partials that
+   define it are imported here. `functions` must come first: `variables` uses
+   `tint-color()` in its own defaults. Neither partial emits CSS. */
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
 :root {
   --shar-primary-100: #e1f5db;
   --shar-primary-200: #b6e3a9;
@@ -31,18 +37,12 @@
 
   /* Bootstrap's gray scale as RGB twins. It ships `--bs-gray-*` as hex and no
      `-rgb` counterpart (read from `bootstrap.min.css` in 5.3.8), and the
-     `rgba(var(--bs-…-rgb), <alpha>)` form needs one. These nine values are
-     therefore copies: a Bootstrap upgrade that changes a gray has to change
-     the matching line here too, and nothing fails if it does not. */
-  --bs-gray-100-rgb: 248, 249, 250;
-  --bs-gray-200-rgb: 233, 236, 239;
-  --bs-gray-300-rgb: 222, 226, 230;
-  --bs-gray-400-rgb: 206, 212, 218;
-  --bs-gray-500-rgb: 173, 181, 189;
-  --bs-gray-600-rgb: 108, 117, 125;
-  --bs-gray-700-rgb: 73, 80, 87;
-  --bs-gray-800-rgb: 52, 58, 64;
-  --bs-gray-900-rgb: 33, 37, 41;
+     `rgba(var(--bs-…-rgb), <alpha>)` form needs one. The values are read from
+     Bootstrap's `$grays` here, so an upgrade that changes a gray moves these
+     with it. */
+  @each $name, $value in $grays {
+    --bs-gray-#{$name}-rgb: #{to-rgb($value)};
+  }
 }
 
 /* ==========================================================================

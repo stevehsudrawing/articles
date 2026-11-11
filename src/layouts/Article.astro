@@ -398,7 +398,7 @@ const trail = articleTrail(locale, article.data.title);
 
 <style is:inline>
   /* The bar's height is reserved at the bottom of this page alone: beside
-     `scroll-padding-top` in `base.css` it would reserve 64 px on the home, the
+     `scroll-padding-top` in `base.scss` it would reserve 64 px on the home, the
      list and every tag page, where no bar exists. */
   :root {
     scroll-padding-bottom: var(--shar-tools-height);
@@ -444,7 +444,7 @@ const trail = articleTrail(locale, article.data.title);
     padding-inline: 0;
   }
 
-  /* The scaled measure, gated on the scale attribute exactly as `base.css`
+  /* The scaled measure, gated on the scale attribute exactly as `base.scss`
      gates its own rules: `--shar-reading-scale` has no definition until a reader
      steps the size, and a `calc` that multiplies a missing custom property is
      invalid at computed-value time - the cap would vanish in the common case,

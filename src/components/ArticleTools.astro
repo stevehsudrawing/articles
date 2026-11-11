@@ -227,7 +227,7 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     margin-inline: auto;
   }
 
-  /* The same gate `base.css` puts in front of its scale rules: the scale has no
+  /* The same gate `base.scss` puts in front of its scale rules: the scale has no
      definition until a size is chosen, and a `calc` over a missing custom
      property is invalid, so the plain measure is what applies until then. */
   :root[data-reading-view="comfort"][data-reading-scale] .article-tools--dock {
@@ -238,7 +238,7 @@ const readingDefault = String(DEFAULT_READING_SCALE);
      `font-size` on this wrapper because `Icon.astro` renders through
      `set:html`, so the SVG carries no scope attribute and no scoped rule can
      name it. The color is the header control's own, so the two bars read as one
-     system, and the underline is canceled because `base.css` gives every
+     system, and the underline is canceled because `base.scss` gives every
      anchor one.
 
      The class serves an anchor and two buttons, so the UA chrome a `<button>`

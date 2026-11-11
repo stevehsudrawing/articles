@@ -9,7 +9,7 @@
 //      emits `<input type="checkbox" disabled>`, which no stylesheet draws: a
 //      browser's default checkbox keeps its own shape, size and accent, and it
 //      ignores both the theme and the accent scale. The class brings
-//      Bootstrap's control, and `base.css` finishes the job - the filled state
+//      Bootstrap's control, and `base.scss` finishes the job - the filled state
 //      and the square corner, both of which Bootstrap compiles to literals.
 //   3. `tabindex="0"` on every `<pre>`. A fenced block scrolls horizontally,
 //      and a scrollable box that cannot take focus cannot be scrolled by
@@ -293,7 +293,7 @@ function localeOf(fileURL: URL | undefined): {
 }
 
 /**
- * The alert's half of the glyph wrapper: `.text-icon` in `base.css` puts the
+ * The alert's half of the glyph wrapper: `.text-icon` in `base.scss` puts the
  * glyph on the title's baseline, and this name is the gap before the title.
  */
 const ALERT_ICON = "alert-icon";
@@ -310,7 +310,7 @@ const ALERT_ICON = "alert-icon";
  * It stays a `<blockquote>`: measured, `setProperty(node, "tagName", "div")`
  * writes a `tagName="div"` attribute rather than renaming the element, and the
  * visitor's return value is not a replacement path for a node that keeps its
- * own children. `base.css` therefore excludes `.alert` from its blockquote
+ * own children. `base.scss` therefore excludes `.alert` from its blockquote
  * rule - the quotation's dimming and left border belong to a quotation.
  *
  * The title has three sources, in order: text the author wrote after the
@@ -387,7 +387,7 @@ export const markdownAlerts = {
         context.removeChildAt(paragraph, at);
       }
       context.setProperty(paragraph, "className", ["alert-title"]);
-      // Two classes on the span: the shared wrapper from `base.css`, and the
+      // Two classes on the span: the shared wrapper from `base.scss`, and the
       // alert's own gap. `aria-hidden` keeps the glyph out of the name the
       // title already states.
       context.prependChild(paragraph, {

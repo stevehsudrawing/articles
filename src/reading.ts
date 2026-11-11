@@ -2,7 +2,7 @@
  * The article's reading size.
  *
  * A reader steps the prose through these scales with the article tools bar, and
- * the rules in `base.css` multiply the body's size and every heading level by
+ * the rules in `base.scss` multiply the body's size and every heading level by
  * the chosen one. Only `.article-body` reads it: the hero, the contents, the bar
  * and the site chrome keep their own sizes.
  *

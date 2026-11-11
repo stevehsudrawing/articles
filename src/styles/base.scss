@@ -2,6 +2,14 @@
    Base - element defaults and the Bootstrap overwrites
    ========================================================================== */
 
+/* The reading-size block below reads Bootstrap's heading variables, the RFS
+   fluid formula and its breakpoint. `functions` must come first: `variables`
+   uses `tint-color()` in its own defaults; `mixins` brings `vendor/rfs`. None
+   of the three emits CSS. */
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
 /* --- Typography deltas ---
    The whole of our typographic opinion. `overflow-wrap` and not `word-break`:
    Chromium treats the latter as `overflow-wrap: anywhere`, which collapses a
@@ -468,54 +476,61 @@ pre code {
    The headings have to be restated because Bootstrap sizes them from the root
    (`h2` is `calc(1.325rem + 0.9vw)`, and `2rem` from 1200px) while a paragraph
    inherits the body's `1rem`: growing the container alone would grow the prose
-   and leave every heading where it was. The six values and the four overrides
-   are Bootstrap 5.3.8's, copied because it exposes no `--bs-h2-font-size`; the
-   `1200px` breakpoint is its own, and they are the one place a dependency's
-   numbers live in this sheet. */
+   and leave every heading where it was. The six sizes and the four overrides
+   are read from Bootstrap's heading variables and its own breakpoint at build
+   time, not copied, so an upgrade moves them with the framework. */
 
 :root[data-reading-scale] .article-body {
   font-size: calc(var(--bs-body-font-size) * var(--shar-reading-scale));
 }
 
 :root[data-reading-scale] .article-body h1 {
-  font-size: calc(var(--shar-reading-scale) * (1.375rem + 1.5vw));
+  font-size: calc(
+    var(--shar-reading-scale) * #{rfs-fluid-value($h1-font-size)}
+  );
 }
 
 :root[data-reading-scale] .article-body h2 {
-  font-size: calc(var(--shar-reading-scale) * (1.325rem + 0.9vw));
+  font-size: calc(
+    var(--shar-reading-scale) * #{rfs-fluid-value($h2-font-size)}
+  );
 }
 
 :root[data-reading-scale] .article-body h3 {
-  font-size: calc(var(--shar-reading-scale) * (1.3rem + 0.6vw));
+  font-size: calc(
+    var(--shar-reading-scale) * #{rfs-fluid-value($h3-font-size)}
+  );
 }
 
 :root[data-reading-scale] .article-body h4 {
-  font-size: calc(var(--shar-reading-scale) * (1.275rem + 0.3vw));
+  font-size: calc(
+    var(--shar-reading-scale) * #{rfs-fluid-value($h4-font-size)}
+  );
 }
 
 :root[data-reading-scale] .article-body h5 {
-  font-size: calc(var(--shar-reading-scale) * 1.25rem);
+  font-size: calc(var(--shar-reading-scale) * #{$h5-font-size});
 }
 
 :root[data-reading-scale] .article-body h6 {
-  font-size: calc(var(--shar-reading-scale) * 1rem);
+  font-size: calc(var(--shar-reading-scale) * #{$h6-font-size});
 }
 
-@media (min-width: 1200px) {
+@include media-breakpoint-up(xl) {
   :root[data-reading-scale] .article-body h1 {
-    font-size: calc(var(--shar-reading-scale) * 2.5rem);
+    font-size: calc(var(--shar-reading-scale) * #{$h1-font-size});
   }
 
   :root[data-reading-scale] .article-body h2 {
-    font-size: calc(var(--shar-reading-scale) * 2rem);
+    font-size: calc(var(--shar-reading-scale) * #{$h2-font-size});
   }
 
   :root[data-reading-scale] .article-body h3 {
-    font-size: calc(var(--shar-reading-scale) * 1.75rem);
+    font-size: calc(var(--shar-reading-scale) * #{$h3-font-size});
   }
 
   :root[data-reading-scale] .article-body h4 {
-    font-size: calc(var(--shar-reading-scale) * 1.5rem);
+    font-size: calc(var(--shar-reading-scale) * #{$h4-font-size});
   }
 }
 
