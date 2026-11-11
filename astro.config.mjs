@@ -36,4 +36,21 @@ export default defineConfig({
     // punctuation - is the processor's own, unchanged.
     processor: satteri({ hastPlugins: markdownPlugins }),
   },
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          // Bootstrap 5.3.8 still uses `@import`, and its color helpers call
+          // deprecated global functions; both warn on every compile.
+          loadPaths: ["node_modules"],
+          silenceDeprecations: [
+            "import",
+            "global-builtin",
+            "color-functions",
+            "if-function",
+          ],
+        },
+      },
+    },
+  },
 });

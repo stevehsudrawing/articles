@@ -1,0 +1,40 @@
+// The components this site ships stop painting Bootstrap's blue focus ring.
+// These are `!default` variables, so the first assignment wins - and it has to
+// happen before `variables`, because `$input-focus-box-shadow` and
+// `$form-select-focus-border-color` are derived from two of them.
+$focus-ring-box-shadow: none;
+$form-select-focus-box-shadow: none;
+$btn-focus-width: 0;
+$input-focus-border-color: var(--bs-primary);
+
+// The modules the built pages name. Adding a component starts here; the classes
+// and `--bs-*` values it emits exist only while its import does.
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms/form-control";
+@import "bootstrap/scss/forms/form-select";
+@import "bootstrap/scss/forms/form-check";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/helpers";
+
+@import "bootstrap/scss/utilities/api";

@@ -4,5 +4,6 @@
 # A dependency allowed to run install scripts is declared under `allowBuilds`
 # as a `<package>: true` entry, never as a list item: pnpm skips install
 # scripts by default, and approving them from inside a workflow would make the
-# build depend on a side effect. No dependency declares one yet.
-allowBuilds: {}
+# build depend on a side effect. `@parcel/watcher` is sass's optional watcher,
+# which this build never uses, so it stays denied.
+allowBuilds: { "@parcel/watcher": false }

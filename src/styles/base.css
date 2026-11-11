@@ -163,11 +163,16 @@ a:active {
    An outline rather than a shadow. Bootstrap's `.btn:focus-visible` sets
    `outline: 0` and a box-shadow ring, and it is the more specific selector, so
    it is listed here too; `.page-link:focus` does exactly the same with a blue
-   shadow, so the pagination's links are the third case of one rule. */
+   shadow, so the pagination's links are the third case of one rule. The form
+   controls and the navigation's own links hard-code `outline: 0` the same way. */
 
 :focus-visible,
 .btn:focus-visible,
-.page-link:focus-visible {
+.page-link:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.nav-link:focus-visible {
   outline: var(--shar-focus-ring-width) solid var(--bs-focus-ring-color);
   outline-offset: 2px;
 }
