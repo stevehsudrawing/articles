@@ -19,6 +19,12 @@ export default defineConfig({
       redirectToDefaultLocale: false,
     },
   },
+  build: {
+    // The purge reads `_astro/*.css`; an inlined sheet is invisible to it, and
+    // a small scoped sheet is cached better as a shared file than as a
+    // per-page `<style>` block.
+    inlineStylesheets: "never",
+  },
   markdown: {
     // Prism rather than the default Shiki: Shiki writes a fixed theme's colors
     // into the markup as a style attribute, which no stylesheet can override,
