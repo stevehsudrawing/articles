@@ -15,6 +15,16 @@
  * the rules `src/public-pages.ts` keeps in one place, and the copy would agree
  * with a broken build.
  *
+ * **It audits promises, not preferences.** A check belongs here only when its
+ * expectation is already in `dist/` - or in the module that owns the rule - a
+ * correct build passes it without any configuration, and failing it means a
+ * specific artifact is wrong for a reader or a crawler. A byte ceiling, a
+ * Lighthouse score, a class-coverage count and a style rule meet none of
+ * those: the number is chosen rather than promised, and the remedy is a
+ * decision rather than a fix. The build prints the sheet sizes, the probe under
+ * `test/probes/` counts class tokens, and the deploy workflow runs the source
+ * checks; those are the right homes.
+ *
  * **It is a script rather than a test** because the suite has to pass on a fresh
  * clone with no `dist/`, so a test of this could only skip where it matters.
  * What it owes instead is that it can fail: it is exercised by breaking the
