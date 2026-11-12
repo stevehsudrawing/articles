@@ -1,8 +1,9 @@
-import { defineConfig } from "astro/config";
 import { satteri } from "@astrojs/markdown-satteri";
+import mdx from "@astrojs/mdx";
+import { defineConfig } from "astro/config";
+import { BASE, SITE } from "./site.config.mjs";
 import { defaultLocale, localeIdentities } from "./src/i18n/locales.ts";
 import { markdownPlugins } from "./src/markdown.ts";
-import { BASE, SITE } from "./site.config.mjs";
 
 // `site` and `base` come from `site.config.mjs`, the single home of the
 // deployment location: every URL and asset URL is built from them, and no
@@ -25,6 +26,10 @@ export default defineConfig({
     // per-page `<style>` block.
     inlineStylesheets: "never",
   },
+  // The article sources are MDX. `extendMarkdownConfig` (the integration's
+  // default) is what keeps this cheap: it inherits `markdown.processor` below,
+  // so the steps in `src/markdown.ts` run on `.mdx` too, configured once.
+  integrations: [mdx()],
   markdown: {
     // Prism rather than the default Shiki: Shiki writes a fixed theme's colors
     // into the markup as a style attribute, which no stylesheet can override,

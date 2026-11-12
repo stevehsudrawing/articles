@@ -15,7 +15,7 @@ import { localeIdentities } from "./i18n/locales";
 export const ARTICLE_FOLDER = /^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** The extension every content source carries. */
-const EXTENSION = ".md";
+export const EXTENSION = ".mdx";
 
 /**
  * Whether a directory name is an article folder.
@@ -41,7 +41,9 @@ export function isArticleFolder(name: string): boolean {
  * @returns The source paths, in no particular order.
  */
 export function contentFiles(): string[] {
-  return Object.keys(import.meta.glob("/src/content/**/*.md"));
+  // Both extensions, so a source left behind as `.md` is still seen and fails
+  // by name instead of matching no collection.
+  return Object.keys(import.meta.glob("/src/content/**/*.{md,mdx}"));
 }
 
 /** The prefix `contentFiles()` gives every path. */
@@ -51,7 +53,7 @@ const ROOT = "/src/content/";
  * What is wrong with one source path, or nothing when it is well formed.
  *
  * Pure, so a test can drive it without a repository: the shape it enforces is
- * `src/content/<YYYY-MM-DD>-<id>/<locale>.md`, and it is exact - the file name
+ * `src/content/<YYYY-MM-DD>-<id>/<locale>.mdx`, and it is exact - the file name
  * is a locale identity character for character (so `zh-Hans.md` is rejected
  * rather than read as a spelling of `zh-hans`), the folder carries the date,
  * and nothing sits between them.
@@ -70,15 +72,19 @@ export function contentPathError(file: string): string | undefined {
   const folder = segments.pop() ?? "";
 
   if (segments.length > 0) {
-    return `${file} is nested too deep. An article is one folder plus one file: src/content/<YYYY-MM-DD>-<id>/<locale>.md.`;
+    return `${file} is nested too deep. An article is one folder plus one file: src/content/<YYYY-MM-DD>-<id>/<locale>.mdx.`;
   }
 
   if (!folder) {
-    return `${file} is loose in ${ROOT}. Move it into an article folder: src/content/<YYYY-MM-DD>-<id>/<locale>.md.`;
+    return `${file} is loose in ${ROOT}. Move it into an article folder: src/content/<YYYY-MM-DD>-<id>/<locale>.mdx.`;
   }
 
   if (!isArticleFolder(folder)) {
     return `The folder "${folder}" must be named <YYYY-MM-DD>-<id>, for example 2026-10-11-hello-world: ${file}.`;
+  }
+
+  if (name.endsWith(".md")) {
+    return `Article sources are .mdx: rename ${file} to ${folder}/<locale>.mdx.`;
   }
 
   const stem = name.endsWith(EXTENSION)
@@ -86,14 +92,14 @@ export function contentPathError(file: string): string | undefined {
     : name;
 
   if (!localeIdentities.some((identity) => identity === stem)) {
-    return `"${name}" must be named after a locale, one of ${localeIdentities.join(", ")}: ${file}. If it is an index.md from the earlier per-locale layout, rename it to ${folder}/<locale>.md.`;
+    return `"${name}" must be named after a locale, one of ${localeIdentities.join(", ")}: ${file}. If it is an index.mdx from the earlier per-locale layout, rename it to ${folder}/<locale>.mdx.`;
   }
 
   return undefined;
 }
 
 /**
- * Fails the build when a source file is not `<slug>/<locale>.md`.
+ * Fails the build when a source file is not `<slug>/<locale>.mdx`.
  *
  * This is what the loaders cannot do: each collection reads only the files that
  * match its own locale, so a mistyped file name makes a translation vanish
@@ -121,7 +127,7 @@ export function assertContentLayout(): void {
  * @returns The sources, as path to text.
  */
 function contentSources(): Record<string, string> {
-  return import.meta.glob("/src/content/**/*.md", {
+  return import.meta.glob("/src/content/**/*.mdx", {
     query: "?raw",
     import: "default",
     eager: true,

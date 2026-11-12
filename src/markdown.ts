@@ -1,6 +1,6 @@
 // The renderer's own steps. What the built markup needs and the Markdown
-// pipeline does not supply is added here, in one pass over the tree each,
-// because none of it needs a dependency:
+// pipeline does not supply is added here, in one pass over the tree each; the
+// only library they use is the parser the processor already runs on.
 //
 //   1. Bootstrap's `table` class on every GFM table. Bootstrap attaches its
 //      table styles to the class, and a bare `<table>` gets only Reboot's
@@ -21,6 +21,8 @@
 //   6. The renderer's two English footnote strings renamed in the article's
 //      own language, and its back-reference mark redrawn - see
 //      `markdownFootnotes` below.
+//   7. The raw HTML those steps insert turned into elements, which is what an
+//      MDX page can compile - see `markdownRawHtml` below.
 //
 // The Astro 7 processor is Sätteri, so the hook is a Sätteri hast visitor and
 // not a unified plugin: `markdown.rehypePlugins` is the legacy path and needs
@@ -30,10 +32,11 @@
 // the rest of the document.
 
 import { satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
+import { htmlToHast } from "satteri";
 import { ALERT_KINDS, parseAlertMarker } from "./alerts";
-import { ICONS } from "./icons";
 import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
 import { t } from "./i18n/messages";
+import { ICONS } from "./icons";
 
 /** An element of the rendered tree, as much of it as this step reads. */
 interface HastElement {
@@ -274,7 +277,7 @@ function fileNameOf(fileURL: URL | undefined): string {
 /**
  * The locale an article file is written in.
  *
- * Every article file is named after its locale - `zh-hans.md` - which is the
+ * Every article file is named after its locale - `zh-hans.mdx` - which is the
  * identity the rest of the site treats as authoritative, so the file name is
  * the only thing this step needs from the document it is rendering.
  *
@@ -285,7 +288,7 @@ function localeOf(fileURL: URL | undefined): {
   locale: Locale;
   named: boolean;
 } {
-  const name = fileNameOf(fileURL).replace(/\.mdx?$/, "");
+  const name = fileNameOf(fileURL).replace(/\.mdx$/, "");
   if (!localeIdentities.includes(name as Locale)) {
     return { locale: defaultLocale, named: false };
   }
@@ -560,6 +563,94 @@ export const markdownFootnotes = {
   },
 };
 
+/** A `raw` node: HTML the renderer keeps as text instead of parsing. */
+interface RawNode {
+  type: string;
+  value: string;
+}
+
+/** The raw-html step's context, as much of it as the step uses. */
+interface RawVisitorContext {
+  /**
+   * Replaces one node with new content.
+   *
+   * @param node - The node to replace.
+   * @param replacement - The nodes that take its place.
+   */
+  replaceNode(node: Readonly<RawNode>, replacement: readonly TreeNode[]): void;
+}
+
+/** Each distinct piece of inserted HTML, parsed once. */
+const rawElements = new Map<string, readonly TreeNode[]>();
+
+/**
+ * Drops the parser's namespace prefix from one node's properties, in place.
+ *
+ * @param node - The node to rewrite, and whose descendants it rewrites too.
+ */
+function renameNamespaceKeys(node: TreeNode): void {
+  const properties = node.properties;
+  if (properties) {
+    for (const key of Object.keys(properties)) {
+      if (!key.startsWith(":")) {
+        continue;
+      }
+      properties[key.slice(1)] = properties[key];
+      delete properties[key];
+    }
+  }
+  for (const child of node.children ?? []) {
+    renameNamespaceKeys(child);
+  }
+}
+
+/**
+ * One icon's source as elements.
+ *
+ * @param html - The icon file's contents, its provenance comment and all.
+ * @returns The nodes that take the raw node's place.
+ */
+function parseRawHtml(html: string): readonly TreeNode[] {
+  const cached = rawElements.get(html);
+  if (cached) {
+    return cached;
+  }
+  const { children } = htmlToHast(html, { fragment: true }) as {
+    children: readonly TreeNode[];
+  };
+  // The parser namespaces an attribute that belongs to XML by prefixing its key
+  // with `:`, while the renderer writes an ordinary key as the attribute it
+  // names: an SVG's `:xmlns` is the document's `xmlns`.
+  for (const node of children) {
+    renameNamespaceKeys(node);
+  }
+  rawElements.set(html, children);
+  return children;
+}
+
+/**
+ * Every raw HTML node the steps above insert, turned into elements.
+ *
+ * A `raw` node is how Markdown carries HTML the renderer leaves unparsed, and
+ * the steps above use it for the glyphs they place. An MDX page cannot compile
+ * one, because JSX has no raw node, so each is parsed by the engine the
+ * processor already runs on and replaced by what it produced. The comment an
+ * icon carries in its source file survives in Markdown and is dropped on an MDX
+ * page, which has no comment node.
+ */
+export const markdownRawHtml = {
+  name: "articles/raw-html",
+  /**
+   * Replaces one raw node with its parsed elements.
+   *
+   * @param node - The raw node.
+   * @param context - The visitor's context.
+   */
+  raw(node: Readonly<RawNode>, context: RawVisitorContext): void {
+    context.replaceNode(node, parseRawHtml(node.value));
+  },
+};
+
 /**
  * The steps `astro.config.mjs` installs, in the order they have to run.
  *
@@ -568,6 +659,9 @@ export const markdownFootnotes = {
  * a heading's `id` would otherwise find none. Its later run finds an `id`
  * already set and adopts it, so one slug stands behind both the permalinks and
  * the table of contents.
+ *
+ * `markdownRawHtml` comes last, because every raw node it parses is one the
+ * steps before it inserted.
  */
 export const markdownPlugins = [
   satteriHeadingIdsPlugin(),
@@ -575,6 +669,7 @@ export const markdownPlugins = [
   markdownFootnotes,
   markdownStep,
   markdownAlerts,
+  markdownRawHtml,
 ];
 
 /** A heading, as `render()` reports it and the table of contents consumes. */

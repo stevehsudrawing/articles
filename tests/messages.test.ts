@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { interpolate, messagesOf, t } from "../src/i18n/messages";
 import { defaultLocale, localeIdentities } from "../src/i18n/locales";
+import { interpolate, messagesOf, t } from "../src/i18n/messages";
 
 describe("interpolate", () => {
   it("substitutes positional placeholders", () => {

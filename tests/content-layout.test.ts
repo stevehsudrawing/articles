@@ -15,52 +15,58 @@ function article(path: string, data: Record<string, unknown>): Article {
 describe("contentPathError", () => {
   it("accepts one file per locale in one article folder", () => {
     for (const file of [
-      "/src/content/2026-10-11-seed/zh-hans.md",
-      "/src/content/2026-10-11-seed/zh-hant.md",
-      "/src/content/2026-10-11-seed/en.md",
+      "/src/content/2026-10-11-seed/zh-hans.mdx",
+      "/src/content/2026-10-11-seed/zh-hant.mdx",
+      "/src/content/2026-10-11-seed/en.mdx",
     ]) {
       expect(contentPathError(file), file).toBeUndefined();
     }
   });
 
-  it("rejects a file name in the wrong case", () => {
-    expect(contentPathError("/src/content/2026-10-11-seed/zh-Hans.md")).toMatch(
-      /must be named after a locale, one of zh-hans, zh-hant, en/,
-    );
+  it("rejects a source still named .md, and names the rename", () => {
+    expect(
+      contentPathError("/src/content/2026-10-11-seed/zh-hans.md"),
+    ).toContain("Article sources are .mdx");
   });
 
-  it("rejects a leftover index.md and names the file to use instead", () => {
-    expect(contentPathError("/src/content/2026-10-11-seed/index.md")).toMatch(
-      /rename it to 2026-10-11-seed\/<locale>\.md/,
+  it("rejects a file name in the wrong case", () => {
+    expect(
+      contentPathError("/src/content/2026-10-11-seed/zh-Hans.mdx"),
+    ).toMatch(/must be named after a locale, one of zh-hans, zh-hant, en/);
+  });
+
+  it("rejects a leftover index.mdx and names the file to use instead", () => {
+    expect(contentPathError("/src/content/2026-10-11-seed/index.mdx")).toMatch(
+      /rename it to 2026-10-11-seed\/<locale>\.mdx/,
     );
   });
 
   it("rejects the earlier per-locale layout", () => {
     expect(
-      contentPathError("/src/content/en/2026-10-11-seed/index.md"),
+      contentPathError("/src/content/en/2026-10-11-seed/index.mdx"),
     ).toMatch(/nested too deep/);
   });
 
   it("rejects a file nested deeper than one folder", () => {
     expect(
-      contentPathError("/src/content/2026-10-11-seed/sub/zh-hans.md"),
+      contentPathError("/src/content/2026-10-11-seed/sub/zh-hans.mdx"),
     ).toMatch(/nested too deep/);
   });
 
   it("rejects a file loose in the content folder", () => {
-    expect(contentPathError("/src/content/zh-hans.md")).toMatch(
+    expect(contentPathError("/src/content/zh-hans.mdx")).toMatch(
       /is loose in \/src\/content\//,
     );
   });
 
   it("rejects a folder without the date", () => {
-    expect(contentPathError("/src/content/hello/zh-hans.md")).toMatch(
+    expect(contentPathError("/src/content/hello/zh-hans.mdx")).toMatch(
       /must be named <YYYY-MM-DD>-<id>/,
     );
   });
 
   it("rejects a path outside the content folder", () => {
-    expect(contentPathError("zh-hans.md")).toMatch(/is outside/);
+    expect(contentPathError("zh-hans.mdx")).toMatch(/is outside/);
   });
 });
 
@@ -75,8 +81,8 @@ describe("sharedFieldMismatch", () => {
   it("accepts locales that agree", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.md", agreed),
-        article("/src/content/2026-10-11-seed/en.md", agreed),
+        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/2026-10-11-seed/en.mdx", agreed),
       ]),
     ).toBeUndefined();
   });
@@ -84,7 +90,7 @@ describe("sharedFieldMismatch", () => {
   it("accepts a single locale, and an empty list", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.md", agreed),
+        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
       ]),
     ).toBeUndefined();
     expect(sharedFieldMismatch([])).toBeUndefined();
@@ -92,23 +98,23 @@ describe("sharedFieldMismatch", () => {
 
   it("names a divergent author and both files", () => {
     const message = sharedFieldMismatch([
-      article("/src/content/2026-10-11-seed/zh-hans.md", agreed),
-      article("/src/content/2026-10-11-seed/en.md", {
+      article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
+      article("/src/content/2026-10-11-seed/en.mdx", {
         ...agreed,
         author: "Someone Else",
       }),
     ]);
 
     expect(message).toContain('"author"');
-    expect(message).toContain("src/content/2026-10-11-seed/zh-hans.md");
-    expect(message).toContain("src/content/2026-10-11-seed/en.md");
+    expect(message).toContain("src/content/2026-10-11-seed/zh-hans.mdx");
+    expect(message).toContain("src/content/2026-10-11-seed/en.mdx");
   });
 
   it("names a divergent license", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.md", agreed),
-        article("/src/content/2026-10-11-seed/en.md", {
+        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/2026-10-11-seed/en.mdx", {
           ...agreed,
           license: "All-Rights-Reserved",
         }),
@@ -119,8 +125,8 @@ describe("sharedFieldMismatch", () => {
   it("names a tag list in a different order", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.md", agreed),
-        article("/src/content/2026-10-11-seed/en.md", {
+        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/2026-10-11-seed/en.mdx", {
           ...agreed,
           tags: ["seed-article", "design"],
         }),
@@ -133,15 +139,15 @@ describe("sharedFieldMismatch", () => {
 
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.md", agreed),
-        article("/src/content/2026-10-11-seed/en.md", withoutAuthor),
+        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/2026-10-11-seed/en.mdx", withoutAuthor),
       ]),
     ).toContain("(unset)");
   });
 });
 
 describe("alertMarkerErrors", () => {
-  const seed = "/src/content/2026-10-11-seed/zh-hans.md";
+  const seed = "/src/content/2026-10-11-seed/zh-hans.mdx";
 
   it("accepts the five kinds inside a blockquote", () => {
     const text = [

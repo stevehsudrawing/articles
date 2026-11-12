@@ -5,6 +5,7 @@ import { defineCollection } from "astro:content";
 import {
   assertAlertMarkers,
   assertContentLayout,
+  EXTENSION,
   isArticleFolder,
 } from "./content-layout";
 import { localeIdentities, type Locale } from "./i18n/locales";
@@ -112,7 +113,7 @@ function assertQuotedDate(field: string, value: unknown, entry: string): void {
  *
  * @param locale - The identity of the collection this callback serves.
  * @returns The loader's `generateId` callback.
- * @throws If the entry is not `<slug>/<locale>.md`, if the folder name is not
+ * @throws If the entry is not `<slug>/<locale>.mdx`, if the folder name is not
  * `<YYYY-MM-DD>-<id>`, if a date is unquoted, or if the two dates disagree.
  */
 export function articleId(locale: Locale) {
@@ -130,19 +131,19 @@ export function articleId(locale: Locale) {
 
     if (!file || !folder || segments.length > 0) {
       throw new Error(
-        `An article is one folder plus one file: ${entry} must be src/content/<YYYY-MM-DD>-<id>/${locale}.md.`,
+        `An article is one folder plus one file: ${entry} must be src/content/<YYYY-MM-DD>-<id>/${locale}${EXTENSION}.`,
       );
     }
 
-    if (file === "index.md") {
+    if (file === "index.md" || file === "index.mdx") {
       throw new Error(
-        `An article is one file per locale: rename ${entry} to ${folder}/${locale}.md.`,
+        `An article is one file per locale: rename ${entry} to ${folder}/${locale}${EXTENSION}.`,
       );
     }
 
-    if (file !== `${locale}.md`) {
+    if (file !== `${locale}${EXTENSION}`) {
       throw new Error(
-        `The ${locale} file of "${folder}" must be named ${locale}.md, not ${file}: ${entry}.`,
+        `The ${locale} file of "${folder}" must be named ${locale}${EXTENSION}, not ${file}: ${entry}.`,
       );
     }
 
@@ -237,7 +238,7 @@ export function articleSchema(locale: Locale) {
  * This runs at module scope because Astro evaluates a page's frontmatter once
  * per rendered route: a route with no paths to render never runs it, which is
  * exactly the state a mistyped file name produces. Measured - with the only
- * article renamed to `zh-Hans.md`, a check in the article route let the build
+ * article renamed to `zh-Hans.mdx`, a check in the article route let the build
  * finish and the site was simply one article shorter.
  */
 assertContentLayout();
@@ -253,7 +254,7 @@ export const collections = Object.fromEntries(
     locale,
     defineCollection({
       loader: glob({
-        pattern: `**/${locale}.md`,
+        pattern: `**/${locale}${EXTENSION}`,
         base: "./src/content",
         generateId: articleId(locale),
       }),

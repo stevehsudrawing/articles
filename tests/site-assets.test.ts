@@ -11,7 +11,7 @@ describe("assertCoverSize", () => {
     expect(() =>
       assertCoverSize(
         { width: COVER_WIDTH, height: COVER_HEIGHT },
-        "2026-10-11-seed/zh-hans.md cover.light",
+        "2026-10-11-seed/zh-hans.mdx cover.light",
       ),
     ).not.toThrow();
   });
@@ -20,10 +20,10 @@ describe("assertCoverSize", () => {
     expect(() =>
       assertCoverSize(
         { width: 512, height: 512 },
-        "2026-10-11-seed/zh-hans.md cover.light",
+        "2026-10-11-seed/zh-hans.mdx cover.light",
       ),
     ).toThrow(
-      "Cover image 2026-10-11-seed/zh-hans.md cover.light is 512x512; a cover must be 1200x630.",
+      "Cover image 2026-10-11-seed/zh-hans.mdx cover.light is 512x512; a cover must be 1200x630.",
     );
   });
 
@@ -38,7 +38,7 @@ describe("assertCoverFormat", () => {
   it("accepts the two formats a crawler can show", () => {
     for (const format of ["png", "jpg", "jpeg"]) {
       expect(() =>
-        assertCoverFormat({ format }, "2026-10-11-seed/zh-hans.md cover"),
+        assertCoverFormat({ format }, "2026-10-11-seed/zh-hans.mdx cover"),
       ).not.toThrow();
     }
   });
@@ -47,10 +47,10 @@ describe("assertCoverFormat", () => {
     expect(() =>
       assertCoverFormat(
         { format: "webp" },
-        "2026-10-11-seed/zh-hans.md cover.light",
+        "2026-10-11-seed/zh-hans.mdx cover.light",
       ),
     ).toThrow(
-      "Cover image 2026-10-11-seed/zh-hans.md cover.light is webp; a cover must be PNG or JPEG.",
+      "Cover image 2026-10-11-seed/zh-hans.mdx cover.light is webp; a cover must be PNG or JPEG.",
     );
   });
 });

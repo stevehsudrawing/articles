@@ -203,4 +203,16 @@ describe("mirrorMarkdown", () => {
     expect(text).toContain("\n\n## 1. A heading\n\nSome text.\n");
     expect(text.endsWith("Some text.\n")).toBe(true);
   });
+
+  it("carries an MDX source as written, imports and components included", () => {
+    const body =
+      'import Figure from "../../components/ArticleFigure.astro";\n\n' +
+      '## 1. A heading\n\n<Figure alt="A picture" />\n';
+    const text = mirrorMarkdown({
+      locale: "en",
+      article: article("a", {}, body),
+    });
+
+    expect(text.endsWith(body)).toBe(true);
+  });
 });

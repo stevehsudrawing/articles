@@ -61,6 +61,7 @@ const TEXT_EXTENSIONS = new Set([
   ".js",
   ".json",
   ".md",
+  ".mdx",
   ".mjs",
   ".sh",
   ".ts",

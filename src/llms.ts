@@ -48,9 +48,10 @@ const LICENSE_NAMES = Object.keys(LICENSES)
 
 /** The sentence that says what the copies are, since the file exists for them. */
 const MIRRORS_NOTE = `Every article also has a markdown copy beside its page: the same URL with
-\`index.md\` where the page has \`index.html\`. Each page names its copy with
-\`rel="alternate" type="text/markdown"\`, and every page under this path is
-described by this file, which it names with \`rel="describedby"\`.`;
+\`index.md\` where the page has \`index.html\`. The copy is the article's own source,
+an MDX document, rather than a page rendered back into markdown. Each page names
+its copy with \`rel="alternate" type="text/markdown"\`, and every page under this
+path is described by this file, which it names with \`rel="describedby"\`.`;
 
 /** That each article carries its own license, and where a reader sees it. */
 const LICENSE_SECTION = `## License
@@ -128,10 +129,10 @@ export interface MirrorFacts {
 /**
  * Writes one article's markdown copy: its source behind a header it needs.
  *
- * The body is the authored markdown rather than a page rendered back into
- * markdown, so there is one renderer. It starts at `##` because the title comes
- * from frontmatter, which is why the composed header can open with `#` without
- * restarting the numbering.
+ * The body is the authored source - an MDX document - rather than a page rendered
+ * back into markdown, so there is one renderer. It starts at `##` because the
+ * title comes from frontmatter, which is why the composed header can open with
+ * `#` without restarting the numbering.
  *
  * The header carries what a reader of the file cannot otherwise see: when the
  * article was published, when it last changed, how it is licensed, and the page

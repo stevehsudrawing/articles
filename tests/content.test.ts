@@ -1,6 +1,6 @@
-import type { CollectionEntry } from "astro:content";
 import type { SchemaContext } from "astro/content/config";
 import { z } from "astro/zod";
+import type { CollectionEntry } from "astro:content";
 import { describe, expect, it } from "vitest";
 import { articleId, articleSchema, LICENSES } from "../src/content.config";
 import type { Locale } from "../src/i18n/locales";
@@ -51,72 +51,78 @@ function idOf(
 
 describe("articleId", () => {
   it("returns the article folder's name", () => {
-    expect(idOf("2026-10-11-seed/zh-hans.md", { date: "2026-10-11" })).toBe(
+    expect(idOf("2026-10-11-seed/zh-hans.mdx", { date: "2026-10-11" })).toBe(
       "2026-10-11-seed",
     );
   });
 
   it("leaves a missing date to the schema", () => {
-    expect(idOf("2026-10-11-seed/zh-hans.md", {})).toBe("2026-10-11-seed");
+    expect(idOf("2026-10-11-seed/zh-hans.mdx", {})).toBe("2026-10-11-seed");
   });
 
   it("derives the same id for every locale of one article", () => {
-    expect(idOf("2026-10-11-seed/en.md", { date: "2026-10-11" }, "en")).toBe(
+    expect(idOf("2026-10-11-seed/en.mdx", { date: "2026-10-11" }, "en")).toBe(
       "2026-10-11-seed",
     );
   });
 
   it("rejects a file loose in the content folder", () => {
-    expect(() => idOf("zh-hans.md", { date: "2026-10-11" })).toThrow(
+    expect(() => idOf("zh-hans.mdx", { date: "2026-10-11" })).toThrow(
       /An article is one folder plus one file/,
     );
   });
 
-  it("rejects a legacy index.md and names the file to use instead", () => {
+  it("rejects a source still named .md", () => {
     expect(() =>
-      idOf("2026-10-11-seed/index.md", { date: "2026-10-11" }),
-    ).toThrow(/rename .* to 2026-10-11-seed\/zh-hans\.md/);
+      idOf("2026-10-11-seed/zh-hans.md", { date: "2026-10-11" }),
+    ).toThrow("must be named zh-hans.mdx, not zh-hans.md");
+  });
+
+  it("rejects a legacy index.mdx and names the file to use instead", () => {
+    expect(() =>
+      idOf("2026-10-11-seed/index.mdx", { date: "2026-10-11" }),
+    ).toThrow(/rename .* to 2026-10-11-seed\/zh-hans\.mdx/);
   });
 
   it("rejects another locale's file", () => {
-    expect(() => idOf("2026-10-11-seed/en.md", { date: "2026-10-11" })).toThrow(
-      /must be named zh-hans\.md, not en\.md/,
-    );
+    expect(() =>
+      idOf("2026-10-11-seed/en.mdx", { date: "2026-10-11" }),
+    ).toThrow(/must be named zh-hans\.mdx, not en\.mdx/);
   });
 
   it("rejects a file name in the wrong case", () => {
     expect(() =>
-      idOf("2026-10-11-seed/zh-Hans.md", { date: "2026-10-11" }),
-    ).toThrow(/must be named zh-hans\.md, not zh-Hans\.md/);
+      idOf("2026-10-11-seed/zh-Hans.mdx", { date: "2026-10-11" }),
+    ).toThrow(/must be named zh-hans\.mdx, not zh-Hans\.mdx/);
   });
 
   it("rejects a folder nested inside an article folder", () => {
     expect(() =>
-      idOf("2026-10-11-seed/nested/zh-hans.md", { date: "2026-10-11" }),
+      idOf("2026-10-11-seed/nested/zh-hans.mdx", { date: "2026-10-11" }),
     ).toThrow(/An article is one folder plus one file/);
   });
 
   it("rejects a folder name without the date", () => {
-    expect(() => idOf("hello/zh-hans.md", { date: "2026-10-11" })).toThrow(
+    expect(() => idOf("hello/zh-hans.mdx", { date: "2026-10-11" })).toThrow(
       /Article folder must be named/,
     );
   });
 
   it("rejects a date that disagrees with the folder", () => {
     expect(() =>
-      idOf("2026-10-10-seed/zh-hans.md", { date: "2026-10-11" }),
+      idOf("2026-10-10-seed/zh-hans.mdx", { date: "2026-10-11" }),
     ).toThrow(/Folder date 2026-10-10 and frontmatter date 2026-10-11/);
   });
 
   it("rejects a date YAML parsed as a Date object", () => {
     expect(() =>
-      idOf("2026-10-11-seed/zh-hans.md", { date: new Date("2026-10-11") }),
+      idOf("2026-10-11-seed/zh-hans.mdx", { date: new Date("2026-10-11") }),
     ).toThrow(/Quote the date/);
   });
 
   it("rejects an `updated` YAML parsed as a Date object", () => {
     expect(() =>
-      idOf("2026-10-11-seed/zh-hans.md", {
+      idOf("2026-10-11-seed/zh-hans.mdx", {
         date: "2026-10-11",
         updated: new Date("2026-12-01"),
       }),

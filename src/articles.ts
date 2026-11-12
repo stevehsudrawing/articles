@@ -1,5 +1,5 @@
-import { getCollection, type CollectionEntry } from "astro:content";
 import type { ImageMetadata, PaginateFunction } from "astro";
+import { getCollection, type CollectionEntry } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { defaultLocale, localeIdentities, type Locale } from "./i18n/locales";
 import { IMAGES } from "./site-assets";

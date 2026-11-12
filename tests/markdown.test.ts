@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
 import {
   createSatteriMarkdownProcessor,
   type SatteriProcessorOptions,
 } from "@astrojs/markdown-satteri";
+import { describe, expect, it } from "vitest";
 import { parseAlertMarker } from "../src/alerts";
 import { ICONS } from "../src/icons";
 import {
@@ -10,6 +10,7 @@ import {
   markdownFootnotes,
   markdownHeadings,
   markdownPlugins,
+  markdownRawHtml,
   markdownStep,
   tableOfContents,
 } from "../src/markdown";
@@ -117,7 +118,7 @@ interface Wrapped {
 function runHeading(
   properties: Record<string, unknown>,
   text = "1. 它要验证什么",
-  file = "file:///content/2026-10-11-seed/zh-hans.md",
+  file = "file:///content/2026-10-11-seed/zh-hans.mdx",
 ) {
   const element: Element = { type: "element", tagName: "h2", properties };
   const wrapped: Wrapped[] = [];
@@ -167,7 +168,7 @@ describe("markdownHeadings", () => {
 
   it("names the link after the heading, in the file's locale", () => {
     const zh = runHeading({ id: "a" });
-    const en = runHeading({ id: "a" }, "1. What it checks", "file:///x/en.md");
+    const en = runHeading({ id: "a" }, "1. What it checks", "file:///x/en.mdx");
 
     expect(zh.wrapped[0].parent.children[0].properties.ariaLabel).toBe(
       "「1. 它要验证什么」的章节链接",
@@ -280,7 +281,7 @@ function notesSection(): FixtureNode {
  */
 function runFootnotes(
   section: FixtureNode,
-  file = "file:///content/2026-10-11-seed/zh-hans.md",
+  file = "file:///content/2026-10-11-seed/zh-hans.mdx",
 ) {
   const replaced: { node: unknown; newNode: unknown }[] = [];
   const patches: { node: unknown; key: string; value: unknown }[] = [];
@@ -343,8 +344,8 @@ describe("markdownFootnotes", () => {
   });
 
   it("speaks the other locales too", () => {
-    const hant = runFootnotes(notesSection(), "file:///x/zh-hant.md");
-    const en = runFootnotes(notesSection(), "file:///x/en.md");
+    const hant = runFootnotes(notesSection(), "file:///x/zh-hant.mdx");
+    const en = runFootnotes(notesSection(), "file:///x/en.mdx");
 
     expect(hant.replaced[0].newNode).toEqual({ type: "text", value: "腳注" });
     expect(hant.patches[0].value).toBe("返回引用 1");
@@ -385,7 +386,7 @@ describe("the rendered pipeline", () => {
     const source = "正文[^a]与再次引用[^a]。\n\n[^a]: 注释。\n";
     const render = (locale: string) =>
       processor.render(source, {
-        fileURL: new URL(`file:///content/post/${locale}.md`),
+        fileURL: new URL(`file:///content/post/${locale}.mdx`),
       });
 
     const zh = await render("zh-hans");
@@ -406,12 +407,16 @@ describe("the rendered pipeline", () => {
 
 describe("markdownPlugins", () => {
   it("runs the heading ids before the permalinks that point at them", () => {
-    expect(markdownPlugins).toHaveLength(5);
+    expect(markdownPlugins).toHaveLength(6);
     expect(typeof markdownPlugins[0]).toBe("function");
     expect(markdownPlugins[1]).toBe(markdownHeadings);
     expect(markdownPlugins[2]).toBe(markdownFootnotes);
     expect(markdownPlugins[3]).toBe(markdownStep);
     expect(markdownPlugins[4]).toBe(markdownAlerts);
+  });
+
+  it("leaves the raw-html parse last, after every step that inserts one", () => {
+    expect(markdownPlugins.at(-1)).toBe(markdownRawHtml);
   });
 });
 
@@ -482,5 +487,61 @@ describe("tableOfContents", () => {
 
   it("returns nothing for an article without headings", () => {
     expect(tableOfContents([])).toEqual([]);
+  });
+});
+
+describe("markdownRawHtml", () => {
+  /**
+   * Runs the raw-html visitor over one piece of HTML.
+   *
+   * @param value - The HTML the raw node carries.
+   * @returns The nodes the visitor replaced it with.
+   */
+  function parse(value: string) {
+    let nodes: ReturnType<typeof markdownRawNodes> = [];
+    markdownRawHtml.raw(
+      { type: "raw", value },
+      {
+        replaceNode: (_node, replacement) => {
+          nodes = markdownRawNodes(replacement);
+        },
+      },
+    );
+    return nodes;
+  }
+
+  /**
+   * Types the replacement the visitor handed the context.
+   *
+   * @param nodes - The replacement, as the context receives it.
+   * @returns The same nodes, with the fields the assertions read.
+   */
+  function markdownRawNodes(nodes: readonly unknown[]) {
+    return nodes as readonly {
+      type: string;
+      tagName?: string;
+      properties?: Record<string, unknown>;
+    }[];
+  }
+
+  it("parses the icon's markup into elements", () => {
+    const nodes = parse(ICONS.keyboardReturn);
+    const svg = nodes.find((node) => node.tagName === "svg");
+
+    expect(nodes.map((node) => node.type)).toContain("element");
+    expect(svg?.properties?.xmlns).toBe("http://www.w3.org/2000/svg");
+    expect(svg?.properties?.viewBox).toBe("0 0 24 24");
+  });
+
+  it("writes the parser's namespaced key as the attribute it names", () => {
+    const properties = parse(ICONS.link2).find(
+      (node) => node.tagName === "svg",
+    )?.properties;
+
+    expect(Object.keys(properties ?? {})).not.toContain(":xmlns");
+  });
+
+  it("parses a piece of HTML once, however often it appears", () => {
+    expect(parse(ICONS.link2)).toBe(parse(ICONS.link2));
   });
 });

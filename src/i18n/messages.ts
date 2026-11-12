@@ -1,7 +1,7 @@
+import { defaultLocale, type Locale } from "./locales";
 import en from "./messages/en.json";
 import zhHans from "./messages/zh-hans.json";
 import zhHant from "./messages/zh-hant.json";
-import { defaultLocale, type Locale } from "./locales";
 
 /** One locale's messages: a flat map from a key to a value. */
 type Messages = Record<string, string>;
