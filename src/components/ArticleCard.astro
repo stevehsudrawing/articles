@@ -2,6 +2,7 @@
 import { articleUrl, coverPair, type Article } from "../articles";
 import type { Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
+import { COVER_WIDTHS } from "../site-assets";
 import Icon from "./Icon.astro";
 import ThemeImage from "./ThemeImage.astro";
 
@@ -46,6 +47,7 @@ const COVER_SIZES =
         alt=""
         class="card-img-top article-card-cover border-bottom"
         sizes={COVER_SIZES}
+        widths={COVER_WIDTHS}
       />
     </a>
     <div class="card-body d-flex flex-column">

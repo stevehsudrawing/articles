@@ -1,5 +1,6 @@
 ---
 import type { Trail } from "../breadcrumbs";
+import { COVER_WIDTHS } from "../site-assets";
 import type { ImageMetadata } from "astro";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import ThemeImage from "./ThemeImage.astro";
@@ -59,6 +60,7 @@ const COVER_SIZES =
           alt={alt}
           class="page-hero-cover"
           sizes={COVER_SIZES}
+          widths={COVER_WIDTHS}
           priority
         />
       </div>

@@ -18,6 +18,14 @@ interface Props {
   class?: string;
   /** How wide that box is at each breakpoint, so the browser picks a variant. */
   sizes?: string;
+  /**
+   * The ladder of widths to render, as `Picture`'s own `widths`.
+   *
+   * The consumer owns it, because the box is the consumer's: a cover box passes
+   * the ladder it is drawn at, while an image drawn at its own size passes
+   * nothing and is rendered once.
+   */
+  widths?: number[];
   /** Whether this picture is the page's largest paint, which is fetched first. */
   priority?: boolean;
 }
@@ -44,15 +52,10 @@ const {
   alt = "",
   class: className,
   sizes,
+  widths,
   priority = false,
   ...rest
 } = Astro.props;
-
-// One step per box the site actually gives a cover, so the browser never has to
-// climb to a width twice what it needs: 440 is the widest hero and the widest
-// card, 520 the single-column card, 880 either of them doubled for a 2x reader,
-// and 1200 the covers' own width.
-const WIDTHS = [440, 520, 880, 1200];
 
 const halves = [
   ...(light ? [{ source: light, theme: "light" as const }] : []),
@@ -68,7 +71,7 @@ const themed = halves.length > 1;
     {...rest}
     src={source}
     formats={["avif", "webp"]}
-    widths={WIDTHS}
+    widths={widths}
     sizes={sizes}
     alt={alt}
     class={className}

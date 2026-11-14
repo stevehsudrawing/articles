@@ -86,6 +86,18 @@ export const COVER_WIDTH = 1200;
 export const COVER_HEIGHT = 630;
 
 /**
+ * The widths a cover is drawn at on every page that shows one, as `Picture`'s
+ * `widths`.
+ *
+ * The four steps are the boxes the site gives a cover: 440 is the widest hero
+ * and the widest card, 520 the single-column card, 880 either of them doubled
+ * for a 2x reader, and 1200 the covers' own width. A step above the file's own
+ * width is dropped by `getImage`, so a 240 px mark asked for this ladder is
+ * emitted once and nothing is upscaled.
+ */
+export const COVER_WIDTHS = [440, 520, 880, 1200];
+
+/**
  * A share card: the file a crawler fetches and the facts it needs first.
  *
  * The URL, its size and its description travel together because they describe
