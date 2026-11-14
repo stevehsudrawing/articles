@@ -1,34 +1,8 @@
 ---
 import { Picture } from "astro:assets";
-import type { ImageMetadata } from "astro";
+import type { ThemeImageProps } from "../theme-image";
 
-interface Props {
-  /** The light half, which is the only half a lone image needs. */
-  light?: ImageMetadata;
-  /** The dark twin, when the artwork has one. */
-  dark?: ImageMetadata;
-  /**
-   * What the picture shows.
-   *
-   * Empty for artwork the site repeats on a page whose heading already names it,
-   * where a description would announce the same thing twice.
-   */
-  alt?: string;
-  /** The consumer's box: its crop, its width caps and its margins. */
-  class?: string;
-  /** How wide that box is at each breakpoint, so the browser picks a variant. */
-  sizes?: string;
-  /**
-   * The ladder of widths to render, as `Picture`'s own `widths`.
-   *
-   * The consumer owns it, because the box is the consumer's: a cover box passes
-   * the ladder it is drawn at, while an image drawn at its own size passes
-   * nothing and is rendered once.
-   */
-  widths?: number[];
-  /** Whether this picture is the page's largest paint, which is fetched first. */
-  priority?: boolean;
-}
+type Props = ThemeImageProps;
 
 // An image with a dark twin is two elements carrying `data-theme-image="light"`
 // and `"dark"`, and the two rules in `base.scss` are the only place that decides
@@ -53,6 +27,8 @@ const {
   class: className,
   sizes,
   widths,
+  width,
+  height,
   priority = false,
   ...rest
 } = Astro.props;
@@ -73,6 +49,8 @@ const themed = halves.length > 1;
     formats={["avif", "webp"]}
     widths={widths}
     sizes={sizes}
+    width={width}
+    height={height}
     alt={alt}
     class={className}
     priority={priority}

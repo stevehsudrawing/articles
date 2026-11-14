@@ -1,46 +1,37 @@
 ---
-import type { ImageMetadata } from "astro";
 import ThemeImage from "./ThemeImage.astro";
 import { figurePlacement, type FigureAlign } from "../figure";
+import type { ThemeImageProps } from "../theme-image";
 
 interface Props {
-  /** The light half of the pair, and the only image a single-theme figure has. */
-  light: ImageMetadata;
-  /** The dark half; omit it when one file serves both themes. */
-  dark?: ImageMetadata;
-  /** What the image shows, for someone who cannot see it. Never the caption. */
-  alt: string;
-  /** How wide that box is at each breakpoint, so the browser picks a variant. */
-  sizes?: string;
-  /** The ladder of widths to render, as `Picture`'s own `widths`. */
-  widths?: number[];
-  /** Whether this picture is the page's largest paint, which is fetched first. */
-  priority?: boolean;
-  /** The consumer's box: its crop, its width caps and its margins. */
-  class?: string;
+  /**
+   * Everything about the image itself.
+   *
+   * `alt` is required here because a figure's description is content. The
+   * object's `class` names the image; this component's own `class` names the
+   * `<figure>`.
+   */
+  image: ThemeImageProps & { alt: string };
   /** Information the image does not carry, rendered under it. */
   caption?: string;
   /** Whether the following prose wraps beside the figure. */
   float?: boolean;
   /** The side the figure sits on, or floats to. */
   align?: FigureAlign;
+  /** The figure's own box: the classes a rule matches, not the image's. */
+  class?: string;
 }
 
 // The pair is `ThemeImage`'s and the theme is the two rules in `base.scss`, so a
-// figure adds no second copy of either. A figure is never drawn wider than its
-// file, which is the case a `ThemeImage` with no `widths` is for: one candidate
-// per format per half, and no `sizes` to choose between them.
+// figure adds no second copy of either. An image drawn at its own size passes no
+// `widths`: one candidate per format per half, and no `sizes` to choose between
+// them.
 const {
-  light,
-  dark,
-  alt,
-  sizes,
-  widths,
-  priority,
-  class: className,
+  image,
   caption,
   float = false,
   align = "left",
+  class: className,
 } = Astro.props;
 const classes = [...figurePlacement({ float, align }), className]
   .filter(Boolean)
@@ -48,13 +39,6 @@ const classes = [...figurePlacement({ float, align }), className]
 ---
 
 <figure class={classes}>
-  <ThemeImage
-    light={light}
-    dark={dark}
-    alt={alt}
-    sizes={sizes}
-    widths={widths}
-    priority={priority}
-  />
+  <ThemeImage {...image} />
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
