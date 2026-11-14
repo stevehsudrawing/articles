@@ -25,6 +25,12 @@
      characters per line stay constant across the five steps. */
   --shar-measure: 33rem;
 
+  /* A figure's caption box is never narrower than this. 10rem is ten Han
+     characters, the shortest line that still reads as a line; a narrower image
+     sits centered in the wider box instead of wrapping its caption one word per
+     line. */
+  --shar-figure-min-width: 10rem;
+
   /* The header's layer, the one value that has to sit above the page and below
      nothing that matters. */
   --shar-z-header: 1030;

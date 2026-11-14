@@ -167,6 +167,57 @@ a:active {
   display: none !important;
 }
 
+/* --- Article figures ---
+   A figure is as wide as its image and never wider than the prose column, so
+   the caption under the image takes the image's width too. */
+
+.article-figure {
+  width: fit-content;
+  max-width: 100%;
+  min-width: var(--shar-figure-min-width);
+  margin-block: 1rem;
+}
+
+/* Unfloated: a block in the column, placed by its inline margins. */
+
+.article-figure--left {
+  margin-inline: 0 auto;
+}
+
+.article-figure--center {
+  margin-inline: auto;
+}
+
+.article-figure--right {
+  margin-inline: auto 0;
+}
+
+/* Floated: only where the column can spare the lines beside the figure - at
+   `lg` the measure still holds about 25 Han characters next to a 240px figure;
+   below it, the figure stays a block. */
+
+@include media-breakpoint-up(lg) {
+  .article-figure--float {
+    margin-block-start: 0.25rem;
+  }
+
+  .article-figure--float.article-figure--left {
+    float: left;
+    margin-inline: 0 1rem;
+  }
+
+  .article-figure--float.article-figure--right {
+    float: right;
+    margin-inline: 1rem 0;
+  }
+}
+
+.article-figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875em;
+  color: var(--bs-secondary-color);
+}
+
 /* --- Focus ---
    An outline rather than a shadow. Bootstrap's `.btn:focus-visible` sets
    `outline: 0` and a box-shadow ring, and it is the more specific selector, so
@@ -379,6 +430,15 @@ pre code {
 .article-body :is(h1, h2, h3, h4, h5, h6) {
   line-height: inherit;
   font-feature-settings: "kern", "tnum";
+}
+
+/* A float would otherwise let the next heading sit beside the image instead of
+   starting its section below it. The heading arrives wrapped in the renderer's
+   `div.heading-with-anchor`, so the wrapper is what clears - the `<h2>` inside
+   it has no float to clear. */
+
+.article-body .heading-with-anchor {
+  clear: both;
 }
 
 /* --- Heading permalinks ---
