@@ -3,7 +3,7 @@ title: Character Settings of Steve Hsu & Kato
 author: Steve Hsu (什五)
 license: All-Rights-Reserved
 date: "2026-07-15"
-updated: "2026-10-24"
+updated: "2026-11-15"
 description: "[INFO @unyLogger] Watched subjects added: observer @you"
 cover:
   light: ./cover.jpg
@@ -14,6 +14,25 @@ tags:
   - sci-fi
   - worldview
 ---
+
+import ArticleFigure from "../../components/ArticleFigure.astro";
+import { figurePlacement, imageObserving, imageThumb } from "./shared-assets";
+
+export const figureObserving = {
+  ...figurePlacement,
+  image: {
+    ...imageObserving,
+    alt: "A sticker of Kato peeking through a magnifying glass.",
+  },
+};
+
+export const figureThumb = {
+  ...figurePlacement,
+  image: {
+    ...imageThumb,
+    alt: "A chibi sticker of Steve Hsu (什五) winking and giving a thumbs-up.",
+  },
+};
 
 > [!IMPORTANT]
 >
@@ -28,6 +47,8 @@ tags:
 ---
 
 ## 1. Basic Information
+
+<ArticleFigure {...figureThumb} caption='"A profile is data. I am not."' />
 
 - Full name: Steve "Shíwǔ" Hsü
 - Aliases: Steve Hsu, Shíwǔ (什五), "Killer Rabbit", ~~**IOTA**~~
@@ -261,6 +282,8 @@ summaries — why not give it a try!
 ## 3. `$ cd $UNY_AI_RUNTIME_LOGS/sigma045`
 
 ### 3.1 `$ cat ./??85-05-22_20-55-28.log`
+
+<ArticleFigure {...figureObserving} caption='"In position. Feed incoming."' />
 
 `[INFO @unyLogger]` Welcome to UNY Logger — Agentic Log makes logs smarter
 

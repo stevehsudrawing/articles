@@ -3,7 +3,7 @@ title: 什五与 Kato 的角色设定资料
 author: Steve Hsu (什五)
 license: All-Rights-Reserved
 date: "2026-07-15"
-updated: "2026-10-24"
+updated: "2026-11-15"
 description: "[INFO @unyLogger] 已新增关注对象：观察者 @you"
 cover:
   light: ./cover.jpg
@@ -12,6 +12,25 @@ tags:
   - sci-fi
   - worldview
 ---
+
+import ArticleFigure from "../../components/ArticleFigure.astro";
+import { figurePlacement, imageObserving, imageThumb } from "./shared-assets";
+
+export const figureObserving = {
+  ...figurePlacement,
+  image: {
+    ...imageObserving,
+    alt: "Kato 透过放大镜张望的表情。",
+  },
+};
+
+export const figureThumb = {
+  ...figurePlacement,
+  image: {
+    ...imageThumb,
+    alt: "什五眨眼竖起大拇指的 Q 版表情。",
+  },
+};
 
 > [!IMPORTANT]
 >
@@ -24,6 +43,8 @@ tags:
 ---
 
 ## 1. 基本状况
+
+<ArticleFigure {...figureThumb} caption="「档案是死的，我可不是。」" />
 
 - 全名：Steve "Shíwǔ" Hsü
 - 别称：Steve Hsu、什五、「杀手兔」、~~**IOTA**~~
@@ -184,6 +205,8 @@ tags:
 ## 3. `$ cd $UNY_AI_RUNTIME_LOGS/sigma045`
 
 ### 3.1 `$ cat ./??85-05-22_20-55-28.log`
+
+<ArticleFigure {...figureObserving} caption="「已就位。画面传输中。」" />
 
 `[INFO @unyLogger]` 欢迎使用 UNY Logger——Agentic Log 让日志更智能
 
