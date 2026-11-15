@@ -168,37 +168,51 @@ a:active {
 }
 
 /* --- Article figures ---
-   A figure is as wide as its image and never wider than the prose column, so
-   the caption under the image takes the image's width too. */
+   A figure is a full-width box in the column: the image sits where `align`
+   puts it and the caption takes the whole box, so its text can run the
+   column's width. From `lg` a floated figure is as wide as its image - or
+   `--shar-figure-min-width` when the image is narrower - and its caption wraps
+   at that width: `width: 0` keeps the caption's longest line out of the box's
+   intrinsic width, which `fit-content` would otherwise be sized to, and
+   `min-width: 100%` stretches the caption back to the box once the box is
+   known. Below `lg` the float keeps the full-width box above, so it reads as
+   an unfloated figure. The grid is what stops the picture filling the box, so
+   `justify-items` places the image and `text-align` carries the caption's text
+   along. */
 
 .article-figure {
-  width: fit-content;
-  max-width: 100%;
-  min-width: var(--shar-figure-min-width);
+  display: grid;
+  justify-items: start;
+  width: 100%;
   margin-block: 1rem;
 }
 
-/* Unfloated: a block in the column, placed by its inline margins. */
-
-.article-figure--left {
-  margin-inline: 0 auto;
-}
-
 .article-figure--center {
-  margin-inline: auto;
+  justify-items: center;
+  text-align: center;
 }
 
 .article-figure--right {
-  margin-inline: auto 0;
+  justify-items: end;
+  text-align: end;
 }
 
-/* Floated: only where the column can spare the lines beside the figure - at
-   `lg` the measure still holds about 25 Han characters next to a 240px figure;
-   below it, the figure stays a block. */
+/* From `lg` the measure can spare the lines beside a figure, so a floated one
+   becomes the image's width, the prose wraps beside it, and the caption wraps
+   at the image. Below `lg` none of this applies: the figure is the block above
+   and only its `align` places the image. */
 
 @include media-breakpoint-up(lg) {
   .article-figure--float {
+    width: fit-content;
+    max-width: 100%;
+    min-width: var(--shar-figure-min-width);
     margin-block-start: 0.25rem;
+  }
+
+  .article-figure--float figcaption {
+    width: 0;
+    min-width: 100%;
   }
 
   .article-figure--float.article-figure--left {
@@ -209,10 +223,18 @@ a:active {
   .article-figure--float.article-figure--right {
     float: right;
     margin-inline: 1rem 0;
+
+    /* In a truly floating state, if a right-aligned figure caption is also
+       right-aligned in text, the left edge appears uneven, and there is no
+       right edge for the right-aligned figure to attach to below; when floating
+       to the right, it is best for the side facing the main text to be
+       flush. */
+    text-align: start;
   }
 }
 
 .article-figure figcaption {
+  justify-self: stretch;
   margin-top: 0.5rem;
   font-size: 0.875em;
   color: var(--bs-secondary-color);
