@@ -9,10 +9,10 @@
  */
 import type { FigurePlacement } from "../../figure";
 import type { ThemeImageProps } from "../../theme-image";
-import observingDarkSrc from "./observing-dark.png";
-import observingLightSrc from "./observing.png";
-import thumbDarkSrc from "./thumb-dark.png";
-import thumbLightSrc from "./thumb.png";
+import observingDarkSrc from "./assets/sticker-observing-dark.png";
+import observingLightSrc from "./assets/sticker-observing.png";
+import thumbDarkSrc from "./assets/sticker-thumb-dark.png";
+import thumbLightSrc from "./assets/sticker-thumb.png";
 
 /** The width both stickers are drawn at, in CSS pixels. */
 const imageWidth = 180;
@@ -21,7 +21,7 @@ const imageWidth = 180;
  * The widths the build emits for a sticker: the drawn width, plus the file's own
  * 240 px that a 2x reader picks. A wider entry would be clamped to the source.
  */
-const imageWidths = [180, 240];
+const imageWidths = [imageWidth, 240];
 
 /** The `sizes` that matches the drawn width, so the ladder resolves to 180w. */
 const imageSizes = `${imageWidth}px`;
