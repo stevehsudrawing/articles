@@ -469,14 +469,52 @@ const currentLanguage =
     rotate: 180deg;
   }
 
+  /* 0.2rem of outline around the 32 px glyph leaves 12.8 px of room above and
+     below it in the 64 px row, and an outline reserves that paint from the
+     first frame where padding would grow the row's content. The filled box is
+     also what the keyboard shows: `base.scss` draws a 2 px ring on links, and
+     this box replaces it on this one link. */
   .site-header-brand {
     display: flex;
     align-items: center;
+    /* Bootstrap pads a `.navbar-brand` by 5 px top and bottom for a text mark.
+       This one is a glyph, and a box with 5 px of slack inside the fill is not
+       the glyph's box. */
+    padding: 0;
+    outline: 0.2rem solid rgba(var(--bs-primary-rgb), 0);
+    outline-offset: 0;
+    transition:
+      background-color var(--shar-duration-fast) linear,
+      outline-color var(--shar-duration-fast) linear;
+  }
+
+  .site-header-brand:hover,
+  .site-header-brand:focus-visible,
+  .site-header-brand:active {
+    background-color: var(--bs-primary);
+    outline: 0.2rem solid rgba(var(--bs-primary-rgb), 1);
   }
 
   .site-header-mark {
     font-size: 2rem;
     color: var(--bs-primary);
+    transition: color var(--shar-duration-fast) linear;
+  }
+
+  /* The glyph paints with `currentColor`, so the anchor's state has to set the
+     mark's own `color`: `.navbar-brand` gives the anchor a `color` of its own,
+     which nothing here inherits. */
+  .site-header-brand:hover .site-header-mark,
+  .site-header-brand:focus-visible .site-header-mark,
+  .site-header-brand:active .site-header-mark {
+    color: var(--shar-primary-contrast);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header-brand,
+    .site-header-mark {
+      transition: none;
+    }
   }
 
   /* `set:html` output carries no scope attribute, so the mark's own element is
