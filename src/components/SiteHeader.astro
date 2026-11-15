@@ -475,6 +475,11 @@ const currentLanguage =
         align-self: stretch;
         align-items: center;
         justify-content: center;
+        /* On a document too short to scroll, the timeline is inactive and
+           neither animation contributes anything, so the bar falls back to
+           these two values: the `from` frame, with the name not yet in. */
+        transform: translateY(var(--shar-header-height));
+        visibility: hidden;
         animation-name: shar-brand-name-in;
         animation-duration: auto;
         animation-timing-function: linear;
