@@ -9,10 +9,12 @@
 // Wide: one row - the mark, the navigation, then the two dropdowns.
 // Narrow: the same 64 px row with the mark centered, a menu button on the left
 // and a settings button on the right, so the navigation and the two settings
-// live in two panels. A panel rather than a list that grows the bar, because
-// `--shar-header-height` is what the sticky header, the article's sidebar and
-// `scroll-padding-top` all read, and a list that grew the header would make
-// every one of them wrong while it was open.
+// live in two panels. The centered cell holds the mark and, once the page is
+// scrolled, the page's own name, which returns the reader to the top: one
+// slides out as the other slides in. A panel rather than a list that grows the
+// bar, because `--shar-header-height` is what the sticky header, the article's
+// sidebar and `scroll-padding-top` all read, and a list that grew the header
+// would make every one of them wrong while it was open.
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { listUrl } from "../articles";
 import mark from "../assets/brand/mark.svg?raw";
@@ -63,9 +65,14 @@ interface Props {
    * them holds a translation.
    */
   path?: string;
+  /**
+   * The page's `h1` text, which the header shows in place of the mark below
+   * the breakpoint. The page renders it; the header only repeats it.
+   */
+  heading: string;
 }
 
-const { locale, page, path = "" } = Astro.props;
+const { locale, page, path = "", heading } = Astro.props;
 
 const siteName = t(locale, "text-site-name");
 
@@ -146,15 +153,20 @@ const currentLanguage =
         </div>
       </details>
 
-      <a
-        class="navbar-brand site-header-brand m-0"
-        href={nav[0].href}
-        aria-label={siteName}
-      >
-        <span class="site-header-mark" aria-hidden="true">
-          <Fragment set:html={mark} />
-        </span>
-      </a>
+      <div class="site-brand">
+        <a
+          class="navbar-brand site-header-brand m-0"
+          href={nav[0].href}
+          aria-label={siteName}
+        >
+          <span class="site-header-mark" aria-hidden="true">
+            <Fragment set:html={mark} />
+          </span>
+        </a>
+        <a class="site-brand-name" href="#top">
+          <span>{heading}</span>
+        </a>
+      </div>
 
       <ul class="navbar-nav d-none d-md-flex me-auto ms-2">
         {nav.map((link) => (
@@ -364,6 +376,31 @@ const currentLanguage =
     border-bottom: var(--bs-border-width) solid transparent;
   }
 
+  /* The wrapper and the name exist only below the breakpoint, where the wrapper
+     becomes the two layers' cell. Above it the wrapper is not a box at all, so
+     the mark keeps the row's own cell and the bar's order. These defaults come
+     before the breakpoint's rules so the breakpoint's wins. */
+  .site-brand {
+    display: contents;
+  }
+
+  /* The name is the page's own `h1` text, so it keeps the page's color instead
+     of taking the link color, and only the underline arrives on hover - in that
+     same color, since `base.scss` would otherwise give it the accent.
+
+     The wrapper is the link: the `#top` fragment resolves to the document top
+     with no element named for it, the same assumption the article's tools bar
+     makes. */
+  .site-brand-name {
+    display: none;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .site-brand-name:hover {
+    text-decoration: underline currentColor;
+  }
+
   /* Without a timeline the seam would still be painted: `animation-duration:
      auto` resolves to 0s, and `fill: both` then holds the finished frame, which
      leaves the border at `rgb(222, 226, 230)` from the top of every page. The
@@ -389,6 +426,72 @@ const currentLanguage =
       animation-timeline: scroll(root block);
       animation-range: 0 1px;
     }
+
+    /* Below the breakpoint the brand's cell stacks the mark and the page's own
+       name, and the scroll moves one out as it moves the other in. Both travel
+       the bar's height rather than a percentage of their boxes: the mark's box
+       is the 32 px glyph inside this 64 px row, so a percentage would leave
+       half of it inside the bar, and the name's box is one line tall.
+
+       `visibility` is what takes the mark out of the tab order once it is gone:
+       it is discrete, it stays visible at every step but the last, and a hidden
+       link cannot be focused. */
+    @media (max-width: 767.98px) {
+      /* The bar clips its own contents, so the name rises exactly out of the
+         bar's bottom edge and the mark slides out of its top instead of
+         floating above it. The panels stay whole: they are `position: fixed`,
+         and a fixed box is not clipped by an ancestor's overflow. */
+      .site-header {
+        overflow: hidden;
+      }
+
+      .site-brand {
+        display: grid;
+        grid-template-rows: 1fr;
+        align-items: center;
+        height: 100%;
+      }
+
+      .site-header-brand {
+        grid-area: 1 / 1;
+        /* The cell is as wide as the name, so the anchor keeps its own 32 px
+           box instead of stretching across it - a stretched anchor paints the
+           hover fill as a bar the width of the name. */
+        justify-self: center;
+        animation-name: shar-brand-mark-out;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 16rem;
+      }
+
+      /* The link carries the animation, not its text: `visibility` is what
+         keeps the name out of the tab order before its text is on screen, and
+         a hidden child inside a visible link would still be a stop. */
+      .site-brand-name {
+        display: flex;
+        grid-area: 1 / 1;
+        align-self: stretch;
+        align-items: center;
+        justify-content: center;
+        animation-name: shar-brand-name-in;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 16rem;
+      }
+
+      .site-brand-name > span {
+        max-inline-size: 60vw;
+        overflow: hidden;
+        font-size: 1rem;
+        font-weight: 500;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
   @keyframes shar-header-edge {
@@ -398,6 +501,36 @@ const currentLanguage =
 
     to {
       border-bottom-color: var(--bs-border-color);
+    }
+  }
+
+  @keyframes shar-brand-mark-out {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(calc(-1 * var(--shar-header-height)));
+      visibility: hidden;
+    }
+  }
+
+  @keyframes shar-brand-name-in {
+    from {
+      transform: translateY(var(--shar-header-height));
+      visibility: hidden;
+    }
+
+    /* The name's first pixel enters the bar at 30 % of the ramp, so the link
+       joins the tab order exactly there rather than offering a focus stop
+       nobody can see. */
+    30% {
+      visibility: hidden;
+    }
+
+    to {
+      transform: translateY(0);
+      visibility: visible;
     }
   }
 

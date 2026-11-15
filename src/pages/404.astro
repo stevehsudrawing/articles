@@ -12,6 +12,7 @@ import { defaultLocale } from "../i18n/locales";
 // and a footer that is one colophon line rather than the banded row with the
 // two outward links, because this page has one exit and needs only that.
 const locale = defaultLocale;
+const title = t(locale, "text-hero-title-404");
 const description = t(locale, "text-hero-description-404");
 ---
 
@@ -19,14 +20,15 @@ const description = t(locale, "text-hero-description-404");
   locale={locale}
   minimal
   noindex
-  title={t(locale, "text-hero-title-404")}
+  title={title}
+  heading={title}
   description={description}
 >
   <div class="container d-flex flex-column justify-content-center align-items-center flex-grow-1 text-center py-5">
     <span class="error-glyph" aria-hidden="true">
       <Icon name="warning" />
     </span>
-    <h1 class="h3">{t(locale, "text-hero-title-404")}</h1>
+    <h1 class="h3">{title}</h1>
     {/* No side padding: the sentence is the panel's widest line, and 16 px of
         it was measured to be the difference between one line and a two-line
         orphan at a 375 viewport (a 319.3 px box for 320 px of text). */}

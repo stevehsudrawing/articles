@@ -44,6 +44,12 @@ interface Props {
   description: string;
   /** The page's own title. Omitted on the home page, which is the site name. */
   title?: string;
+  /**
+   * The page's `h1` text, which the header shows in place of the mark below
+   * the breakpoint. It is a second fact rather than `title`: the document
+   * title carries the short site name as a suffix, and the heading does not.
+   */
+  heading: string;
   /** The list's page number: it reaches the title and never the heading. */
   pageNumber?: number;
   /**
@@ -92,6 +98,7 @@ const {
   minimal = false,
   description,
   title,
+  heading,
   pageNumber,
   path = "",
   noindex = false,
@@ -292,7 +299,9 @@ const jsonLd = serializeGraph(graph);
     {/* The header is markup, not an island: it is rendered here and needs
         nothing in the browser, so a page's only script is the theme's, inlined
         in the head above. The minimal chrome leaves the header out entirely. */}
-    {!minimal && <SiteHeader locale={locale} page={page} path={path} />}
+    {!minimal && (
+      <SiteHeader locale={locale} page={page} path={path} heading={heading} />
+    )}
     {/* `d-flex flex-column` is what lets a page's own bottom strip - the
         pagination band `Page.astro` renders - park itself with `mt-auto`. */}
     <main id="page-content" class="flex-grow-1 d-flex flex-column">
