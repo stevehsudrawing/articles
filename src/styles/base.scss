@@ -175,10 +175,10 @@ a:active {
    at that width: `width: 0` keeps the caption's longest line out of the box's
    intrinsic width, which `fit-content` would otherwise be sized to, and
    `min-width: 100%` stretches the caption back to the box once the box is
-   known. Below `lg` the float keeps the full-width box above, so it reads as
-   an unfloated figure. The grid is what stops the picture filling the box, so
-   `justify-items` places the image and `text-align` carries the caption's text
-   along. */
+   known. Below `lg`, and in the comfortable view at any width, the float keeps
+   the full-width box above, so it reads as an unfloated figure. The grid stops
+   the picture filling the box, so `justify-items` places the image and
+   `text-align` carries the caption's text along. */
 
 .article-figure {
   display: grid;
@@ -200,36 +200,41 @@ a:active {
 /* From `lg` the measure can spare the lines beside a figure, so a floated one
    becomes the image's width, the prose wraps beside it, and the caption wraps
    at the image. Below `lg` none of this applies: the figure is the block above
-   and only its `align` places the image. */
+   and only its `align` places the image. The comfortable view holds the same
+   measure - 528 px whatever the window - so it takes the same reading: the
+   `data-reading-view` attribute is the gate, and the float's rules apply only
+   to the standard view. */
 
 @include media-breakpoint-up(lg) {
-  .article-figure--float {
-    width: fit-content;
-    max-width: 100%;
-    min-width: var(--shar-figure-min-width);
-    margin-block-start: 0.25rem;
-  }
+  :root:not([data-reading-view="comfort"]) {
+    .article-figure--float {
+      width: fit-content;
+      max-width: 100%;
+      min-width: var(--shar-figure-min-width);
+      margin-block-start: 0.25rem;
+    }
 
-  .article-figure--float figcaption {
-    width: 0;
-    min-width: 100%;
-  }
+    .article-figure--float figcaption {
+      width: 0;
+      min-width: 100%;
+    }
 
-  .article-figure--float.article-figure--left {
-    float: left;
-    margin-inline: 0 1rem;
-  }
+    .article-figure--float.article-figure--left {
+      float: left;
+      margin-inline: 0 1rem;
+    }
 
-  .article-figure--float.article-figure--right {
-    float: right;
-    margin-inline: 1rem 0;
+    .article-figure--float.article-figure--right {
+      float: right;
+      margin-inline: 1rem 0;
 
-    /* In a truly floating state, if a right-aligned figure caption is also
-       right-aligned in text, the left edge appears uneven, and there is no
-       right edge for the right-aligned figure to attach to below; when floating
-       to the right, it is best for the side facing the main text to be
-       flush. */
-    text-align: start;
+      /* In a truly floating state, if a right-aligned figure caption is also
+         right-aligned in text, the left edge appears uneven, and there is no
+         right edge for the right-aligned figure to attach to below; when
+         floating to the right, it is best for the side facing the main text to
+         be flush. */
+      text-align: start;
+    }
   }
 }
 
