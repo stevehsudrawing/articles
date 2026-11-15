@@ -396,7 +396,7 @@ const trail = articleTrail(locale, article.data.title);
   </script>
 </Base>
 
-<style is:inline>
+<style>
   /* The bar's height is reserved at the bottom of this page alone: beside
      `scroll-padding-top` in `base.scss` it would reserve 64 px on the home, the
      list and every tag page, where no bar exists. */
@@ -409,9 +409,7 @@ const trail = articleTrail(locale, article.data.title);
       margin-top: 1rem;
     }
   }
-</style>
 
-<style>
   /* The row's second composition, and why it is one declaration.
 
      `display: block` retires the column widths and the ordering together:
