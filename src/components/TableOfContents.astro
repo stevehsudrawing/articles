@@ -68,15 +68,15 @@ function entryNames(index: number): string {
 // 2px switch below it finishes 1px before the heading gets there. The main site's
 // scrollspy adds 16px to its offset for the same reason.
 const timelineStyle = [
-  `:root {
-    timeline-scope: ${entries.map((_, index) => timelineName(index)).join(", ")}
-  }`,
+  ":root {" +
+    `  timeline-scope: ${entries.map((_, index) => timelineName(index)).join(", ")}` +
+    "}",
   ...entries.map(
     (heading, index) =>
-      `[id="${heading.slug}"] {
-        view-timeline-name: ${timelineName(index)};
-        view-timeline-inset: calc(var(--shar-header-height) + 3px) 0
-      }`,
+      `[id="${heading.slug}"] {` +
+      `  view-timeline-name: ${timelineName(index)};` +
+      "  view-timeline-inset: calc(var(--shar-header-height) + 3px) 0" +
+      "}",
   ),
 ].join("\n");
 ---
