@@ -1,13 +1,13 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
-import { coverPair, mirrorUrl } from "../articles";
+import { articleUrl, coverPair, mirrorUrl } from "../articles";
 import { articleTrail } from "../breadcrumbs";
 import ArticleTools from "../components/ArticleTools.astro";
 import PageHero from "../components/PageHero.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import { LICENSES, type LicenseId } from "../content.config";
-import type { Locale } from "../i18n/locales";
+import { getLocale, type Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
 import { DEFAULT_READING_SCALE, readingScalePercent } from "../reading";
 import { isIndexable } from "../public-pages";
@@ -34,8 +34,8 @@ interface Props {
   rendered: Rendered;
   /** The tag pages this article's tags link to, in the current locale. */
   tagHref: (tag: string) => string;
-  /** The locales that hold a real copy of this article, for `hreflang`. */
-  alternates: { tag: string; href: string }[];
+  /** The locales that hold a real copy of this article. */
+  languages: Locale[];
 }
 
 // The row is the layout: the article takes eight columns and the table of
@@ -44,7 +44,7 @@ interface Props {
 // The four columns are also the hero cover's column (see `PageHero.astro`): one
 // third of the container is the right rail, and the cover above the fold lines
 // up with the contents below it.
-const { locale, article, rendered, tagHref, alternates } = Astro.props;
+const { locale, article, rendered, tagHref, languages } = Astro.props;
 const { Content, headings } = rendered;
 const cover = article.data.cover;
 
@@ -123,6 +123,14 @@ const structuredData = [
 // The article is filed under the list rather than under a URL of its own, and
 // the same value shows the trail and describes it as a `BreadcrumbList`.
 const trail = articleTrail(locale, article.data.title);
+
+// `hreflang` marks real translations only: a locale whose page is a redirect is
+// not a translation of the article, so it is never advertised as one. The same
+// set is what the header's language menu offers, so the two cannot disagree.
+const alternates = languages.map((other) => ({
+  tag: getLocale(other).tag,
+  href: articleUrl(other, article.id),
+}));
 ---
 
 <Base
@@ -134,6 +142,7 @@ const trail = articleTrail(locale, article.data.title);
   ogImage={ogImage}
   ogType="article"
   alternates={alternates}
+  languages={languages}
   noindex={!isIndexable({ draft: article.data.draft })}
   structuredData={structuredData}
   markdown={mirrorUrl(locale, article.id)}

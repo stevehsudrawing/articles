@@ -54,8 +54,8 @@ interface Props {
   pageNumber?: number;
   /**
    * The page's own path inside its locale (`page/2/`, `<slug>/`), which is what
-   * the language switcher links to. Every locale serves the same shape, so the
-   * switcher never has to know which of them holds a translation.
+   * the language switcher links to. The path is shared, and which locales serve
+   * a page of their own is what `languages` answers.
    */
   path?: string;
   /** Whether the page should stay out of search results. */
@@ -73,6 +73,11 @@ interface Props {
   ogType?: "website" | "article";
   /** The translations this page really has, for `hreflang`. */
   alternates?: { tag: string; href: string }[];
+  /**
+   * The locales that hold this page, which the header's menu offers. Absent on
+   * the page kinds that exist in every locale, where the whole table applies.
+   */
+  languages?: Locale[];
   /**
    * The nodes this page adds to its graph, holding what only the page can
    * build - an article's `BlogPosting`. Everything else about the page is
@@ -105,6 +110,7 @@ const {
   ogImage,
   ogType = "website",
   alternates = [],
+  languages,
   structuredData,
   markdown,
   trail,
@@ -300,7 +306,13 @@ const jsonLd = serializeGraph(graph);
         nothing in the browser, so a page's only script is the theme's, inlined
         in the head above. The minimal chrome leaves the header out entirely. */}
     {!minimal && (
-      <SiteHeader locale={locale} page={page} path={path} heading={heading} />
+      <SiteHeader
+        locale={locale}
+        page={page}
+        path={path}
+        heading={heading}
+        languages={languages}
+      />
     )}
     {/* `d-flex flex-column` is what lets a page's own bottom strip - the
         pagination band `Page.astro` renders - park itself with `mt-auto`. */}

@@ -1,13 +1,8 @@
 ---
 import { getCollection, render } from "astro:content";
 import Article from "../../layouts/Article.astro";
-import {
-  articleSlugs,
-  articleUrl,
-  localesWith,
-  redirectUrl,
-} from "../../articles";
-import { getLocale, type Locale } from "../../i18n/locales";
+import { articleSlugs, localesWith, redirectUrl } from "../../articles";
+import type { Locale } from "../../i18n/locales";
 import { tagPageUrl } from "../../tags";
 
 const locale: Locale = "zh-hant";
@@ -32,19 +27,12 @@ if (target) {
 const [entry] = await getCollection(locale, ({ id }) => id === slug);
 const rendered = await render(entry);
 const holding = await localesWith(slug);
-
-// `hreflang` marks real translations only: a locale whose page is a redirect is
-// not a translation of the article, so it is never advertised as one.
-const alternates = holding.map((other) => ({
-  tag: getLocale(other).tag,
-  href: articleUrl(other, slug),
-}));
 ---
 
 <Article
   locale={locale}
   article={entry}
   rendered={rendered}
-  alternates={alternates}
+  languages={holding}
   tagHref={(tag) => tagPageUrl(locale, tag, 1)}
 />

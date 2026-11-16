@@ -18,7 +18,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { listUrl } from "../articles";
 import mark from "../assets/brand/mark.svg?raw";
-import { locales, type Locale } from "../i18n/locales";
+import { locales, localeIdentities, type Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
 import type { IconName } from "../icons";
 import { tagIndexUrl } from "../tags";
@@ -33,12 +33,14 @@ interface NavLink {
 
 /** One entry in the language switcher. */
 interface LanguageLink {
-  /** The BCP-47 tag, for `hreflang`. */
+  /** The BCP-47 tag, for `lang` and `hreflang`. */
   tag: string;
   /** The language's own name. */
   name: string;
   href: string;
   current: boolean;
+  /** Whether the locale holds this page, which a missing one renders disabled. */
+  available: boolean;
 }
 
 /** One theme choice. */
@@ -60,9 +62,9 @@ interface Props {
    */
   page?: "home" | "list" | "tags";
   /**
-   * The page's own path inside its locale, which the language links keep. Every
-   * locale serves the same shape, so the switcher never has to know which of
-   * them holds a translation.
+   * The page's own path inside its locale, which the language links keep. The
+   * path is shared, and which locales serve a page of their own is what
+   * `languages` answers.
    */
   path?: string;
   /**
@@ -70,9 +72,21 @@ interface Props {
    * the breakpoint. The page renders it; the header only repeats it.
    */
   heading: string;
+  /**
+   * The locales that hold this page. An article passes the set its translations
+   * make; a page kind that exists in every locale passes nothing and gets the
+   * whole table.
+   */
+  languages?: Locale[];
 }
 
-const { locale, page, path = "", heading } = Astro.props;
+const {
+  locale,
+  page,
+  path = "",
+  heading,
+  languages: availableLocales = localeIdentities,
+} = Astro.props;
 
 const siteName = t(locale, "text-site-name");
 
@@ -90,11 +104,18 @@ const nav: NavLink[] = [
   current: page === kind,
 }));
 
-const languages: LanguageLink[] = locales.map((other) => ({
+// A locale the page does not exist in is a disabled row rather than a link, so a
+// reader is never sent through the redirect page that stands at its URL. The set
+// `localesWith()` returns leaves a draft out; the current locale stays available
+// regardless, because a draft is served at its own URL although it is not
+// advertised as a translation.
+const languageLinks: LanguageLink[] = locales.map((other) => ({
   tag: other.tag,
   name: other.name,
   href: getRelativeLocaleUrl(other.identity, path),
   current: other.identity === locale,
+  available:
+    other.identity === locale || availableLocales.includes(other.identity),
 }));
 
 const themes: ThemeOption[] = (
@@ -113,7 +134,7 @@ const themes: ThemeOption[] = (
 }));
 
 const currentLanguage =
-  languages.find((entry) => entry.current) ?? languages[0];
+  languageLinks.find((entry) => entry.current) ?? languageLinks[0];
 ---
 
 <header class="site-header sticky-top bg-body">
@@ -195,17 +216,31 @@ const currentLanguage =
               </span>
             </summary>
             <ul class="dropdown-menu">
-              {languages.map((language) => (
+              {languageLinks.map((language) => (
                 <li>
-                  <a
-                    class:list={["dropdown-item", { active: language.current }]}
-                    href={language.href}
-                    lang={language.tag}
-                    hreflang={language.tag}
-                    aria-current={language.current ? "true" : undefined}
-                  >
-                    {language.name}
-                  </a>
+                  {language.available ? (
+                    <a
+                      class:list={[
+                        "dropdown-item",
+                        { active: language.current },
+                      ]}
+                      href={language.href}
+                      lang={language.tag}
+                      hreflang={language.tag}
+                      aria-current={language.current ? "true" : undefined}
+                    >
+                      {language.name}
+                    </a>
+                  ) : (
+                    <span
+                      class="dropdown-item disabled"
+                      role="link"
+                      aria-disabled="true"
+                      lang={language.tag}
+                    >
+                      {language.name}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -266,17 +301,28 @@ const currentLanguage =
             {t(locale, "text-action-language")}
           </h6>
           <ul class="navbar-nav" aria-labelledby="site-settings-language">
-            {languages.map((language) => (
+            {languageLinks.map((language) => (
               <li class="nav-item">
-                <a
-                  class:list={["nav-link", { active: language.current }]}
-                  href={language.href}
-                  lang={language.tag}
-                  hreflang={language.tag}
-                  aria-current={language.current ? "true" : undefined}
-                >
-                  {language.name}
-                </a>
+                {language.available ? (
+                  <a
+                    class:list={["nav-link", { active: language.current }]}
+                    href={language.href}
+                    lang={language.tag}
+                    hreflang={language.tag}
+                    aria-current={language.current ? "true" : undefined}
+                  >
+                    {language.name}
+                  </a>
+                ) : (
+                  <span
+                    class="nav-link disabled"
+                    role="link"
+                    aria-disabled="true"
+                    lang={language.tag}
+                  >
+                    {language.name}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
