@@ -565,9 +565,13 @@ export const markdownFootnotes = {
   },
 };
 
-/** The bar's own class, the label's, and the marker the pipeline uses for none. */
+/**
+ * The bar's own class, the label's, the copy button's, and the marker the
+ * pipeline uses for none.
+ */
 const CODE_BLOCK_BAR = "code-block-bar";
 const CODE_BLOCK_LANGUAGE = "code-block-language";
+const CODE_BLOCK_COPY = "code-block-copy";
 const UNNAMED_LANGUAGE = "plaintext";
 
 /** The bar step's context, as much of it as the step uses. */
@@ -584,7 +588,49 @@ interface CodeBlockVisitorContext {
 }
 
 /**
- * Puts a bar above every fenced code block, naming the language it holds.
+ * Builds the bar's copy button.
+ *
+ * The glyphs are `raw` nodes because `src/icons.ts` holds SVG strings: the
+ * raw-HTML step, which runs after this one, parses each into the elements a
+ * page can compile. Both carry `aria-hidden`, since the button's own
+ * `aria-label` is its name and a swapped glyph is silent anyway. `hidden` keeps
+ * the button out of a page without a script, the one page where a press would
+ * copy nothing.
+ *
+ * @param locale - The article's locale, for the button's name and its tooltip.
+ * @returns The button element, to append after the bar's label.
+ */
+function codeBlockCopy(locale: Locale): unknown {
+  const label = t(locale, "text-action-copy-code");
+  const glyph = (svg: string, marker: string) => ({
+    type: "element",
+    tagName: "span",
+    properties: { className: ["text-icon"], [marker]: "", ariaHidden: "true" },
+    children: [{ type: "raw", value: svg }],
+  });
+
+  return {
+    type: "element",
+    tagName: "button",
+    properties: {
+      type: "button",
+      className: [CODE_BLOCK_COPY],
+      dataCopyCode: "",
+      dataNeedsScript: "",
+      hidden: true,
+      ariaLabel: label,
+      title: label,
+    },
+    children: [
+      glyph(ICONS.contentCopy, "dataCopyIcon"),
+      glyph(ICONS.check, "dataCopiedIcon"),
+    ],
+  };
+}
+
+/**
+ * Puts a bar above every fenced code block, naming the language it holds and
+ * carrying the control that copies it.
  *
  * The name is the fence's info string, which the processor leaves in
  * `data-language` exactly as the author wrote it - `js` stays `js` - while the
@@ -613,11 +659,12 @@ export const markdownCodeBlocks = {
      * @param context - The visitor's context.
      */
     visit(node: Readonly<HastElement>, context: CodeBlockVisitorContext): void {
+      const { locale } = localeOf(context.fileURL);
       const written = node.properties?.dataLanguage;
       const marker = typeof written === "string" ? written.trim() : "";
       const label =
         marker === "" || marker === UNNAMED_LANGUAGE
-          ? t(localeOf(context.fileURL).locale, "text-label-code-block")
+          ? t(locale, "text-label-code-block")
           : marker;
 
       context.insertBefore(node, {
@@ -631,6 +678,7 @@ export const markdownCodeBlocks = {
             properties: { className: [CODE_BLOCK_LANGUAGE] },
             children: [{ type: "text", value: label }],
           },
+          codeBlockCopy(locale),
         ],
       });
     },

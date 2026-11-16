@@ -17,6 +17,7 @@
   "text-nav-toc": "On this page",
 
   "text-action-back-to-top": "Back to top",
+  "text-action-copy-code": "Copy code",
   "text-action-copy-link": "Copy link",
   "text-action-font-decrease": "Decrease text size",
   "text-action-font-increase": "Increase text size",
@@ -77,5 +78,6 @@
   "text-count-pages": "%1 pages",
   "text-count-tags": "Tags: %1",
 
+  "text-status-code-copied": "Code copied",
   "text-status-link-copied": "Link copied"
 }

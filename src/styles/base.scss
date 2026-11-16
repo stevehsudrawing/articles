@@ -446,6 +446,43 @@ pre code {
   color: var(--shar-syntax-comment);
 }
 
+/* The bar's copy control: a glyph rather than a word, so the bar keeps its
+   height at the reading scale's largest step. The UA chrome a `<button>`
+   carries is removed here for the tools bar's reason. The confirmation swaps
+   two glyphs through one attribute, which repeats that bar's pattern rather
+   than sharing it: its copy is scoped to its component and this one is
+   rendered into a code block, so neither can reach the other. */
+
+.code-block-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.125rem;
+  color: var(--shar-syntax-comment);
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.code-block-copy:hover {
+  color: var(--shar-syntax-text);
+}
+
+.code-block-copy [data-copied-icon] {
+  display: none;
+}
+
+.code-block-copy[data-copied] [data-copied-icon] {
+  display: inline-flex;
+}
+
+.code-block-copy[data-copied] [data-copy-icon] {
+  display: none;
+}
+
 /* --- Larger headings punctuation compression ---
    Larger headings need to use the "kern" font feature to compress the
    punctuation spacing. */

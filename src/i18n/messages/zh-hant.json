@@ -17,6 +17,7 @@
   "text-nav-toc": "本頁目錄",
 
   "text-action-back-to-top": "回到頂部",
+  "text-action-copy-code": "複製程式碼",
   "text-action-copy-link": "複製連結",
   "text-action-font-decrease": "縮小字級",
   "text-action-font-increase": "放大字級",
@@ -77,5 +78,6 @@
   "text-count-pages": "共 %1 頁",
   "text-count-tags": "共 %1 個標籤",
 
+  "text-status-code-copied": "已複製程式碼",
   "text-status-link-copied": "已複製連結"
 }

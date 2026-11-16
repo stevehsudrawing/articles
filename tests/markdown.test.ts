@@ -434,14 +434,63 @@ describe("markdownCodeBlocks", () => {
       className: ["code-block-bar"],
       dataCodeBlock: "",
     });
-    expect(bar.children).toEqual([
-      {
-        type: "element",
-        tagName: "span",
-        properties: { className: ["code-block-language"] },
-        children: [{ type: "text", value: "JavaScript" }],
+    const [label] = bar.children as InsertedNode[];
+
+    expect(label).toEqual({
+      type: "element",
+      tagName: "span",
+      properties: { className: ["code-block-language"] },
+      children: [{ type: "text", value: "JavaScript" }],
+    });
+  });
+
+  it("puts a copy button in the bar, hidden and named", () => {
+    const [bar] = runCodeBlock({ dataLanguage: "yaml" });
+    const [, button] = bar.children as InsertedNode[];
+
+    expect(button).toEqual({
+      type: "element",
+      tagName: "button",
+      properties: {
+        type: "button",
+        className: ["code-block-copy"],
+        dataCopyCode: "",
+        dataNeedsScript: "",
+        hidden: true,
+        ariaLabel: "复制代码",
+        title: "复制代码",
       },
-    ]);
+      children: [
+        {
+          type: "element",
+          tagName: "span",
+          properties: {
+            className: ["text-icon"],
+            dataCopyIcon: "",
+            ariaHidden: "true",
+          },
+          children: [{ type: "raw", value: ICONS.contentCopy }],
+        },
+        {
+          type: "element",
+          tagName: "span",
+          properties: {
+            className: ["text-icon"],
+            dataCopiedIcon: "",
+            ariaHidden: "true",
+          },
+          children: [{ type: "raw", value: ICONS.check }],
+        },
+      ],
+    });
+  });
+
+  it("names the copy button in the article's locale", () => {
+    const [bar] = runCodeBlock({}, "file:///content/2026-10-11-seed/en.mdx");
+    const [, button] = bar.children as InsertedNode[];
+
+    expect(button.properties?.ariaLabel).toBe("Copy code");
+    expect(button.properties?.title).toBe("Copy code");
   });
 
   it("falls back to the label when no language was written", () => {
@@ -502,8 +551,15 @@ describe("the rendered pipeline", () => {
   it("puts the bar directly before the code it names", async () => {
     const html = await render("```yaml\nloader: glob\n```\n", "zh-hans");
     const barEnd = html.indexOf("</div>") + "</div>".length;
+    const barHtml = html.slice(0, barEnd);
 
-    expect(html).toContain('<span class="code-block-language">yaml</span>');
+    expect(barHtml).toContain('<span class="code-block-language">yaml</span>');
+    expect(barHtml).toContain('class="code-block-copy"');
+    expect(barHtml).toContain("data-copy-code");
+    expect(barHtml).toContain('aria-label="复制代码"');
+    // Both glyphs arrive as `raw` nodes and leave it as elements: the two
+    // `<svg>` tags are what proves the step ran before the parse.
+    expect((barHtml.match(/<svg\b/g) ?? []).length).toBe(2);
     expect(html.slice(barEnd).trimStart().startsWith("<pre")).toBe(true);
   });
 });

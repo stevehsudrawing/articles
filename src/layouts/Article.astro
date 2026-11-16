@@ -212,12 +212,12 @@ const trail = articleTrail(locale, article.data.title);
       script or a measured offset. */}
   <ArticleTools locale={locale} placement="dock" />
 
-  {/* Two live regions, one per kind of announcement: a region inside the
+  {/* Three live regions, one per kind of announcement: a region inside the
       component would be rendered twice and announce every change twice. They
       are hidden, so where they sit does not matter. `aria-atomic` on the first
       makes the caption part of every announcement rather than a bare "110%";
-      the second is one sentence, and it starts empty because the confirmation
-      only becomes true when a copy succeeds. */}
+      the other two are one sentence each, and they start empty because a
+      confirmation only becomes true when a copy succeeds. */}
   <p class="visually-hidden" aria-live="polite" aria-atomic="true">
     {t(locale, "text-label-font-scale")}{" "}
     <span data-reading-status>
@@ -230,6 +230,13 @@ const trail = articleTrail(locale, article.data.title);
     aria-live="polite"
     data-copy-status
     data-copy-message={t(locale, "text-status-link-copied")}
+  ></p>
+
+  <p
+    class="visually-hidden"
+    aria-live="polite"
+    data-code-copy-status
+    data-code-copy-message={t(locale, "text-status-code-copied")}
   ></p>
 
   {/* The bar is rendered twice, so its behavior lives here, once: one delegated
@@ -347,6 +354,41 @@ const trail = articleTrail(locale, article.data.title);
         }, COPIED_MS);
       };
 
+      // The code block's copy control. The bar is the `pre`'s previous sibling,
+      // so the payload is the next element and nothing else: the label and the
+      // button stay behind.
+      const codeCopyButtons = document.querySelectorAll("[data-copy-code]");
+      const codeCopyStatus = document.querySelector("[data-code-copy-status]");
+      let codeCopiedTimer = 0;
+
+      const copyCode = async (button) => {
+        const pre = button.closest("[data-code-block]")?.nextElementSibling;
+        if (!(pre instanceof Element)) return;
+
+        if (codeCopyStatus) codeCopyStatus.textContent = "";
+
+        try {
+          await navigator.clipboard.writeText(pre.textContent ?? "");
+        } catch {
+          // The link control's reason: a check that lies is worse than none.
+          return;
+        }
+
+        // One checked block at a time, so the check follows the last press
+        // rather than marking every block the reader has copied.
+        for (const other of codeCopyButtons) delete other.dataset.copied;
+        button.dataset.copied = "";
+        if (codeCopyStatus) {
+          codeCopyStatus.textContent = codeCopyStatus.dataset.codeCopyMessage;
+        }
+
+        clearTimeout(codeCopiedTimer);
+        codeCopiedTimer = setTimeout(() => {
+          delete button.dataset.copied;
+          if (codeCopyStatus) codeCopyStatus.textContent = "";
+        }, COPIED_MS);
+      };
+
       // The face is a third branch of the same handler, and it hides nothing:
       // the pressed button is still on screen afterwards, so focus stays where
       // the reader put it. Only the view toggle needs the hand-off above,
@@ -371,6 +413,12 @@ const trail = articleTrail(locale, article.data.title);
 
         if (target.closest("[data-copy-link]")) {
           copy();
+          return;
+        }
+
+        const codeButton = target.closest("[data-copy-code]");
+        if (codeButton) {
+          copyCode(codeButton);
           return;
         }
 
