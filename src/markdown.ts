@@ -21,7 +21,9 @@
 //   6. The renderer's two English footnote strings renamed in the article's
 //      own language, and its back-reference mark redrawn - see
 //      `markdownFootnotes` below.
-//   7. The raw HTML those steps insert turned into elements, which is what an
+//   7. A bar above every fenced block, naming the language its author wrote -
+//      see `markdownCodeBlocks` below.
+//   8. The raw HTML those steps insert turned into elements, which is what an
 //      MDX page can compile - see `markdownRawHtml` below.
 //
 // The Astro 7 processor is Sätteri, so the hook is a Sätteri hast visitor and
@@ -563,6 +565,78 @@ export const markdownFootnotes = {
   },
 };
 
+/** The bar's own class, the label's, and the marker the pipeline uses for none. */
+const CODE_BLOCK_BAR = "code-block-bar";
+const CODE_BLOCK_LANGUAGE = "code-block-language";
+const UNNAMED_LANGUAGE = "plaintext";
+
+/** The bar step's context, as much of it as the step uses. */
+interface CodeBlockVisitorContext {
+  /** The file being rendered, for the language an unnamed block speaks. */
+  readonly fileURL: URL | undefined;
+  /**
+   * Inserts one node directly before another.
+   *
+   * @param node - The node the new one comes before.
+   * @param newNode - The node to insert.
+   */
+  insertBefore(node: Readonly<HastElement>, newNode: unknown): void;
+}
+
+/**
+ * Puts a bar above every fenced code block, naming the language it holds.
+ *
+ * The name is the fence's info string, which the processor leaves in
+ * `data-language` exactly as the author wrote it - `js` stays `js` - while the
+ * `language-*` class carries the grammar Prism resolved. The capitals the bar
+ * shows are `text-transform` in `base.scss`, so the markup keeps the author's
+ * own spelling and a reader whose browser ignores the transform still sees it.
+ *
+ * The bar is the `pre`'s **previous sibling**, not a wrapper: `wrapNode` makes
+ * the wrapped node its parent's first child, which would put the bar below the
+ * code. A sibling also keeps the block's own text intact, so a copy control can
+ * hand out `pre.textContent` without the bar traveling with it.
+ *
+ * A fence with no info string, and an indented block, arrive as
+ * `data-language="plaintext"`; neither names a language, so both take the
+ * message table's label. An author's own `<pre>` is still a raw node here and is
+ * parsed afterwards, which leaves their HTML exactly as written.
+ */
+export const markdownCodeBlocks = {
+  name: "articles/code-block-bar",
+  element: {
+    filter: ["pre"],
+    /**
+     * Inserts the bar before one code block.
+     *
+     * @param node - The `pre`.
+     * @param context - The visitor's context.
+     */
+    visit(node: Readonly<HastElement>, context: CodeBlockVisitorContext): void {
+      const written = node.properties?.dataLanguage;
+      const marker = typeof written === "string" ? written.trim() : "";
+      const label =
+        marker === "" || marker === UNNAMED_LANGUAGE
+          ? t(localeOf(context.fileURL).locale, "text-label-code-block")
+          : marker;
+
+      context.insertBefore(node, {
+        type: "element",
+        tagName: "div",
+        properties: { className: [CODE_BLOCK_BAR], dataCodeBlock: "" },
+        children: [
+          {
+            type: "element",
+            tagName: "span",
+            properties: { className: [CODE_BLOCK_LANGUAGE] },
+            children: [{ type: "text", value: label }],
+          },
+        ],
+      });
+    },
+  },
+};
+
 /** A `raw` node: HTML the renderer keeps as text instead of parsing. */
 interface RawNode {
   type: string;
@@ -669,6 +743,7 @@ export const markdownPlugins = [
   markdownFootnotes,
   markdownStep,
   markdownAlerts,
+  markdownCodeBlocks,
   markdownRawHtml,
 ];
 

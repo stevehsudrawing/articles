@@ -414,6 +414,38 @@ pre code {
   outline: none;
 }
 
+/* --- The code block's bar ---
+   The language a fence's author wrote, above the code and on the block's own
+   surface, so bar and code read as one panel. The hairline is the inline
+   chip's: it is the one line weight that works in both themes.
+
+   Sizes are in `em` because the reading scale sets `--shar-reading-scale` on
+   `.article-body`, so the bar has to move with the prose it belongs to - the
+   same reason Bootstrap's own `pre` rule is in `em`. The label takes the body's
+   face rather than the monospace stack, which has no CJK member and would draw
+   the unnamed case's 代码块 in whatever the browser fell back to; its capitals
+   are drawn here rather than written into the markup.
+
+   The inline start is `0.875em` rather than `1em` because `pre` draws its own
+   `1em` of padding at Bootstrap's `0.875em` type size; this puts the label on
+   the code's first column instead of 2px to its right. */
+
+.code-block-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.125rem 0.375rem 0.125rem 0.875em;
+  background-color: var(--shar-syntax-surface);
+  border-bottom: 1px solid rgba(var(--bs-body-color-rgb), 0.2);
+}
+
+.code-block-language {
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--shar-syntax-comment);
+}
+
 /* --- Larger headings punctuation compression ---
    Larger headings need to use the "kern" font feature to compress the
    punctuation spacing. */

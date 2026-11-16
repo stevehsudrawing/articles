@@ -7,6 +7,7 @@ import { parseAlertMarker } from "../src/alerts";
 import { ICONS } from "../src/icons";
 import {
   markdownAlerts,
+  markdownCodeBlocks,
   markdownFootnotes,
   markdownHeadings,
   markdownPlugins,
@@ -374,8 +375,99 @@ describe("markdownFootnotes", () => {
   });
 });
 
+/** A node the step inserts, as the visitor hands it over. */
+interface InsertedNode {
+  type: string;
+  tagName: string;
+  properties?: Record<string, unknown>;
+  children?: unknown[];
+}
+
+/**
+ * Runs the bar step over one code block, the way the processor does.
+ *
+ * @param properties - The `pre`'s properties, `data-language` included.
+ * @param file - The article file, whose name names the locale.
+ * @returns The nodes the step inserted, in order.
+ */
+function runCodeBlock(
+  properties: Record<string, unknown>,
+  file = "file:///content/2026-10-11-seed/zh-hans.mdx",
+) {
+  const element: Element = { type: "element", tagName: "pre", properties };
+  const inserted: InsertedNode[] = [];
+
+  markdownCodeBlocks.element.visit(element, {
+    fileURL: new URL(file),
+    insertBefore: (_node, newNode) => {
+      inserted.push(newNode as InsertedNode);
+    },
+  });
+
+  return inserted;
+}
+
+/**
+ * Reads the label out of an inserted bar.
+ *
+ * @param bar - The bar node.
+ * @returns The label's text.
+ */
+function labelOf(bar: InsertedNode): string {
+  const [span] = bar.children as InsertedNode[];
+  const [text] = span.children as { type: string; value: string }[];
+
+  return text.value;
+}
+
+describe("markdownCodeBlocks", () => {
+  it("filters for the code blocks it decorates", () => {
+    expect(markdownCodeBlocks.element.filter).toEqual(["pre"]);
+    expect(markdownCodeBlocks.name).toBe("articles/code-block-bar");
+  });
+
+  it("wraps the marker in a bar, without rewriting it", () => {
+    const [bar] = runCodeBlock({ dataLanguage: "JavaScript" });
+
+    expect(bar.tagName).toBe("div");
+    expect(bar.properties).toEqual({
+      className: ["code-block-bar"],
+      dataCodeBlock: "",
+    });
+    expect(bar.children).toEqual([
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["code-block-language"] },
+        children: [{ type: "text", value: "JavaScript" }],
+      },
+    ]);
+  });
+
+  it("falls back to the label when no language was written", () => {
+    expect(labelOf(runCodeBlock({})[0])).toBe("代码块");
+    expect(labelOf(runCodeBlock({ dataLanguage: "  " })[0])).toBe("代码块");
+    expect(labelOf(runCodeBlock({ dataLanguage: "plaintext" })[0])).toBe(
+      "代码块",
+    );
+  });
+
+  it("speaks the label in the article's locale", () => {
+    const [bar] = runCodeBlock({}, "file:///content/2026-10-11-seed/en.mdx");
+
+    expect(labelOf(bar)).toBe("Code block");
+  });
+});
+
 describe("the rendered pipeline", () => {
-  it("localizes a footnote's label and its back reference", async () => {
+  /**
+   * Renders one body through the site's steps.
+   *
+   * @param source - The Markdown to render.
+   * @param locale - The locale whose messages the render resolves.
+   * @returns The rendered HTML.
+   */
+  async function render(source: string, locale: string) {
     const processor = await createSatteriMarkdownProcessor({
       // Each step declares the part of the visitor context it reads, which is
       // narrower than the processor's own contract, so the list is cast where it
@@ -383,36 +475,48 @@ describe("the rendered pipeline", () => {
       hastPlugins:
         markdownPlugins as unknown as SatteriProcessorOptions["hastPlugins"],
     });
+    const { code } = await processor.render(source, {
+      fileURL: new URL(`file:///content/post/${locale}.mdx`),
+    });
+
+    return code;
+  }
+
+  it("localizes a footnote's label and its back reference", async () => {
     const source = "正文[^a]与再次引用[^a]。\n\n[^a]: 注释。\n";
-    const render = (locale: string) =>
-      processor.render(source, {
-        fileURL: new URL(`file:///content/post/${locale}.mdx`),
-      });
+    const zh = await render(source, "zh-hans");
+    const en = await render(source, "en");
 
-    const zh = await render("zh-hans");
-    const en = await render("en");
-
-    expect(zh.code).toContain('id="footnote-label">脚注</h2>');
-    expect(zh.code).toContain('aria-label="返回引用 1"');
-    expect(zh.code).toContain('aria-label="返回引用 1-2"');
-    expect(zh.code).not.toContain("Back to reference");
-    expect(zh.code).not.toContain("↩");
-    expect(zh.code).toContain(
+    expect(zh).toContain('id="footnote-label">脚注</h2>');
+    expect(zh).toContain('aria-label="返回引用 1"');
+    expect(zh).toContain('aria-label="返回引用 1-2"');
+    expect(zh).not.toContain("Back to reference");
+    expect(zh).not.toContain("↩");
+    expect(zh).toContain(
       'aria-hidden="true"><!-- Material Symbols: keyboard_return -->',
     );
-    expect(en.code).toContain('id="footnote-label">Footnotes</h2>');
-    expect(en.code).not.toContain("返回引用");
+    expect(en).toContain('id="footnote-label">Footnotes</h2>');
+    expect(en).not.toContain("返回引用");
+  });
+
+  it("puts the bar directly before the code it names", async () => {
+    const html = await render("```yaml\nloader: glob\n```\n", "zh-hans");
+    const barEnd = html.indexOf("</div>") + "</div>".length;
+
+    expect(html).toContain('<span class="code-block-language">yaml</span>');
+    expect(html.slice(barEnd).trimStart().startsWith("<pre")).toBe(true);
   });
 });
 
 describe("markdownPlugins", () => {
   it("runs the heading ids before the permalinks that point at them", () => {
-    expect(markdownPlugins).toHaveLength(6);
+    expect(markdownPlugins).toHaveLength(7);
     expect(typeof markdownPlugins[0]).toBe("function");
     expect(markdownPlugins[1]).toBe(markdownHeadings);
     expect(markdownPlugins[2]).toBe(markdownFootnotes);
     expect(markdownPlugins[3]).toBe(markdownStep);
     expect(markdownPlugins[4]).toBe(markdownAlerts);
+    expect(markdownPlugins[5]).toBe(markdownCodeBlocks);
   });
 
   it("leaves the raw-html parse last, after every step that inserts one", () => {
