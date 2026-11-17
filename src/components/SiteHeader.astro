@@ -646,7 +646,7 @@ const currentLanguage =
      touched - and it carries no transition, because the header is flat. */
   .site-menu-caret {
     margin-inline-start: 0.25rem;
-    opacity: 0.75;
+    opacity: var(--shar-decoration-opacity);
   }
 
   .site-menu[open] > summary .site-menu-caret {
@@ -730,8 +730,11 @@ const currentLanguage =
   .site-panel-scrim {
     inset-inline: 0;
     z-index: 1;
-    background-color: rgba(var(--bs-body-bg-rgb), 0.75);
-    backdrop-filter: blur(0.5rem);
+    background-color: rgba(
+      var(--bs-body-bg-rgb),
+      var(--shar-decoration-opacity)
+    );
+    backdrop-filter: var(--shar-backdrop-filter);
   }
 
   .site-panel {

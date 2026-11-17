@@ -6,6 +6,16 @@
    ========================================================================== */
 
 :root {
+  /* The opacity of a translucent decoration, matching the main site's surface
+     value. Read by the panel scrim and the menu caret; the preference query
+     below makes it 1. */
+  --shar-decoration-opacity: 0.8;
+
+  /* The backdrop filter that blurs a translucent decoration, matching the main
+     site's small blur step. `none` in the same query, so a surface is not
+     blurred to zero. */
+  --shar-backdrop-filter: blur(0.5rem);
+
   /* The header's own height. The header, the sticky sidebar's offset and
      `scroll-padding-top` all read it, so the three cannot drift apart. */
   --shar-header-height: 64px;
@@ -59,4 +69,18 @@
      where it is used, so one definition serves both themes. */
   --shar-border: var(--bs-border-width) var(--bs-border-style)
     var(--bs-border-color);
+}
+
+/* --- Accessibility preferences --- */
+
+/* A reader who asks for flatter surfaces gets them: both preferences ask for
+   the same thing, and a browser that does not know one of them still answers
+   the other. The filter is `none` rather than `blur(0)`, which would still
+   create the backdrop root. */
+
+@media (prefers-contrast: more) or (prefers-reduced-transparency: reduce) {
+  :root {
+    --shar-decoration-opacity: 1;
+    --shar-backdrop-filter: none;
+  }
 }
