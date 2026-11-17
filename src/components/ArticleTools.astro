@@ -176,8 +176,8 @@ const readingDefault = String(DEFAULT_READING_SCALE);
      the rail would separate the bar from nothing while standing beside the
      article's own footer rule at the bottom of the page - half its width, in the
      neighboring column, reading as two lines that failed to meet. The
-     background stays on both: one declaration serves the two placements, and
-     only the dock copy needs it. */
+     background stays on the base rule, so the rail copy is opaque; the dock copy
+     overrides it with its band. */
   .article-tools {
     position: sticky;
     bottom: 0;
@@ -198,6 +198,18 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   .article-tools--dock {
     display: flex;
     justify-content: space-around;
+  }
+
+  /* Only the dock copy carries the band: nothing passes beneath the rail copy,
+     so it keeps the opaque base. */
+  .article-tools--dock {
+    background-color: transparent;
+    background-image: linear-gradient(
+      to top,
+      rgba(var(--bs-body-bg-rgb), 1),
+      rgba(var(--bs-body-bg-rgb), var(--shar-decoration-opacity))
+    );
+    backdrop-filter: var(--shar-backdrop-filter);
   }
 
   @media (min-width: 1200px) {

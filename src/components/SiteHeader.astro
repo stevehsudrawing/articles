@@ -137,7 +137,7 @@ const currentLanguage =
   languageLinks.find((entry) => entry.current) ?? languageLinks[0];
 ---
 
-<header class="site-header sticky-top bg-body">
+<header class="site-header sticky-top">
   <nav class="navbar navbar-expand-md">
     {/* Below `md` this is a grid: the two buttons take the outer columns and
         the mark takes the middle one. At `md` it is Bootstrap's flex row. */}
@@ -422,6 +422,24 @@ const currentLanguage =
     border-bottom: var(--bs-border-width) solid transparent;
   }
 
+  /* The band is the header's surface, drawn behind its content. A filter on the
+     header itself would become the fixed panels' containing block and their
+     backdrop root, so a panel would collapse to the header's box and the page
+     behind the scrim would lose its blur. The pseudo stops at the padding box,
+     so the 1px scroll edge stays uncovered. */
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(var(--bs-body-bg-rgb), 1),
+      rgba(var(--bs-body-bg-rgb), var(--shar-decoration-opacity))
+    );
+    backdrop-filter: var(--shar-backdrop-filter);
+  }
+
   /* The wrapper and the name exist only below the breakpoint, where the wrapper
      becomes the two layers' cell. Above it the wrapper is not a box at all, so
      the mark keeps the row's own cell and the bar's order. These defaults come
@@ -643,7 +661,8 @@ const currentLanguage =
 
   /* The caret says what a wide trigger does. It turns while the menu is open -
      `rotate` rather than a `transform`, so nothing else on the summary is
-     touched - and it carries no transition, because the header is flat. */
+     touched - and it carries no transition, because the panel it opens
+     appears instantly. */
   .site-menu-caret {
     margin-inline-start: 0.25rem;
     opacity: var(--shar-decoration-opacity);
