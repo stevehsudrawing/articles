@@ -203,7 +203,7 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   /* Only the dock copy carries the band: nothing passes beneath the rail copy,
      so it keeps the opaque base. */
   .article-tools--dock {
-    background-color: transparent;
+    background-color: var(--shar-band-background);
     background-image: linear-gradient(
       to top,
       rgba(var(--bs-body-bg-rgb), 1),
@@ -424,5 +424,25 @@ const readingDefault = String(DEFAULT_READING_SCALE);
 
   .article-tools--dock .article-tools-line {
     display: block;
+  }
+
+  /* Forced colors leaves an SVG's strokes alone (the UA's
+     `svg|svg { forced-color-adjust: preserve-parent-color }` inherits to the
+     circles), so the ring keeps the author's accent while the line's background
+     is forced to the palette. Both take `Highlight`, the track `GrayText`, so
+     the two placements state progress the same way; a system color is not
+     forced again. */
+  @media (forced-colors: active) {
+    .article-tools-ring-arc {
+      stroke: Highlight;
+    }
+
+    .article-tools-ring-track {
+      stroke: GrayText;
+    }
+
+    .article-tools-line {
+      background-color: Highlight;
+    }
   }
 </style>

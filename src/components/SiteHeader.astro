@@ -432,6 +432,7 @@ const currentLanguage =
     position: absolute;
     inset: 0;
     z-index: -1;
+    background-color: var(--shar-band-background);
     background-image: linear-gradient(
       to bottom,
       rgba(var(--bs-body-bg-rgb), 1),
@@ -717,6 +718,15 @@ const currentLanguage =
     .site-header-brand,
     .site-header-mark {
       transition: none;
+    }
+  }
+
+  /* The transparent outline is a reserved box, not a hidden one: forced colors
+     paints every outline, so the resting brand would wear a frame. Canvas is
+     the band's own fill there, which leaves the box to the state rules. */
+  @media (forced-colors: active) {
+    .site-header-brand {
+      outline-color: Canvas;
     }
   }
 
