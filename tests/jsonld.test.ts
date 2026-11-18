@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SITE } from "../site.config.mjs";
 import type { Trail } from "../src/breadcrumbs";
 import {
   articleNode,
@@ -9,6 +10,7 @@ import {
   type LocaleSite,
   type PageGraph,
 } from "../src/jsonld";
+import { MAIN_SITE_URL } from "../src/site";
 import type { ShareImage } from "../src/site-assets";
 
 const site: LocaleSite = {
@@ -90,7 +92,7 @@ describe("pageGraph", () => {
     });
     expect(person).toMatchObject({
       name: "Steve Hsu (什五)",
-      url: "https://stevehsudrawing.github.io/",
+      url: MAIN_SITE_URL,
       email: "stevehsudrawing@outlook.com",
     });
   });
@@ -262,8 +264,8 @@ describe("breadcrumbNode", () => {
     const node = breadcrumbNode(trail, url);
 
     expect(node.itemListElement.map((step) => step.item)).toEqual([
-      "https://stevehsudrawing.github.io/articles/zh-hans/",
-      "https://stevehsudrawing.github.io/articles/zh-hans/page/1/",
+      `${SITE}/articles/zh-hans/`,
+      `${SITE}/articles/zh-hans/page/1/`,
       undefined,
     ]);
   });

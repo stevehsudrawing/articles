@@ -12,7 +12,7 @@
  */
 
 /** The origin the site is published from. */
-export const SITE = "https://stevehsudrawing.github.io";
+export const SITE = "https://stevehsu.link";
 
 /** The path the site lives under, with no trailing slash. */
 export const BASE = "/articles";

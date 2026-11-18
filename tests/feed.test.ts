@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SITE } from "../site.config.mjs";
 import type { Article } from "../src/articles";
 import { feedItems, feedOptions, feedUrl } from "../src/feed";
 import { AUTHOR_EMAIL } from "../src/site";
@@ -54,7 +55,7 @@ describe("feedItems", () => {
   it("links each item to its page in this locale", () => {
     const [first] = feedItems("zh-hant", ARTICLES);
 
-    expect(first.link).toMatch(/^https:\/\/stevehsudrawing\.github\.io\//);
+    expect(first.link?.startsWith(`${SITE}/`)).toBe(true);
     expect(first.link).toMatch(/\/zh-hant\/2026-10-11-new\/$/);
   });
 

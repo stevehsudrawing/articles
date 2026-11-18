@@ -1,7 +1,7 @@
 # Steve Hsu (什五)'s Articles
 
 The source of Steve Hsu (什五)'s personal blog. The site is built with Astro and
-published with GitHub Pages at <https://stevehsudrawing.github.io/articles>.
+published with GitHub Pages at <https://stevehsu.link/articles>.
 
 ## 1. Browser Support
 

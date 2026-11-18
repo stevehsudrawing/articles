@@ -15,7 +15,7 @@
  * Absolute and written whole, because it is a destination outside this site and
  * never passes through `asset()`.
  */
-export const MAIN_SITE_URL = "https://stevehsudrawing.github.io/";
+export const MAIN_SITE_URL = "https://stevehsu.link/";
 
 /**
  * The address the site's author can be written to.

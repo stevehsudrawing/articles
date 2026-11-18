@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { SITE as ORIGIN } from "../site.config.mjs";
 import { mirrorUrl, type Article } from "../src/articles";
 import { LICENSES } from "../src/content.config";
 import { llmsTxt, llmsUrl, mirrorMarkdown } from "../src/llms";
 import { REPOSITORY_URL } from "../src/site";
+
+/** The origin with its dots escaped, for the address assertions below. */
+const ORIGIN_PATTERN = ORIGIN.replace(/\./g, "\\.");
 
 /** A published article with only the fields these documents read. */
 function article(
@@ -88,7 +92,10 @@ describe("llmsTxt", () => {
     // The base is `/` under Vitest, so the middle of the address is optional
     // here and only the build writes the real one.
     expect(text).toMatch(
-      /\(https:\/\/stevehsudrawing\.github\.io\/(?:[^)]*\/)?en\/2026-10-11-seed\/index\.md\): A description\.$/m,
+      new RegExp(
+        `\\(${ORIGIN_PATTERN}/(?:[^)]*/)?en/2026-10-11-seed/index\\.md\\): A description\\.$`,
+        "m",
+      ),
     );
   });
 
@@ -148,7 +155,7 @@ describe("mirrorMarkdown", () => {
 
     expect(text).toContain("- Published: 2026-10-11");
     expect(text).toMatch(
-      /- Canonical: https:\/\/stevehsudrawing\.github\.io\/(?:.*\/)?zh-hans\/a\/$/m,
+      new RegExp(`- Canonical: ${ORIGIN_PATTERN}/(?:.*/)?zh-hans/a/$`, "m"),
     );
   });
 
