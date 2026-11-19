@@ -330,6 +330,19 @@ a:active {
   vertical-align: -0.125em;
 }
 
+/* --- Outward-link glyph ---
+   A link that leaves the site wears an arrow small enough to read as a mark,
+   at the text's top-right corner - the hub's own indicator rule. The size is a
+   font size because a glyph is an `em` box, and the wrapper owns it, so nothing
+   reaches into the icon. The header's hub link and the footer's license link
+   share the rule. */
+
+.link-indicator {
+  font-size: 0.6rem;
+  line-height: 1;
+  vertical-align: top;
+}
+
 /* --- Alerts ---
    `markdownAlerts` rewrites `> [!NOTE]` into a blockquote carrying
    `.alert`, `alert-<variant>` and `data-alert-kind="note"`. The variant is one

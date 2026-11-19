@@ -21,6 +21,7 @@ import mark from "../assets/brand/mark.svg?raw";
 import { locales, localeIdentities, type Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
 import type { IconName } from "../icons";
+import { MAIN_SITE_URL } from "../site";
 import { tagIndexUrl } from "../tags";
 import Icon from "./Icon.astro";
 
@@ -28,7 +29,11 @@ import Icon from "./Icon.astro";
 interface NavLink {
   href: string;
   label: string;
+  /** The hover text, for a link whose label cannot say where it leads. */
+  title?: string;
   current: boolean;
+  /** Whether the link leaves this site for the hub. */
+  mainSite?: boolean;
 }
 
 /** One entry in the language switcher. */
@@ -90,19 +95,36 @@ const {
 
 const siteName = t(locale, "text-site-name");
 
+// The hub reads the shared `lang` key, so the hub link writes the locale's
+// BCP-47 tag before it navigates. Visiting this site never writes it.
+const language = locales.find((entry) => entry.identity === locale)!.tag;
+
 // The list's own URL is its first page: `/page/` exists only as a redirect, and
 // no in-site link should need one. The tag index follows the same shape, and
 // both paths come from the modules that build them, because the breadcrumb is
 // their third reader.
 const nav: NavLink[] = [
-  { kind: "home", href: getRelativeLocaleUrl(locale, "") },
-  { kind: "list", href: listUrl(locale) },
-  { kind: "tags", href: tagIndexUrl(locale) },
-].map(({ kind, href }) => ({
-  href,
-  label: t(locale, `text-nav-${kind}`),
-  current: page === kind,
-}));
+  ...[
+    { kind: "home", href: getRelativeLocaleUrl(locale, "") },
+    { kind: "list", href: listUrl(locale) },
+    { kind: "tags", href: tagIndexUrl(locale) },
+  ].map(({ kind, href }) => ({
+    href,
+    label: t(locale, `text-nav-${kind}`),
+    current: page === kind,
+  })),
+  // The hub closes the row. It is not a page of this site, so it is never
+  // current and takes no `aria-current`; `data-main-site` is what the
+  // language write looks for, and the tooltip names the hub instead of
+  // repeating the label.
+  {
+    href: MAIN_SITE_URL,
+    label: t(locale, "text-nav-main-site"),
+    title: t(locale, "text-nav-main-site-title"),
+    current: false,
+    mainSite: true,
+  },
+];
 
 // A locale the page does not exist in is a disabled row rather than a link, so a
 // reader is never sent through the redirect page that stands at its URL. The set
@@ -165,8 +187,16 @@ const currentLanguage =
                   class:list={["nav-link", { active: link.current }]}
                   href={link.href}
                   aria-current={link.current ? "page" : undefined}
+                  title={link.title}
+                  data-main-site={link.mainSite ? "" : undefined}
+                  data-lang={link.mainSite ? language : undefined}
                 >
                   {link.label}
+                  {link.mainSite && (
+                    <span class="link-indicator">
+                      <Icon name="arrowOutward" />
+                    </span>
+                  )}
                 </a>
               </li>
             ))}
@@ -196,8 +226,16 @@ const currentLanguage =
               class:list={["nav-link", { active: link.current }]}
               href={link.href}
               aria-current={link.current ? "page" : undefined}
+              title={link.title}
+              data-main-site={link.mainSite ? "" : undefined}
+              data-lang={link.mainSite ? language : undefined}
             >
               {link.label}
+              {link.mainSite && (
+                <span class="link-indicator">
+                  <Icon name="arrowOutward" />
+                </span>
+              )}
             </a>
           </li>
         ))}
@@ -403,6 +441,17 @@ const currentLanguage =
         menu.open = false;
       }
     });
+
+    // The hub link writes the shared `lang` key before it navigates. The link
+    // works without this - only the storage write is lost - which is why the
+    // handler is three lines here rather than a second island. The list is
+    // rendered twice (the wide row and the panel) and only one copy is shown
+    // at a time, so every copy is wired.
+    for (const link of document.querySelectorAll("[data-main-site]")) {
+      link.addEventListener("click", (event) => {
+        localStorage.setItem("lang", event.currentTarget.dataset.lang);
+      });
+    }
   })();
 </script>
 

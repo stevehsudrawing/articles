@@ -1,8 +1,8 @@
 ---
 import { feedUrl } from "../feed";
 import { t } from "../i18n/messages";
-import { locales, type Locale } from "../i18n/locales";
-import { MAIN_SITE_URL, REPOSITORY_URL } from "../site";
+import type { Locale } from "../i18n/locales";
+import { REPOSITORY_URL } from "../site";
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
   /**
    * Whether the footer is the site's colophon in one line - the copyright and
    * the site's own name - rather than the banded row that also carries the feed
-   * link and the two outward links. Only the error page asks for it: it has one
+   * link and the license. Only the error page asks for it: it has one
    * exit already, and a link home here would be a second.
    */
   minimal?: boolean;
@@ -20,10 +20,6 @@ interface Props {
 const { locale, minimal = false } = Astro.props;
 const year = new Date().getFullYear();
 const siteName = t(locale, "text-site-name");
-
-// The one control that writes the shared `lang`: following it is an explicit
-// act, and the main site reads that key. Visiting this site never writes it.
-const language = locales.find((entry) => entry.identity === locale)!.tag;
 ---
 
 <footer class={minimal ? "py-4 small" : "bg-body-tertiary py-4 mt-2 small"}>
@@ -54,15 +50,7 @@ const language = locales.find((entry) => entry.identity === locale)!.tag;
           <p class="mb-0">
             <a href={`${REPOSITORY_URL}/blob/main/LICENSE.md`} target="_blank">
               {t(locale, "text-nav-license")}
-              <span class="footer-indicator">
-                <Icon name="arrowOutward" />
-              </span>
-            </a>
-          </p>
-          <p class="mb-0">
-            <a href={MAIN_SITE_URL} data-main-site data-lang={language}>
-              {t(locale, "text-nav-main-site")}
-              <span class="footer-indicator">
+              <span class="link-indicator">
                 <Icon name="arrowOutward" />
               </span>
             </a>
@@ -72,28 +60,3 @@ const language = locales.find((entry) => entry.identity === locale)!.tag;
     </div>
   </div>
 </footer>
-
-{!minimal && <script is:inline>
-  // The link above works without this: only the storage write is lost, which
-  // is why the handler is three lines here rather than a second island. It
-  // renders only beside that link - the minimal footer has none.
-  document
-    .querySelector("[data-main-site]")
-    ?.addEventListener("click", (event) => {
-      localStorage.setItem("lang", event.currentTarget.dataset.lang);
-    });
-</script>}
-
-<style>
-  /* The two links that leave the site carry the outward arrow, small and at the
-     text's top-right corner, which is the main site's own indicator rule. The
-     size is a font size because a glyph is an `em` box: the wrapper is what
-     owns it, so nothing here reaches into the icon. (`Icon.astro` renders the
-     SVG through `set:html`, so it carries no scope attribute and a scoped rule
-     cannot name it - the wrapper is the element that can be named.) */
-  .footer-indicator {
-    font-size: 0.6rem;
-    line-height: 1;
-    vertical-align: top;
-  }
-</style>
