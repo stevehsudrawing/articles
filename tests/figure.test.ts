@@ -6,10 +6,10 @@ import {
 } from "../src/figure";
 
 describe("figurePlacement", () => {
-  it("defaults to an unfloated left figure", () => {
+  it("defaults to an unfloated centered figure", () => {
     expect(figurePlacement({})).toEqual([
       FIGURE_CLASS,
-      `${FIGURE_CLASS}--left`,
+      `${FIGURE_CLASS}--center`,
     ]);
   });
 
@@ -32,11 +32,17 @@ describe("figurePlacement", () => {
     }
   });
 
-  it("refuses to float and center at once, naming the two sides that work", () => {
+  it("refuses to float and center, naming the two sides that work", () => {
     const placement: FigurePlacement = { float: true, align: "center" };
 
     expect(() => figurePlacement(placement)).toThrow(
-      'cannot float and center at once: text cannot wrap a centered float. Use align="left" or align="right"',
+      'cannot float and center at once: align defaults to "center", and text cannot wrap a centered float. Use align="left" or align="right"',
+    );
+  });
+
+  it("refuses a float with no side: the default is the center", () => {
+    expect(() => figurePlacement({ float: true })).toThrow(
+      'align defaults to "center"',
     );
   });
 });

@@ -14,9 +14,15 @@ interface Props {
   image: ThemeImageProps & { alt: string };
   /** Information the image does not carry, rendered under it. */
   caption?: string;
-  /** Whether the following prose wraps beside the figure. */
+  /**
+   * Whether the following prose wraps beside the figure, from `lg` up in the
+   * standard view. A float needs a side.
+   */
   float?: boolean;
-  /** The side the figure sits on, or floats to. */
+  /**
+   * The side the figure sits on, or floats to: centered by default, and
+   * effective only from `lg` up in the standard view.
+   */
   align?: FigureAlign;
   /** The figure's own box: the classes a rule matches, not the image's. */
   class?: string;
@@ -30,7 +36,7 @@ const {
   image,
   caption,
   float = false,
-  align = "left",
+  align = "center",
   class: className,
 } = Astro.props;
 const classes = [...figurePlacement({ float, align }), className]

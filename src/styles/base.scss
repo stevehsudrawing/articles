@@ -168,45 +168,47 @@ a:active {
 }
 
 /* --- Article figures ---
-   A figure is a full-width box in the column: the image sits where `align`
-   puts it and the caption takes the whole box, so its text can run the
-   column's width. From `lg` a floated figure is as wide as its image - or
-   `--shar-figure-min-width` when the image is narrower - and its caption wraps
-   at that width: `width: 0` keeps the caption's longest line out of the box's
-   intrinsic width, which `fit-content` would otherwise be sized to, and
+   A figure is a full-width box in the column, centered: the image sits in the
+   middle of the measure and the caption takes the whole box, so its text can
+   run the column's width. `align` and `float` are refinements of the wide
+   standard view, drawn only by the rules inside the `lg` query below, so a
+   narrow page and the comfortable view keep this centered, unfloated box
+   whatever the props say. From `lg` a floated figure is as wide as its image -
+   or `--shar-figure-min-width` when the image is narrower - and its caption
+   wraps at that width: `width: 0` keeps the caption's longest line out of the
+   box's intrinsic width, which `fit-content` would otherwise be sized to, and
    `min-width: 100%` stretches the caption back to the box once the box is
-   known. Below `lg`, and in the comfortable view at any width, the float keeps
-   the full-width box above, so it reads as an unfloated figure. The grid stops
-   the picture filling the box, so `justify-items` places the image and
-   `text-align` carries the caption's text along. */
+   known. The grid stops the picture filling the box, so `justify-items` places
+   the image and `text-align` carries the caption's text along. */
 
 .article-figure {
   display: grid;
-  justify-items: start;
+  justify-items: center;
+  text-align: center;
   width: 100%;
   margin-block: 1rem;
 }
 
-.article-figure--center {
-  justify-items: center;
-  text-align: center;
-}
-
-.article-figure--right {
-  justify-items: end;
-  text-align: end;
-}
-
 /* From `lg` the measure can spare the lines beside a figure, so a floated one
    becomes the image's width, the prose wraps beside it, and the caption wraps
-   at the image. Below `lg` none of this applies: the figure is the block above
-   and only its `align` places the image. The comfortable view holds the same
-   measure - 528 px whatever the window - so it takes the same reading: the
-   `data-reading-view` attribute is the gate, and the float's rules apply only
-   to the standard view. */
+   at the image. The same view is where a side applies: below `lg` the image has
+   nothing to sit against, so it stays in the middle. The comfortable view holds
+   the same measure - 528 px whatever the window - so it takes the same reading:
+   the `data-reading-view` attribute is the gate, and the side's and the float's
+   rules apply only to the standard view. */
 
 @include media-breakpoint-up(lg) {
   :root:not([data-reading-view="comfort"]) {
+    .article-figure--left {
+      justify-items: start;
+      text-align: start;
+    }
+
+    .article-figure--right {
+      justify-items: end;
+      text-align: end;
+    }
+
     .article-figure--float {
       width: fit-content;
       max-width: 100%;
