@@ -54,11 +54,13 @@ export function normalizeLang(tag: string): Locale {
 }
 
 /**
- * Resolves the language for the bare root: the shared `lang` when it holds a
- * `zh-*` value, then the browser's own preferences, then the default locale.
+ * Resolves the language for the bare root: the shared `lang` when it names a
+ * published locale, then the browser's own preferences, then the default
+ * locale.
  *
- * A shared `lang` of `en` is skipped, because the main site writes its own
- * default on every load and `en` therefore cannot be told from a real choice.
+ * The main site writes `lang` only when a reader picks a language, so a stored
+ * value that matches is a choice. An unsupported value — a leftover from an
+ * older release, or another page's write — falls through to the browser.
  *
  * @param stored - The value of the shared `lang` key, or `null`.
  * @param browserLanguages - `navigator.languages`, most preferred first.
@@ -68,14 +70,12 @@ export function resolveLocale(
   stored: string | null,
   browserLanguages: readonly string[],
 ): Locale {
-  const shared = stored?.trim().toLowerCase() ?? "";
-  if (shared === "zh" || shared.startsWith("zh-")) {
-    return matchLang(shared) ?? defaultLocale;
-  }
+  const shared = matchLang(stored ?? "");
+  if (shared) return shared;
 
   for (const tag of browserLanguages) {
-    const match = matchLang(tag);
-    if (match) return match;
+    const browser = matchLang(tag);
+    if (browser) return browser;
   }
   return defaultLocale;
 }

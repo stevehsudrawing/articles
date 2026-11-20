@@ -95,8 +95,9 @@ const {
 
 const siteName = t(locale, "text-site-name");
 
-// The hub reads the shared `lang` key, so the hub link writes the locale's
-// BCP-47 tag before it navigates. Visiting this site never writes it.
+// The hub writes the shared `lang` key only when a reader chooses a
+// language, so following the hub link writes this locale's BCP-47 tag back;
+// visiting this site never writes it.
 const language = locales.find((entry) => entry.identity === locale)!.tag;
 
 // The list's own URL is its first page: `/page/` exists only as a redirect, and

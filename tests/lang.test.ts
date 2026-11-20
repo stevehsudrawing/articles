@@ -50,8 +50,12 @@ describe("resolveLocale", () => {
     expect(resolveLocale("zh-Hant", ["en-US", "en"])).toBe("zh-hant");
   });
 
-  it("skips a stored en value and reads the browser's list", () => {
-    expect(resolveLocale("en", ["zh-Hant", "en-US"])).toBe("zh-hant");
+  it("lets a stored en value win — the reader chose it", () => {
+    expect(resolveLocale("en", ["zh-Hant", "en-US"])).toBe("en");
+  });
+
+  it("ignores an unsupported stored value and reads the browser's list", () => {
+    expect(resolveLocale("fr", ["zh-Hant"])).toBe("zh-hant");
   });
 
   it("scans the browser's list for the first supported language", () => {
