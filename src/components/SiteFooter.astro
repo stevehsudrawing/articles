@@ -1,7 +1,7 @@
 ---
 import { feedUrl } from "../feed";
-import { t } from "../i18n/messages";
 import type { Locale } from "../i18n/locales";
+import { t } from "../i18n/messages";
 import { REPOSITORY_URL } from "../site";
 import Icon from "./Icon.astro";
 
@@ -24,39 +24,44 @@ const siteName = t(locale, "text-site-name");
 
 <footer class={minimal ? "py-4 small" : "bg-body-tertiary py-4 mt-2 small"}>
   <div class="container">
-    <div class="text-body-secondary d-flex flex-wrap gap-3">
-      <p class="mb-0 flex-grow-1">
+    <div class="text-body-secondary d-flex flex-wrap gap-1">
+      <div class="mb-0 flex-grow-1 me-2">
         {t(
           locale,
           "text-site-copyright",
           String(year),
           t(locale, "text-site-author"),
         )}
-      </p>
-      {minimal ? (
-        <p class="mb-0">
-          <b>{siteName}</b>
-        </p>
-      ) : (
-        <>
-          <p class="mb-0">
-            <a href={feedUrl(locale)}>
-              <span class="text-icon me-1" aria-hidden="true">
-                <Icon name="rssFeed" />
-              </span>
-              {t(locale, "text-nav-feed")}
-            </a>
-          </p>
-          <p class="mb-0">
-            <a href={`${REPOSITORY_URL}/blob/main/LICENSE.md`} target="_blank">
-              {t(locale, "text-nav-license")}
-              <span class="link-indicator">
-                <Icon name="arrowOutward" />
-              </span>
-            </a>
-          </p>
-        </>
-      )}
+      </div>
+      <div class="d-flex gap-3">
+        {minimal ? (
+          <div class="mb-0">
+            <b>{siteName}</b>
+          </div>
+        ) : (
+          <>
+            <div class="mb-0">
+              <a href={feedUrl(locale)}>
+                <span class="text-icon me-1" aria-hidden="true">
+                  <Icon name="rssFeed" />
+                </span>
+                {t(locale, "text-nav-feed")}
+              </a>
+            </div>
+            <div class="mb-0">
+              <a
+                href={`${REPOSITORY_URL}/blob/main/LICENSE.md`}
+                target="_blank"
+              >
+                {t(locale, "text-nav-license")}
+                <span class="link-indicator">
+                  <Icon name="arrowOutward" />
+                </span>
+              </a>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   </div>
 </footer>
