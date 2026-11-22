@@ -139,6 +139,19 @@ describe("pagesOf", () => {
     );
   });
 
+  it("appends a license document after the articles, dated by its last change", () => {
+    const pages = pagesOf("zh-hans", {
+      ...content,
+      licenses: [{ slug: "restricted-artworks", lastmod: "2026-11-22" }],
+    });
+
+    const last = pages[pages.length - 1];
+    expect(last.path).toBe("licenses/restricted-artworks/");
+    expect(last.kind).toBe("license");
+    expect(last.indexable).toBe(true);
+    expect(last.lastmod).toBe("2026-11-22");
+  });
+
   it("adds a second list page only when the articles need one", () => {
     const many = Array.from({ length: PER_PAGE + 1 }, (_, index) =>
       article(`2026-01-01-${String(index).padStart(2, "0")}`, "2026-01-01", {

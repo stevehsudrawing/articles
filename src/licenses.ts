@@ -19,6 +19,19 @@ function slugOf(id: string): string {
 }
 
 /**
+ * The slug of one document.
+ *
+ * The routes and the markdown copies hold the entry rather than its id, so this
+ * is where the two segments become the slug again.
+ *
+ * @param entry - The document's entry.
+ * @returns The slug, which is the last segment of its URL but one.
+ */
+export function licenseSlug(entry: License): string {
+  return slugOf(entry.id);
+}
+
+/**
  * A locale's license documents, ordered by slug.
  *
  * The filter reads the id rather than the data, because the id is what the
@@ -108,4 +121,28 @@ export function licenseUrl(locale: Locale, slug: string): string {
  */
 export function licenseMirrorUrl(locale: Locale, slug: string): string {
   return `${licenseUrl(locale, slug)}index.md`;
+}
+
+/** What the site's inventory needs from one document. */
+export interface LicenseRow {
+  /** The document's slug, which is its URL's last segment. */
+  slug: string;
+  /** The newest date the document carries: `updated`, else its effective date. */
+  lastmod: string;
+}
+
+/**
+ * A locale's documents, as the inventory lists them.
+ *
+ * Only the two facts a sitemap entry needs: which document, and how fresh it
+ * is. The page and the copy get their own data from {@link licenseEntry}.
+ *
+ * @param locale - The locale whose documents to list.
+ * @returns One row per document, by slug.
+ */
+export async function licenseRows(locale: Locale): Promise<LicenseRow[]> {
+  return (await licenseEntries(locale)).map((entry) => ({
+    slug: licenseSlug(entry),
+    lastmod: entry.data.updated ?? entry.data.effectiveDate,
+  }));
 }

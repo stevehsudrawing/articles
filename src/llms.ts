@@ -1,6 +1,12 @@
 import { articleUrl, mirrorUrl, type Article } from "./articles";
 import { LICENSES } from "./content.config";
 import { getLocale, type Locale } from "./i18n/locales";
+import {
+  licenseMirrorUrl,
+  licenseSlug,
+  licenseUrl,
+  type License,
+} from "./licenses";
 import { REPOSITORY_URL } from "./site";
 import { absoluteUrl } from "./site-assets";
 
@@ -78,6 +84,13 @@ export interface LocaleArticles {
   articles: readonly Article[];
 }
 
+/** One locale's license documents, in the order the file should list them. */
+export interface LocaleLicenses {
+  locale: Locale;
+  /** That locale's documents, by slug. */
+  licenses: readonly License[];
+}
+
 /** What the inventory is written from. */
 export interface LlmsFacts {
   /** The site's formal name, as the home page's heading shows it. */
@@ -86,6 +99,8 @@ export interface LlmsFacts {
   summary: string;
   /** Every locale, in the order its section should appear. */
   locales: readonly LocaleArticles[];
+  /** Every locale's license documents, in the same order. */
+  licenses: readonly LocaleLicenses[];
 }
 
 /**
@@ -109,10 +124,23 @@ export function llmsTxt(facts: LlmsFacts): string {
       return [`## ${getLocale(locale).name}`, "", ...items].join("\n");
     });
 
+  // A site with no license documents writes no section, rather than a heading
+  // over an empty list: the same rule the locale sections follow.
+  const licenseItems = facts.licenses.flatMap(({ locale, licenses }) =>
+    licenses.map(
+      (license) =>
+        `- [${license.data.title}](${absoluteUrl(licenseMirrorUrl(locale, licenseSlug(license)))}) (version ${license.data.version}, effective ${license.data.effectiveDate})`,
+    ),
+  );
+  const licenseSection = ["## License documents", "", ...licenseItems].join(
+    "\n",
+  );
+
   return `${[
     `# ${facts.siteName}\n\n> ${facts.summary}`,
     MIRRORS_NOTE,
     ...sections,
+    ...(licenseItems.length > 0 ? [licenseSection] : []),
     LICENSE_SECTION,
     projectSection(),
   ].join("\n\n")}\n`;
@@ -169,6 +197,55 @@ export function mirrorMarkdown({ locale, article }: MirrorFacts): string {
     // `body` is optional on an entry built in code; a file entry always has
     // one, and this keeps the document well formed either way.
     (article.body ?? "").trimEnd(),
+  );
+
+  return `${lines.join("\n")}\n`;
+}
+
+/** What one license markdown copy is written from. */
+export interface LicenseMirrorFacts {
+  /** The locale whose copy this is. */
+  locale: Locale;
+  /** The document, as the collection hands it over. */
+  license: License;
+}
+
+/**
+ * Writes one license's markdown copy: the document behind a header it needs.
+ *
+ * A license has no publication date, so the header carries its version and the
+ * day that version took effect instead - what a reader of the file must know to
+ * tell which text they are holding. `Canonical` names the page the copy
+ * describes, because a copy read on its own has no address to cite.
+ *
+ * The body is the authored source, an MDX document that starts at `##`; the
+ * composed header can therefore open with `#` without restarting the numbering.
+ *
+ * @param facts - The document and the locale it is copied for.
+ * @returns The document, with a trailing newline.
+ */
+export function licenseMarkdown({
+  locale,
+  license,
+}: LicenseMirrorFacts): string {
+  const { data } = license;
+  const lines = [
+    `# ${data.title}`,
+    "",
+    `> ${data.description}`,
+    "",
+    `- Version: ${data.version}`,
+    `- Effective: ${data.effectiveDate}`,
+  ];
+
+  if (data.updated && data.updated !== data.effectiveDate) {
+    lines.push(`- Updated: ${data.updated}`);
+  }
+
+  lines.push(
+    `- Canonical: ${absoluteUrl(licenseUrl(locale, licenseSlug(license)))}`,
+    "",
+    (license.body ?? "").trimEnd(),
   );
 
   return `${lines.join("\n")}\n`;

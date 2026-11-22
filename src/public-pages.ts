@@ -1,6 +1,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PER_PAGE, published, type Article } from "./articles";
 import { localeIdentities, type Locale } from "./i18n/locales";
+import { licenseRows, type LicenseRow } from "./licenses";
 import { absoluteUrl } from "./site-assets";
 import { articlesWithTag, siteTags } from "./tags";
 
@@ -44,7 +45,8 @@ export function isIndexable(shown: Shown): boolean {
 }
 
 /** The kinds of page the site publishes, in the order one locale lists them. */
-export type PageKind = "home" | "list" | "tag-index" | "tag" | "article";
+export type PageKind =
+  "home" | "list" | "tag-index" | "tag" | "article" | "license";
 
 /** One real page: where it is, whether it may be indexed, and how fresh it is. */
 export interface PublicPage {
@@ -72,6 +74,8 @@ export interface LocaleContent {
   articles: Article[];
   /** The site's tag set, in the order the tag index lists it. */
   tags: readonly string[];
+  /** The locale's license documents, by slug; absent means none. */
+  licenses?: readonly LicenseRow[];
 }
 
 /**
@@ -136,7 +140,7 @@ function newestDate(articles: readonly Article[]): string | undefined {
  * @returns Its pages.
  */
 export function pagesOf(locale: Locale, content: LocaleContent): PublicPage[] {
-  const { articles, tags } = content;
+  const { articles, tags, licenses } = content;
   const page = (
     kind: PageKind,
     path: string,
@@ -203,6 +207,15 @@ export function pagesOf(locale: Locale, content: LocaleContent): PublicPage[] {
     );
   }
 
+  // A license is a standalone document rather than a section of the site, so
+  // its pages close the locale's list: they are the newest kind, and their
+  // paths share no prefix with the three sections above.
+  for (const license of licenses ?? []) {
+    pages.push(
+      page("license", `licenses/${license.slug}/`, true, license.lastmod),
+    );
+  }
+
   return pages;
 }
 
@@ -220,7 +233,13 @@ export async function publicPages(): Promise<PublicPage[]> {
   const pages: PublicPage[] = [];
 
   for (const locale of localeIdentities) {
-    pages.push(...pagesOf(locale, { articles: await published(locale), tags }));
+    pages.push(
+      ...pagesOf(locale, {
+        articles: await published(locale),
+        tags,
+        licenses: await licenseRows(locale),
+      }),
+    );
   }
 
   return pages;

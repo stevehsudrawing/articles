@@ -1,0 +1,83 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+import { licenseTrail } from "../breadcrumbs";
+import PageHero from "../components/PageHero.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import { getLocale, type Locale } from "../i18n/locales";
+import { licenseMirrorUrl, licenseSlug, licenseUrl } from "../licenses";
+import Base from "./Base.astro";
+
+/** What `render()` hands back, whose `Content` and `headings` are both used. */
+type Rendered = Awaited<ReturnType<typeof render>>;
+
+interface Props {
+  /** The locale whose copy the page is written in. */
+  locale: Locale;
+  /** The document, as the collection hands it over. */
+  license: CollectionEntry<"licenses">;
+  /** The rendered body and its headings. */
+  rendered: Rendered;
+  /** The locales that hold a real copy of this document. */
+  languages: Locale[];
+}
+
+// A document is not an article: it has no cover to assert, no reading view, no
+// tools, no tags, no byline and no `BlogPosting`. What it shares with an article
+// is the prose column and the contents rail, and those are one grid row here
+// rather than the article's own classes - the article's row exists for the
+// reading view and the dock, neither of which a document has.
+const { locale, license, rendered, languages } = Astro.props;
+const { Content, headings } = rendered;
+const slug = licenseSlug(license);
+const { version, effectiveDate, updated } = license.data;
+
+// The trail and the alternate list, both the values the header and the graph
+// read: a license stands directly under the home, and only a locale that holds
+// the text is a translation of the page.
+const trail = licenseTrail(locale, license.data.title);
+const alternates = languages.map((other) => ({
+  tag: getLocale(other).tag,
+  href: licenseUrl(other, slug),
+}));
+---
+
+<Base
+  locale={locale}
+  description={license.data.description}
+  title={license.data.title}
+  heading={license.data.title}
+  path={`licenses/${slug}/`}
+  alternates={alternates}
+  languages={languages}
+  markdown={licenseMirrorUrl(locale, slug)}
+  trail={trail}
+>
+  <PageHero
+    title={license.data.title}
+    description={license.data.description}
+    trail={trail}
+  />
+  <div class="container pb-4">
+    <div class="row g-4">
+      <div class="col-12 col-xl-4 order-xl-last">
+        <TableOfContents locale={locale} headings={headings} />
+      </div>
+      <div class="col-12 col-xl-8">
+        {/* The version line is the document's date block: which text this is,
+            and the day it took effect. It has no message key because both
+            halves are the frontmatter's own values, and the line reads the same
+            in every locale. */}
+        <p class="text-body-secondary small mb-3">
+          <span class="font-tnum">{`v${version} · ${effectiveDate}`}</span>
+          {updated && updated !== effectiveDate && (
+            <span class="font-tnum">{` · updated ${updated}`}</span>
+          )}
+        </p>
+        <article class="article-body" id="article-body">
+          <Content />
+        </article>
+      </div>
+    </div>
+  </div>
+</Base>

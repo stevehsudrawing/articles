@@ -1,0 +1,40 @@
+---
+import { render } from "astro:content";
+import Document from "../../../layouts/Document.astro";
+import { defaultLocale, type Locale } from "../../../i18n/locales";
+import {
+  licenseEntry,
+  licenseLocales,
+  licenseSlugs,
+  licenseUrl,
+} from "../../../licenses";
+
+const locale: Locale = "zh-hans";
+
+// Every locale generates a route for every document the default locale has, so
+// a missing translation has a URL that redirects rather than no URL at all -
+// the rule the article routes follow. The default locale always holds the
+// document, because its set is what `licenseSlugs()` returns.
+
+export async function getStaticPaths() {
+  const slugs = await licenseSlugs();
+  return slugs.map((slug) => ({ params: { slug } }));
+}
+
+const slug = Astro.params.slug!;
+
+const entry = await licenseEntry(locale, slug);
+if (!entry) {
+  return Astro.redirect(licenseUrl(defaultLocale, slug));
+}
+
+const rendered = await render(entry);
+const holding = await licenseLocales(slug);
+---
+
+<Document
+  locale={locale}
+  license={entry}
+  rendered={rendered}
+  languages={holding}
+/>

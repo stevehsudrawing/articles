@@ -30,6 +30,9 @@ function article(
 const SITE = {
   siteName: "Steve Hsu (什五) 的文章",
   summary: "随想 · 故事 · 绘画 · 设计 · 技巧",
+  // These documents are about articles: a license section is the one part of
+  // the inventory they do not read, so they declare it empty.
+  licenses: [],
 };
 
 describe("llmsUrl", () => {
