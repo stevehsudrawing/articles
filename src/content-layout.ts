@@ -31,6 +31,22 @@ export function isArticleFolder(name: string): boolean {
   return ARTICLE_FOLDER.test(name);
 }
 
+/** The slug a license document's folder carries: lowercase and hyphenated. */
+export const LICENSE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Whether a directory name is a license document's slug.
+ *
+ * The loader and the guard both ask this, so a license's slug has one
+ * definition rather than two that can drift.
+ *
+ * @param name - A directory name, relative to `src/content/licenses/`.
+ * @returns Whether the name is lowercase and hyphenated.
+ */
+export function isLicenseSlug(name: string): boolean {
+  return LICENSE_SLUG.test(name);
+}
+
 /**
  * Every source file under `src/content/`, as `/src/content/...` paths.
  *
@@ -75,6 +91,12 @@ const KINDS: readonly ContentKind[] = [
     folderShape: "<YYYY-MM-DD>-<id>, for example 2026-10-11-hello-world",
     isFolder: isArticleFolder,
   },
+  {
+    name: "licenses",
+    shape: "src/content/licenses/<slug>/<locale>.mdx",
+    folderShape: "a lowercase hyphenated slug, for example restricted-artworks",
+    isFolder: isLicenseSlug,
+  },
 ];
 
 /**
@@ -90,11 +112,12 @@ function shapes(): string {
  * What is wrong with one source path, or nothing when it is well formed.
  *
  * Pure, so a test can drive it without a repository. The path's first segment
- * after `src/content/` names its kind, and the kind decides the rest: today
- * `articles` wants `<YYYY-MM-DD>-<id>/<locale>.mdx`, and a path with fewer,
- * deeper or unknown segments is reported against the shape that should have
- * held it. The file name is a locale identity character for character (so
- * `zh-Hans.md` is rejected rather than read as a spelling of `zh-hans`).
+ * after `src/content/` names its kind, and the kind decides the rest:
+ * `articles` wants `<YYYY-MM-DD>-<id>/<locale>.mdx` and `licenses` wants
+ * `<slug>/<locale>.mdx`, and a path with fewer, deeper or unknown segments is
+ * reported against the shape that should have held it. The file name is a
+ * locale identity character for character (so `zh-Hans.md` is rejected rather
+ * than read as a spelling of `zh-hans`).
  *
  * @param file - A path as `contentFiles()` reports it.
  * @returns The message to fail the build with, or `undefined` when the path is
@@ -141,7 +164,7 @@ export function contentPathError(file: string): string | undefined {
     : name;
 
   if (!localeIdentities.some((identity) => identity === stem)) {
-    return `"${name}" must be named after a locale, one of ${localeIdentities.join(", ")}: ${file}. If it is an index.mdx from the earlier per-locale layout, rename it to ${kind.name}/${folder}/<locale>.mdx.`;
+    return `"${name}" must be named after a locale, one of ${localeIdentities.join(", ")}: ${file}. Then rename it to ${kind.name}/${folder}/<locale>.mdx.`;
   }
 
   return undefined;

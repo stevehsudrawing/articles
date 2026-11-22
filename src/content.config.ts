@@ -7,6 +7,7 @@ import {
   assertContentLayout,
   EXTENSION,
   isArticleFolder,
+  isLicenseSlug,
 } from "./content-layout";
 import { localeIdentities, type Locale } from "./i18n/locales";
 
@@ -49,6 +50,9 @@ const LICENSE_IDS = Object.keys(LICENSES) as [LicenseId, ...LicenseId[]];
 
 /** `YYYY-MM-DD`, the only shape a frontmatter date may take. */
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A license's version: digits and dots, so `1.0` and `1.1.0` are both valid. */
+const VERSION = /^\d+(\.\d+)*$/;
 
 /** A tag: lowercase and hyphenated, so it can be a message-key fragment too. */
 const TAG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -169,6 +173,60 @@ export function articleId(locale: Locale) {
 }
 
 /**
+ * Derives a license document's id from its path: `<slug>/<locale>`.
+ *
+ * The folder is the slug and the file name is the locale, so both are in the
+ * id and `src/licenses.ts` can answer "this locale's documents" and "this
+ * document's locales" from the id alone - no `lang` field to keep in step and
+ * no second look at the path. The guard in `content-layout.ts` fails the build
+ * first, but these checks run inside the loader, where a wrong id would
+ * otherwise be a URL.
+ *
+ * @param options - The loader's callback argument, as `articleId()` declares it.
+ * @returns The id, `<slug>/<locale>`.
+ * @throws If the entry is not one folder plus one file, if the file is not
+ *   named after a locale, or if the folder is not a slug.
+ */
+export function licenseId({
+  entry,
+}: {
+  entry: string;
+  base: URL;
+  data: Record<string, unknown>;
+}): string {
+  const segments = entry.split("/");
+  const file = segments.pop();
+  const folder = segments.pop();
+
+  if (!file || !folder || segments.length > 0) {
+    throw new Error(
+      `A license is one folder plus one file: ${entry} must be src/content/licenses/<slug>/<locale>${EXTENSION}.`,
+    );
+  }
+
+  const locale = file.endsWith(EXTENSION)
+    ? file.slice(0, -EXTENSION.length)
+    : file;
+
+  if (
+    file !== `${locale}${EXTENSION}` ||
+    !localeIdentities.some((identity) => identity === locale)
+  ) {
+    throw new Error(
+      `A license's file is named after a locale, one of ${localeIdentities.join(", ")}: ${entry} must be src/content/licenses/${folder}/<locale>${EXTENSION}.`,
+    );
+  }
+
+  if (!isLicenseSlug(folder)) {
+    throw new Error(
+      `License folder must be a lowercase hyphenated slug, for example restricted-artworks: "${folder}" in ${entry}.`,
+    );
+  }
+
+  return `${folder}/${locale}`;
+}
+
+/**
  * Builds the schema every locale's articles are validated against.
  *
  * The fields are identical in every locale; the only difference is the `lang`
@@ -233,6 +291,33 @@ export function articleSchema(locale: Locale) {
 }
 
 /**
+ * The schema every license document is validated against.
+ *
+ * One collection serves every locale, because a license's language is its file
+ * name and its data states none. There is no `date`: a license is not a dated
+ * post, and `effectiveDate` is the field that carries that meaning. There is
+ * no `draft` either - a published file is a published license, and an
+ * unpublished one would put a catalog row in front of a page that does not
+ * exist.
+ *
+ * @returns The function Astro calls with its schema context.
+ */
+export function licenseSchema() {
+  return () =>
+    z.object({
+      title: z.string().min(1, "A license needs a title: it is the page's H1."),
+      description: z
+        .string()
+        .min(1, "A license needs a description: it is the lede."),
+      version: z
+        .string()
+        .regex(VERSION, 'Write the version as digits and dots, as "1.0".'),
+      effectiveDate: z.string().regex(DATE, QUOTED_DATE),
+      updated: z.string().regex(DATE, QUOTED_DATE).optional(),
+    });
+}
+
+/**
  * The layout the loaders below assume, checked where it cannot be skipped.
  *
  * This runs at module scope because Astro evaluates a page's frontmatter once
@@ -245,11 +330,11 @@ assertContentLayout();
 assertAlertMarkers();
 
 /**
- * One collection per locale, named after its identity: every collection reads
- * the same `src/content/articles/`, and each matches only that locale's file, so
- * a collection name, a file name and a `lang` value are one string.
+ * One collection per article locale, named after its identity: every collection
+ * reads the same `src/content/articles/`, and each matches only that locale's
+ * file, so a collection name, a file name and a `lang` value are one string.
  */
-export const collections = Object.fromEntries(
+const articleCollections = Object.fromEntries(
   localeIdentities.map((locale) => [
     locale,
     defineCollection({
@@ -262,3 +347,30 @@ export const collections = Object.fromEntries(
     }),
   ]),
 );
+
+/**
+ * The licenses collection: one loader for every document and every locale.
+ *
+ * A route renders one locale's page, so it already knows which file it wants
+ * and the collection needs no per-locale copy; `generateId` writes the slug and
+ * the locale into the id, which is what the readers filter on.
+ */
+const licenseCollection = defineCollection({
+  loader: glob({
+    pattern: `**/*${EXTENSION}`,
+    base: "./src/content/licenses",
+    generateId: licenseId,
+  }),
+  schema: licenseSchema(),
+});
+
+/**
+ * The collections the site reads, one map per kind.
+ *
+ * Merged with `Object.assign` rather than a spread: a spread of the article
+ * map erases the key types Astro reads to type every entry, while an
+ * intersection keeps both.
+ */
+export const collections = Object.assign({}, articleCollections, {
+  licenses: licenseCollection,
+});

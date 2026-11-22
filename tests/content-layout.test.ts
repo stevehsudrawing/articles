@@ -23,6 +23,15 @@ describe("contentPathError", () => {
     }
   });
 
+  it("accepts a license document, which carries a slug instead of a date", () => {
+    for (const file of [
+      "/src/content/licenses/restricted-artworks/zh-hans.mdx",
+      "/src/content/licenses/restricted-artworks/en.mdx",
+    ]) {
+      expect(contentPathError(file), file).toBeUndefined();
+    }
+  });
+
   it("rejects a source still named .md, and names the rename", () => {
     expect(
       contentPathError("/src/content/articles/2026-10-11-seed/zh-hans.md"),
@@ -75,6 +84,29 @@ describe("contentPathError", () => {
     expect(contentPathError("/src/content/articles/hello/zh-hans.mdx")).toMatch(
       /must be named <YYYY-MM-DD>-<id>/,
     );
+  });
+
+  it("rejects a license file that names no locale, and names the shape", () => {
+    expect(
+      contentPathError("/src/content/licenses/restricted-artworks/notes.mdx"),
+    ).toMatch(/must be named after a locale, one of zh-hans, zh-hant, en/);
+    expect(
+      contentPathError("/src/content/licenses/restricted-artworks/index.mdx"),
+    ).toMatch(/rename it to licenses\/restricted-artworks\/<locale>\.mdx/);
+  });
+
+  it("rejects a license folder that is not a lowercase slug", () => {
+    expect(
+      contentPathError("/src/content/licenses/Restricted-Artworks/zh-hans.mdx"),
+    ).toMatch(/must be named a lowercase hyphenated slug/);
+  });
+
+  it("rejects a license nested deeper than its slug", () => {
+    expect(
+      contentPathError(
+        "/src/content/licenses/restricted-artworks/sub/zh-hans.mdx",
+      ),
+    ).toMatch(/nested too deep/);
   });
 
   it("rejects a path outside the content folder", () => {
