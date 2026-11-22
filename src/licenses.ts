@@ -134,6 +134,26 @@ export function licenseIndexUrl(locale: Locale): string {
 }
 
 /**
+ * The date line a document's page, its catalog row and its `llms.txt` entry
+ * print: the version and the effective date, or the effective date alone for a
+ * document that never carried a version.
+ *
+ * One function rather than three literals, because the three surfaces must not
+ * disagree about the shape a reader sees.
+ *
+ * @param license - The version, when there is one, and the effective date.
+ * @returns `v1.0 · 2026-11-22`, or `2026-11-22` without a version.
+ */
+export function licenseStamp(license: {
+  version?: string;
+  effectiveDate: string;
+}): string {
+  return license.version === undefined
+    ? license.effectiveDate
+    : `v${license.version} · ${license.effectiveDate}`;
+}
+
+/**
  * The locale an entry's id ends in.
  *
  * The loader derived that segment from the file's name and checked it against
@@ -156,9 +176,9 @@ export interface LicenseRow {
   title: string;
   /** The document's description, in its own language. */
   description: string;
-  /** The text's version, as its frontmatter declares it. */
-  version: string;
-  /** The date the version took effect, `YYYY-MM-DD`. */
+  /** The text's version, when its frontmatter declares one. */
+  version?: string;
+  /** The date the text took effect, `YYYY-MM-DD`. */
   effectiveDate: string;
   /** The newest date the document carries: `updated`, else its effective date. */
   lastmod: string;

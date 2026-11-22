@@ -6,6 +6,7 @@ import {
   licenseIndexUrl,
   licenseMirrorUrl,
   licenseSlug,
+  licenseStamp,
   licenseUrl,
   type License,
 } from "./licenses";
@@ -131,11 +132,11 @@ export function llmsTxt(facts: LlmsFacts): string {
   // The catalog opens the section: a reader who needs the collection rather
   // than one document follows it, and it comes before the documents for the
   // reason the trail puts it there.
-  const licenseCatalog = `- [${t(defaultLocale, "text-nav-license")}](${absoluteUrl(licenseIndexUrl(defaultLocale))}): every license this site publishes, with its version and effective date`;
+  const licenseCatalog = `- [${t(defaultLocale, "text-nav-license")}](${absoluteUrl(licenseIndexUrl(defaultLocale))}): every license this site publishes, with its effective date`;
   const licenseItems = facts.licenses.flatMap(({ locale, licenses }) =>
     licenses.map(
       (license) =>
-        `- [${license.data.title}](${absoluteUrl(licenseMirrorUrl(locale, licenseSlug(license)))}) (version ${license.data.version}, effective ${license.data.effectiveDate})`,
+        `- [${license.data.title}](${absoluteUrl(licenseMirrorUrl(locale, licenseSlug(license)))}) (${licenseStamp(license.data)})`,
     ),
   );
   const licenseSection = [
@@ -222,10 +223,10 @@ export interface LicenseMirrorFacts {
 /**
  * Writes one license's markdown copy: the document behind a header it needs.
  *
- * A license has no publication date, so the header carries its version and the
- * day that version took effect instead - what a reader of the file must know to
- * tell which text they are holding. `Canonical` names the page the copy
- * describes, because a copy read on its own has no address to cite.
+ * A license has no publication date, so the header carries the day the text
+ * took effect, and the version when the document declares one - what a reader of
+ * the file must know to tell which text they are holding. `Canonical` names the
+ * page the copy describes, because a copy read on its own has no address to cite.
  *
  * The body is the authored source, an MDX document that starts at `##`; the
  * composed header can therefore open with `#` without restarting the numbering.
@@ -238,14 +239,11 @@ export function licenseMarkdown({
   license,
 }: LicenseMirrorFacts): string {
   const { data } = license;
-  const lines = [
-    `# ${data.title}`,
-    "",
-    `> ${data.description}`,
-    "",
-    `- Version: ${data.version}`,
-    `- Effective: ${data.effectiveDate}`,
-  ];
+  const stamp =
+    data.version === undefined
+      ? [`- Effective: ${data.effectiveDate}`]
+      : [`- Version: ${data.version}`, `- Effective: ${data.effectiveDate}`];
+  const lines = [`# ${data.title}`, "", `> ${data.description}`, "", ...stamp];
 
   if (data.updated && data.updated !== data.effectiveDate) {
     lines.push(`- Updated: ${data.updated}`);

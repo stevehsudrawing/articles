@@ -4,7 +4,7 @@ import Icon from "../../../components/Icon.astro";
 import { getLocale, locales, type Locale } from "../../../i18n/locales";
 import { t } from "../../../i18n/messages";
 import Page from "../../../layouts/Page.astro";
-import { licenseCatalog } from "../../../licenses";
+import { licenseCatalog, licenseStamp } from "../../../licenses";
 import { REPOSITORY_URL } from "../../../site";
 
 const locale: Locale = "zh-hant";
@@ -50,7 +50,7 @@ const alternates = locales.map((other) => ({
           </a>
           <p class="text-body-secondary my-1">{row.description}</p>
           <p class="text-body-secondary font-tnum mb-0 small">
-            {`v${row.version} · ${row.effectiveDate}`}
+            {licenseStamp(row)}
           </p>
         </li>
       ))}

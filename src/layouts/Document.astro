@@ -5,7 +5,12 @@ import { licenseTrail } from "../breadcrumbs";
 import PageHero from "../components/PageHero.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import { getLocale, type Locale } from "../i18n/locales";
-import { licenseMirrorUrl, licenseSlug, licenseUrl } from "../licenses";
+import {
+  licenseMirrorUrl,
+  licenseSlug,
+  licenseStamp,
+  licenseUrl,
+} from "../licenses";
 import Base from "./Base.astro";
 
 /** What `render()` hands back, whose `Content` and `headings` are both used. */
@@ -30,7 +35,7 @@ interface Props {
 const { locale, license, rendered, languages } = Astro.props;
 const { Content, headings } = rendered;
 const slug = licenseSlug(license);
-const { version, effectiveDate, updated } = license.data;
+const { effectiveDate, updated } = license.data;
 
 // The trail and the alternate list, both the values the header and the graph
 // read: a license stands directly under the home, and only a locale that holds
@@ -69,7 +74,7 @@ const alternates = languages.map((other) => ({
             halves are the frontmatter's own values, and the line reads the same
             in every locale. */}
         <p class="text-body-secondary small mb-3">
-          <span class="font-tnum">{`v${version} · ${effectiveDate}`}</span>
+          <span class="font-tnum">{licenseStamp(license.data)}</span>
           {updated && updated !== effectiveDate && (
             <span class="font-tnum">{` · updated ${updated}`}</span>
           )}

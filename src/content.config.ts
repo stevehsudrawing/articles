@@ -51,7 +51,10 @@ const LICENSE_IDS = Object.keys(LICENSES) as [LicenseId, ...LicenseId[]];
 /** `YYYY-MM-DD`, the only shape a frontmatter date may take. */
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** A license's version: digits and dots, so `1.0` and `1.1.0` are both valid. */
+/**
+ * A license's version: digits and dots, so `1.0` and `1.1.0` are both valid. A
+ * document that never carried a version leaves the field out.
+ */
 const VERSION = /^\d+(\.\d+)*$/;
 
 /** A tag: lowercase and hyphenated, so it can be a message-key fragment too. */
@@ -311,7 +314,8 @@ export function licenseSchema() {
         .min(1, "A license needs a description: it is the lede."),
       version: z
         .string()
-        .regex(VERSION, 'Write the version as digits and dots, as "1.0".'),
+        .regex(VERSION, 'Write the version as digits and dots, as "1.0".')
+        .optional(),
       effectiveDate: z.string().regex(DATE, QUOTED_DATE),
       updated: z.string().regex(DATE, QUOTED_DATE).optional(),
     });
