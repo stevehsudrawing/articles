@@ -131,7 +131,7 @@ export function articleId(locale: Locale) {
 
     if (!file || !folder || segments.length > 0) {
       throw new Error(
-        `An article is one folder plus one file: ${entry} must be src/content/<YYYY-MM-DD>-<id>/${locale}${EXTENSION}.`,
+        `An article is one folder plus one file: ${entry} must be src/content/articles/<YYYY-MM-DD>-<id>/${locale}${EXTENSION}.`,
       );
     }
 
@@ -246,8 +246,8 @@ assertAlertMarkers();
 
 /**
  * One collection per locale, named after its identity: every collection reads
- * the same `src/content/`, and each matches only that locale's file, so a
- * collection name, a file name and a `lang` value are one string.
+ * the same `src/content/articles/`, and each matches only that locale's file, so
+ * a collection name, a file name and a `lang` value are one string.
  */
 export const collections = Object.fromEntries(
   localeIdentities.map((locale) => [
@@ -255,7 +255,7 @@ export const collections = Object.fromEntries(
     defineCollection({
       loader: glob({
         pattern: `**/${locale}${EXTENSION}`,
-        base: "./src/content",
+        base: "./src/content/articles",
         generateId: articleId(locale),
       }),
       schema: articleSchema(locale),

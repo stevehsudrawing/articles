@@ -2,7 +2,8 @@ import { isAlertKind, parseAlertMarker } from "./alerts";
 import { localeIdentities } from "./i18n/locales";
 
 /**
- * The content layout's contract: one folder per article, one file per locale.
+ * The content layout's contract: one directory per kind, one folder per
+ * document, one file per locale.
  *
  * A collection's loader sees only the files that match its own locale, so a
  * file it does not match is not an error there - a `zh-Hans.md` just means that
@@ -49,14 +50,51 @@ export function contentFiles(): string[] {
 /** The prefix `contentFiles()` gives every path. */
 const ROOT = "/src/content/";
 
+/** One kind of content: the directory it lives in, and the shape it has. */
+interface ContentKind {
+  /** The directory's name, which is the first segment of every source in it. */
+  name: string;
+  /** The shape one of its sources has, as a `src/content/…` path. */
+  shape: string;
+  /** How one of its document folders must be named, for a message. */
+  folderShape: string;
+  /** Whether a document folder's name is well formed. */
+  isFolder: (name: string) => boolean;
+}
+
+/**
+ * The kinds of content the root holds, one directory each.
+ *
+ * A table rather than a chain of conditions, so a new kind is one row and a
+ * path that names no kind can be told which kinds exist.
+ */
+const KINDS: readonly ContentKind[] = [
+  {
+    name: "articles",
+    shape: "src/content/articles/<YYYY-MM-DD>-<id>/<locale>.mdx",
+    folderShape: "<YYYY-MM-DD>-<id>, for example 2026-10-11-hello-world",
+    isFolder: isArticleFolder,
+  },
+];
+
+/**
+ * Every kind's shape, joined for a message that has to name them all.
+ *
+ * @returns One sentence fragment, `A or B`.
+ */
+function shapes(): string {
+  return KINDS.map(({ shape }) => shape).join(" or ");
+}
+
 /**
  * What is wrong with one source path, or nothing when it is well formed.
  *
- * Pure, so a test can drive it without a repository: the shape it enforces is
- * `src/content/<YYYY-MM-DD>-<id>/<locale>.mdx`, and it is exact - the file name
- * is a locale identity character for character (so `zh-Hans.md` is rejected
- * rather than read as a spelling of `zh-hans`), the folder carries the date,
- * and nothing sits between them.
+ * Pure, so a test can drive it without a repository. The path's first segment
+ * after `src/content/` names its kind, and the kind decides the rest: today
+ * `articles` wants `<YYYY-MM-DD>-<id>/<locale>.mdx`, and a path with fewer,
+ * deeper or unknown segments is reported against the shape that should have
+ * held it. The file name is a locale identity character for character (so
+ * `zh-Hans.md` is rejected rather than read as a spelling of `zh-hans`).
  *
  * @param file - A path as `contentFiles()` reports it.
  * @returns The message to fail the build with, or `undefined` when the path is
@@ -69,22 +107,33 @@ export function contentPathError(file: string): string | undefined {
 
   const segments = file.slice(ROOT.length).split("/");
   const name = segments.pop() ?? "";
-  const folder = segments.pop() ?? "";
 
-  if (segments.length > 0) {
-    return `${file} is nested too deep. An article is one folder plus one file: src/content/<YYYY-MM-DD>-<id>/<locale>.mdx.`;
+  if (segments.length > 2) {
+    return `${file} is nested too deep. A content source is ${shapes()}.`;
   }
 
-  if (!folder) {
-    return `${file} is loose in ${ROOT}. Move it into an article folder: src/content/<YYYY-MM-DD>-<id>/<locale>.mdx.`;
+  if (segments.length === 0) {
+    return `${file} is loose in ${ROOT}. A content source is ${shapes()}.`;
   }
 
-  if (!isArticleFolder(folder)) {
-    return `The folder "${folder}" must be named <YYYY-MM-DD>-<id>, for example 2026-10-11-hello-world: ${file}.`;
+  const kind = KINDS.find((entry) => entry.name === segments[0]);
+
+  if (!kind) {
+    return `${file} names no content kind. A content source is ${shapes()}.`;
+  }
+
+  if (segments.length === 1) {
+    return `${file} names no document folder. A content source is ${shapes()}.`;
+  }
+
+  const folder = segments[1];
+
+  if (!kind.isFolder(folder)) {
+    return `The folder "${folder}" must be named ${kind.folderShape}: ${file}.`;
   }
 
   if (name.endsWith(".md")) {
-    return `Article sources are .mdx: rename ${file} to ${folder}/<locale>.mdx.`;
+    return `Content sources are .mdx: rename ${file} to ${kind.name}/${folder}/<locale>.mdx.`;
   }
 
   const stem = name.endsWith(EXTENSION)
@@ -92,14 +141,14 @@ export function contentPathError(file: string): string | undefined {
     : name;
 
   if (!localeIdentities.some((identity) => identity === stem)) {
-    return `"${name}" must be named after a locale, one of ${localeIdentities.join(", ")}: ${file}. If it is an index.mdx from the earlier per-locale layout, rename it to ${folder}/<locale>.mdx.`;
+    return `"${name}" must be named after a locale, one of ${localeIdentities.join(", ")}: ${file}. If it is an index.mdx from the earlier per-locale layout, rename it to ${kind.name}/${folder}/<locale>.mdx.`;
   }
 
   return undefined;
 }
 
 /**
- * Fails the build when a source file is not `<slug>/<locale>.mdx`.
+ * Fails the build when a source file is not `<kind>/<folder>/<locale>.mdx`.
  *
  * This is what the loaders cannot do: each collection reads only the files that
  * match its own locale, so a mistyped file name makes a translation vanish

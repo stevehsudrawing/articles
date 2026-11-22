@@ -8,8 +8,8 @@
  * by a public path, so the build reads their dimensions and emits them at the
  * widths below instead of at the file's own.
  */
-import type { FigurePlacement } from "../../figure";
-import type { ThemeImageProps } from "../../theme-image";
+import type { FigurePlacement } from "../../../figure";
+import type { ThemeImageProps } from "../../../theme-image";
 import observingDarkSrc from "./assets/sticker-observing-dark.png";
 import observingLightSrc from "./assets/sticker-observing.png";
 import thumbDarkSrc from "./assets/sticker-thumb-dark.png";

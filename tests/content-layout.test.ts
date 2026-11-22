@@ -13,11 +13,11 @@ function article(path: string, data: Record<string, unknown>): Article {
 }
 
 describe("contentPathError", () => {
-  it("accepts one file per locale in one article folder", () => {
+  it("accepts one file per locale in one document folder", () => {
     for (const file of [
-      "/src/content/2026-10-11-seed/zh-hans.mdx",
-      "/src/content/2026-10-11-seed/zh-hant.mdx",
-      "/src/content/2026-10-11-seed/en.mdx",
+      "/src/content/articles/2026-10-11-seed/zh-hans.mdx",
+      "/src/content/articles/2026-10-11-seed/zh-hant.mdx",
+      "/src/content/articles/2026-10-11-seed/en.mdx",
     ]) {
       expect(contentPathError(file), file).toBeUndefined();
     }
@@ -25,31 +25,43 @@ describe("contentPathError", () => {
 
   it("rejects a source still named .md, and names the rename", () => {
     expect(
-      contentPathError("/src/content/2026-10-11-seed/zh-hans.md"),
-    ).toContain("Article sources are .mdx");
+      contentPathError("/src/content/articles/2026-10-11-seed/zh-hans.md"),
+    ).toContain("Content sources are .mdx");
   });
 
   it("rejects a file name in the wrong case", () => {
     expect(
-      contentPathError("/src/content/2026-10-11-seed/zh-Hans.mdx"),
+      contentPathError("/src/content/articles/2026-10-11-seed/zh-Hans.mdx"),
     ).toMatch(/must be named after a locale, one of zh-hans, zh-hant, en/);
   });
 
   it("rejects a leftover index.mdx and names the file to use instead", () => {
-    expect(contentPathError("/src/content/2026-10-11-seed/index.mdx")).toMatch(
-      /rename it to 2026-10-11-seed\/<locale>\.mdx/,
+    expect(
+      contentPathError("/src/content/articles/2026-10-11-seed/index.mdx"),
+    ).toMatch(/rename it to articles\/2026-10-11-seed\/<locale>\.mdx/);
+  });
+
+  it("rejects a path whose first segment is not a kind", () => {
+    expect(
+      contentPathError("/src/content/2026-10-11-seed/zh-hans.mdx"),
+    ).toMatch(/names no content kind/);
+  });
+
+  it("rejects an unknown kind", () => {
+    expect(contentPathError("/src/content/blog/x/zh-hans.mdx")).toMatch(
+      /names no content kind/,
     );
   });
 
-  it("rejects the earlier per-locale layout", () => {
-    expect(
-      contentPathError("/src/content/en/2026-10-11-seed/index.mdx"),
-    ).toMatch(/nested too deep/);
+  it("rejects a kind without a document folder", () => {
+    expect(contentPathError("/src/content/articles/zh-hans.mdx")).toMatch(
+      /names no document folder/,
+    );
   });
 
-  it("rejects a file nested deeper than one folder", () => {
+  it("rejects a file nested deeper than kind, folder and file", () => {
     expect(
-      contentPathError("/src/content/2026-10-11-seed/sub/zh-hans.mdx"),
+      contentPathError("/src/content/articles/2026-10-11-seed/sub/zh-hans.mdx"),
     ).toMatch(/nested too deep/);
   });
 
@@ -60,7 +72,7 @@ describe("contentPathError", () => {
   });
 
   it("rejects a folder without the date", () => {
-    expect(contentPathError("/src/content/hello/zh-hans.mdx")).toMatch(
+    expect(contentPathError("/src/content/articles/hello/zh-hans.mdx")).toMatch(
       /must be named <YYYY-MM-DD>-<id>/,
     );
   });
@@ -81,8 +93,8 @@ describe("sharedFieldMismatch", () => {
   it("accepts locales that agree", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
-        article("/src/content/2026-10-11-seed/en.mdx", agreed),
+        article("/src/content/articles/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/articles/2026-10-11-seed/en.mdx", agreed),
       ]),
     ).toBeUndefined();
   });
@@ -90,7 +102,7 @@ describe("sharedFieldMismatch", () => {
   it("accepts a single locale, and an empty list", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/articles/2026-10-11-seed/zh-hans.mdx", agreed),
       ]),
     ).toBeUndefined();
     expect(sharedFieldMismatch([])).toBeUndefined();
@@ -98,23 +110,25 @@ describe("sharedFieldMismatch", () => {
 
   it("names a divergent author and both files", () => {
     const message = sharedFieldMismatch([
-      article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
-      article("/src/content/2026-10-11-seed/en.mdx", {
+      article("/src/content/articles/2026-10-11-seed/zh-hans.mdx", agreed),
+      article("/src/content/articles/2026-10-11-seed/en.mdx", {
         ...agreed,
         author: "Someone Else",
       }),
     ]);
 
     expect(message).toContain('"author"');
-    expect(message).toContain("src/content/2026-10-11-seed/zh-hans.mdx");
-    expect(message).toContain("src/content/2026-10-11-seed/en.mdx");
+    expect(message).toContain(
+      "src/content/articles/2026-10-11-seed/zh-hans.mdx",
+    );
+    expect(message).toContain("src/content/articles/2026-10-11-seed/en.mdx");
   });
 
   it("names a divergent license", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
-        article("/src/content/2026-10-11-seed/en.mdx", {
+        article("/src/content/articles/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/articles/2026-10-11-seed/en.mdx", {
           ...agreed,
           license: "All-Rights-Reserved",
         }),
@@ -125,8 +139,8 @@ describe("sharedFieldMismatch", () => {
   it("names a tag list in a different order", () => {
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
-        article("/src/content/2026-10-11-seed/en.mdx", {
+        article("/src/content/articles/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/articles/2026-10-11-seed/en.mdx", {
           ...agreed,
           tags: ["seed-article", "design"],
         }),
@@ -139,15 +153,15 @@ describe("sharedFieldMismatch", () => {
 
     expect(
       sharedFieldMismatch([
-        article("/src/content/2026-10-11-seed/zh-hans.mdx", agreed),
-        article("/src/content/2026-10-11-seed/en.mdx", withoutAuthor),
+        article("/src/content/articles/2026-10-11-seed/zh-hans.mdx", agreed),
+        article("/src/content/articles/2026-10-11-seed/en.mdx", withoutAuthor),
       ]),
     ).toContain("(unset)");
   });
 });
 
 describe("alertMarkerErrors", () => {
-  const seed = "/src/content/2026-10-11-seed/zh-hans.mdx";
+  const seed = "/src/content/articles/2026-10-11-seed/zh-hans.mdx";
 
   it("accepts the five kinds inside a blockquote", () => {
     const text = [

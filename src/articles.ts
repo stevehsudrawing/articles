@@ -215,7 +215,7 @@ export async function assertDefaultCovers(): Promise<void> {
     for (const article of await published(locale)) {
       if (!known.has(article.id)) {
         throw new Error(
-          `${locale} holds "${article.id}", which ${defaultLocale} does not have. Every article needs a ${defaultLocale} version: add src/content/${article.id}/${defaultLocale}.md or remove the file.`,
+          `${locale} holds "${article.id}", which ${defaultLocale} does not have. Every article needs a ${defaultLocale} version: add src/content/articles/${article.id}/${defaultLocale}.md or remove the file.`,
         );
       }
     }
