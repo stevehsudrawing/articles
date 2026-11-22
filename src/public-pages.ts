@@ -1,7 +1,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { PER_PAGE, published, type Article } from "./articles";
 import { localeIdentities, type Locale } from "./i18n/locales";
-import { licenseRows, type LicenseRow } from "./licenses";
+import { licenseCatalog, licenseRows, type LicenseRow } from "./licenses";
 import { absoluteUrl } from "./site-assets";
 import { articlesWithTag, siteTags } from "./tags";
 
@@ -46,7 +46,13 @@ export function isIndexable(shown: Shown): boolean {
 
 /** The kinds of page the site publishes, in the order one locale lists them. */
 export type PageKind =
-  "home" | "list" | "tag-index" | "tag" | "article" | "license";
+  | "home"
+  | "list"
+  | "tag-index"
+  | "tag"
+  | "article"
+  | "license-index"
+  | "license";
 
 /** One real page: where it is, whether it may be indexed, and how fresh it is. */
 export interface PublicPage {
@@ -76,6 +82,12 @@ export interface LocaleContent {
   tags: readonly string[];
   /** The locale's license documents, by slug; absent means none. */
   licenses?: readonly LicenseRow[];
+  /**
+   * What the locale's license catalog lists, which is the site's whole set
+   * rather than this locale's part of it: a catalog page names every document
+   * even where the text is in another language.
+   */
+  licenseCatalog?: readonly LicenseRow[];
 }
 
 /**
@@ -128,19 +140,20 @@ function newestDate(articles: readonly Article[]): string | undefined {
  * One locale's pages, in the order the inventory lists them.
  *
  * The order is fixed - home, then the list's pages, then the tag index's, then
- * the site's tag pages, then the articles newest first - so the same content
- * always produces the same list and a rendered file does not move.
+ * the site's tag pages, then the articles newest first, then the license
+ * catalog and its documents - so the same content always produces the same list
+ * and a rendered file does not move.
  *
  * The home, the list and the tag index are indexable by construction: they
- * exist in every locale and are the site's own sections. Only the two previews
- * of `isIndexable()` can answer no.
+ * exist in every locale and are the site's own sections. Only the previews of
+ * `isIndexable()` and an empty license catalog can answer no.
  *
  * @param locale - The locale these pages belong to.
  * @param content - What that locale publishes.
  * @returns Its pages.
  */
 export function pagesOf(locale: Locale, content: LocaleContent): PublicPage[] {
-  const { articles, tags, licenses } = content;
+  const { articles, tags, licenses, licenseCatalog } = content;
   const page = (
     kind: PageKind,
     path: string,
@@ -207,6 +220,19 @@ export function pagesOf(locale: Locale, content: LocaleContent): PublicPage[] {
     );
   }
 
+  // The catalog opens the license section: it lists the documents that follow,
+  // and it is indexable when it lists one, the rule the tag pages follow. Its
+  // content is the site's set, so every locale's catalog answers the same; a
+  // locale whose content was not read has no catalog to report.
+  if (licenses !== undefined) {
+    const catalog = licenseCatalog ?? [];
+    const newest = catalog
+      .map(({ lastmod }) => lastmod)
+      .sort()
+      .at(-1);
+    pages.push(page("license-index", "licenses/", catalog.length > 0, newest));
+  }
+
   // A license is a standalone document rather than a section of the site, so
   // its pages close the locale's list: they are the newest kind, and their
   // paths share no prefix with the three sections above.
@@ -238,6 +264,7 @@ export async function publicPages(): Promise<PublicPage[]> {
         articles: await published(locale),
         tags,
         licenses: await licenseRows(locale),
+        licenseCatalog: await licenseCatalog(locale),
       }),
     );
   }

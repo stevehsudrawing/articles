@@ -54,6 +54,8 @@
   "text-hero-title-tags": "Tags",
   "text-hero-description-tags": "Browse every article on the site by tag.",
   "text-hero-description-tag": "Every article tagged \"%1\".",
+  "text-hero-description-licenses": "Every license this site publishes, with its version and effective date.",
+  "text-license-catalog-code": "is the license for this site’s software and code; the licenses for its artworks follow.",
 
   "text-alt-default-cover": "Steve Hsu (什五)'s Articles: the site's mark in gray, a slanted pen above a line.",
   "text-alt-home-cover": "Steve Hsu (什五)'s Articles: the site's mark in pale green, a slanted pen above a line.",

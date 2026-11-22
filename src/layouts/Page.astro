@@ -8,8 +8,11 @@ import Base from "./Base.astro";
 interface Props {
   /** The locale whose copy the page is written in. */
   locale: Locale;
-  /** Which of the header's items this page is. */
-  page: "home" | "list" | "tags";
+  /**
+   * Which of the header's items this page is. Omitted where no item is: the
+   * license catalog belongs to none of the three sections.
+   */
+  page?: "home" | "list" | "tags";
   /** The hero's heading, which is also the page's `h1`. */
   heroTitle: string;
   /** The hero's introduction. */

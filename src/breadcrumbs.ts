@@ -2,6 +2,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import { listUrl } from "./articles";
 import type { Locale } from "./i18n/locales";
 import { t } from "./i18n/messages";
+import { licenseIndexUrl } from "./licenses";
 import { tagIndexUrl } from "./tags";
 
 /**
@@ -11,9 +12,10 @@ import { tagIndexUrl } from "./tags";
  * One value serves both halves, which is what keeps the visible trail and the
  * structured one from drifting apart. Three page kinds have a trail: an article
  * is filed under the list, a tag page under the tag index, and a license
- * document directly under the home. The home, the list, the tag index and the
- * error page render none, because a trail whose every step is one link says
- * nothing a reader does not already know from the header.
+ * document under the catalog that lists it. The home, the list, the tag index,
+ * the license catalog and the error page render none, because a trail whose
+ * every step is one link says nothing a reader does not already know from the
+ * header.
  */
 
 /** One step of a trail. The last step is the page itself, so it has no `href`. */
@@ -94,10 +96,10 @@ export function tagTrail(locale: Locale, tag: string): Trail {
 }
 
 /**
- * The trail of a license document: home, the document.
+ * The trail of a license document: home, the catalog, the document.
  *
- * A license is a standalone document rather than a section of this site, so its
- * trail is the shortest one: where the reader is, and the document's own title.
+ * The catalog comes before the document because that is the order a reader
+ * walks: the document is one entry of a list, not a top-level section.
  *
  * @param locale - The locale the page is written in.
  * @param title - The document's title, which is the trail's last step.
@@ -106,6 +108,10 @@ export function tagTrail(locale: Locale, tag: string): Trail {
 export function licenseTrail(locale: Locale, title: string): Trail {
   return {
     label: t(locale, "text-nav-breadcrumb"),
-    steps: [homeStep(locale), { label: title }],
+    steps: [
+      homeStep(locale),
+      { label: t(locale, "text-nav-license"), href: licenseIndexUrl(locale) },
+      { label: title },
+    ],
   };
 }

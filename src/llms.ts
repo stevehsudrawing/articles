@@ -1,7 +1,9 @@
 import { articleUrl, mirrorUrl, type Article } from "./articles";
 import { LICENSES } from "./content.config";
-import { getLocale, type Locale } from "./i18n/locales";
+import { defaultLocale, getLocale, type Locale } from "./i18n/locales";
+import { t } from "./i18n/messages";
 import {
+  licenseIndexUrl,
   licenseMirrorUrl,
   licenseSlug,
   licenseUrl,
@@ -126,15 +128,22 @@ export function llmsTxt(facts: LlmsFacts): string {
 
   // A site with no license documents writes no section, rather than a heading
   // over an empty list: the same rule the locale sections follow.
+  // The catalog opens the section: a reader who needs the collection rather
+  // than one document follows it, and it comes before the documents for the
+  // reason the trail puts it there.
+  const licenseCatalog = `- [${t(defaultLocale, "text-nav-license")}](${absoluteUrl(licenseIndexUrl(defaultLocale))}): every license this site publishes, with its version and effective date`;
   const licenseItems = facts.licenses.flatMap(({ locale, licenses }) =>
     licenses.map(
       (license) =>
         `- [${license.data.title}](${absoluteUrl(licenseMirrorUrl(locale, licenseSlug(license)))}) (version ${license.data.version}, effective ${license.data.effectiveDate})`,
     ),
   );
-  const licenseSection = ["## License documents", "", ...licenseItems].join(
-    "\n",
-  );
+  const licenseSection = [
+    "## License documents",
+    "",
+    licenseCatalog,
+    ...licenseItems,
+  ].join("\n");
 
   return `${[
     `# ${facts.siteName}\n\n> ${facts.summary}`,

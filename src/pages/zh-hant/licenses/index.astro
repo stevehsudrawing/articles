@@ -1,0 +1,59 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import Icon from "../../../components/Icon.astro";
+import { getLocale, locales, type Locale } from "../../../i18n/locales";
+import { t } from "../../../i18n/messages";
+import Page from "../../../layouts/Page.astro";
+import { licenseCatalog } from "../../../licenses";
+import { REPOSITORY_URL } from "../../../site";
+
+const locale: Locale = "zh-hant";
+
+// The catalog is a page of its own rather than a header item: the licenses are
+// few, and the footer is where a reader looks for them. The code license lives
+// in the repository, so this page names it and links out.
+const rows = await licenseCatalog(locale);
+
+const alternates = locales.map((other) => ({
+  tag: other.tag,
+  href: getRelativeLocaleUrl(other.identity, "licenses/"),
+}));
+---
+
+<Page
+  locale={locale}
+  heroTitle={t(locale, "text-nav-license")}
+  heroDescription={t(locale, "text-hero-description-licenses")}
+  title={t(locale, "text-nav-license")}
+  path="licenses/"
+  alternates={alternates}
+>
+  <div class="col-12 col-lg-9">
+    <p class="text-body-secondary">
+      <a href={`${REPOSITORY_URL}/blob/main/LICENSE.md`} target="_blank">
+        LICENSE.md
+        <span class="link-indicator" aria-hidden="true">
+          <Icon name="arrowOutward" />
+        </span>
+      </a>{" "}
+      {t(locale, "text-license-catalog-code")}
+    </p>
+    <ul class="list-unstyled">
+      {rows.map((row) => (
+        <li class="mb-4">
+          <a
+            class="fw-medium"
+            href={row.url}
+            lang={row.locale === locale ? undefined : getLocale(row.locale).tag}
+          >
+            {row.title}
+          </a>
+          <p class="text-body-secondary my-1">{row.description}</p>
+          <p class="text-body-secondary font-tnum mb-0 small">
+            {`v${row.version} · ${row.effectiveDate}`}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Page>

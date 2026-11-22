@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PER_PAGE, type Article } from "../src/articles";
+import type { LicenseRow } from "../src/licenses";
 import {
   isIndexable,
   pagesOf,
@@ -35,6 +36,20 @@ function article(
 }
 
 const TAGS = ["design", "sci-fi"];
+
+/** A license row with only the fields the inventory reads filled in. */
+function licenseRow(slug: string, lastmod: string): LicenseRow {
+  return {
+    slug,
+    locale: "zh-hans",
+    title: slug,
+    description: "",
+    version: "1.0",
+    effectiveDate: lastmod,
+    lastmod,
+    url: `/articles/zh-hans/licenses/${slug}/`,
+  };
+}
 
 /** The path each record holds, in the order `pagesOf()` returns them. */
 function paths(pages: readonly PublicPage[]): string[] {
@@ -139,17 +154,32 @@ describe("pagesOf", () => {
     );
   });
 
-  it("appends a license document after the articles, dated by its last change", () => {
+  it("opens the license section with its catalog, then lists the documents", () => {
+    const row = licenseRow("restricted-artworks", "2026-11-22");
     const pages = pagesOf("zh-hans", {
       ...content,
-      licenses: [{ slug: "restricted-artworks", lastmod: "2026-11-22" }],
+      licenses: [row],
+      licenseCatalog: [row],
     });
 
-    const last = pages[pages.length - 1];
-    expect(last.path).toBe("licenses/restricted-artworks/");
-    expect(last.kind).toBe("license");
-    expect(last.indexable).toBe(true);
-    expect(last.lastmod).toBe("2026-11-22");
+    expect(pages.slice(-2).map((page) => [page.kind, page.path])).toEqual([
+      ["license-index", "licenses/"],
+      ["license", "licenses/restricted-artworks/"],
+    ]);
+    expect(pages[pages.length - 2].indexable).toBe(true);
+    expect(pages[pages.length - 2].lastmod).toBe("2026-11-22");
+    expect(pages[pages.length - 1].lastmod).toBe("2026-11-22");
+  });
+
+  it("serves the catalog as a preview when it lists nothing", () => {
+    const pages = pagesOf("zh-hans", {
+      ...content,
+      licenses: [],
+      licenseCatalog: [],
+    });
+    const catalog = pages.find((page) => page.kind === "license-index");
+
+    expect(catalog?.indexable).toBe(false);
   });
 
   it("adds a second list page only when the articles need one", () => {
