@@ -729,6 +729,18 @@ pre code {
   margin-bottom: 0.5rem;
 }
 
+/* A Markdown table arrives without a wrapper, and its natural width is set by
+   the longest unbreakable token in a cell - a license file name, say - which on
+   a narrow screen pushed the whole page sideways. `display: block` is what gives
+   the table its own scroll box; the cells keep their natural width and stay
+   readable, where breaking inside every token would set a column a few
+   characters wide. */
+
+.article-body table {
+  display: block;
+  overflow-x: auto;
+}
+
 /* --- Article footnotes ---
    The separator is ours: the renderer's section needs no `---` in the source,
    which is why an article never writes one before its notes. `.footnotes p`
