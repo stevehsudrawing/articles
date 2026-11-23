@@ -6,6 +6,8 @@ import arrowOutward from "./assets/icons/arrow_outward.svg?raw";
 import arrowUpward from "./assets/icons/arrow_upward.svg?raw";
 import calendarToday from "./assets/icons/calendar_today.svg?raw";
 import check from "./assets/icons/check.svg?raw";
+import checkBox from "./assets/icons/check_box.svg?raw";
+import checkBoxOutlineBlank from "./assets/icons/check_box_outline_blank.svg?raw";
 import chevronLeft from "./assets/icons/chevron_left.svg?raw";
 import chevronRight from "./assets/icons/chevron_right.svg?raw";
 import contentCopy from "./assets/icons/content_copy.svg?raw";
@@ -40,6 +42,8 @@ export const ICONS = {
   arrowUpward,
   calendarToday,
   check,
+  checkBox,
+  checkBoxOutlineBlank,
   chevronLeft,
   chevronRight,
   contentCopy,

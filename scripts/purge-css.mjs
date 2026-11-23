@@ -67,8 +67,8 @@ function distFiles(directory = DIST, prefix = "") {
  *
  * The default extractor reads a document into tokens like `type=checkbox`, so
  * a bare attribute name never appears and PurgeCSS would drop every attribute
- * selector. The site keeps state in attributes - the theme, the reading scale,
- * the checkbox's type - so the sheet's own attributes are declared dynamic.
+ * selector. The site keeps state in attributes - the theme and the reading
+ * scale - so the sheet's own attributes are declared dynamic.
  *
  * @param text - The sheet's text.
  * @returns The distinct attribute names it selects on.
@@ -130,8 +130,8 @@ for (const file of sheets) {
     safelist: { standard: ["active"] },
     // The extractor yields `name=value` tokens, never a bare attribute name, so
     // every attribute selector in the sheet would otherwise be dropped - the
-    // theme, the reading scale and the checkbox mark among them. Treat every
-    // attribute the sheet selects on as dynamic.
+    // theme and the reading scale among them. Treat every attribute the sheet
+    // selects on as dynamic.
     dynamicAttributes: attributeNames(beforeText),
     // Custom properties are the theme bridge, an unused face may be the
     // reader's choice, and no animation here is unused.

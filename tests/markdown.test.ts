@@ -26,24 +26,36 @@ interface Element {
 /** What the visitor set, in call order. */
 type Patch = { key: string; value: unknown };
 
+/** What the visitor inserted, in call order. */
+interface Insertion {
+  type: string;
+  tagName: string;
+  properties: Record<string, unknown>;
+  children: { type: string; value: string }[];
+}
+
 /**
  * Runs the visitor over one element, the way the processor does.
  *
  * @param tagName - The element's tag.
  * @param properties - The properties it already carries.
- * @returns The element and the patches the visitor applied.
+ * @returns The element, the patches the visitor applied and what it inserted.
  */
 function run(tagName: string, properties: Record<string, unknown> = {}) {
   const element: Element = { type: "element", tagName, properties };
   const patches: Patch[] = [];
+  const insertions: Insertion[] = [];
 
   markdownStep.element.visit(element, {
+    insertBefore: (_node, newNode) => {
+      insertions.push(newNode as Insertion);
+    },
     setProperty: (_node, key, value) => {
       patches.push({ key, value });
     },
   });
 
-  return { element, patches };
+  return { element, patches, insertions };
 }
 
 describe("markdownStep", () => {
@@ -72,17 +84,67 @@ describe("markdownStep", () => {
     expect(patches).toEqual([]);
   });
 
-  it("gives a task list's checkbox Bootstrap's control", () => {
-    const { patches } = run("input", { type: "checkbox", disabled: true });
+  it("draws a checked task item's box filled", () => {
+    const { patches, insertions } = run("input", {
+      type: "checkbox",
+      checked: true,
+      disabled: true,
+    });
+
+    expect(insertions).toEqual([
+      {
+        type: "element",
+        tagName: "span",
+        properties: {
+          className: ["task-checkbox", "is-checked"],
+          ariaHidden: "true",
+        },
+        children: [{ type: "raw", value: ICONS.checkBox }],
+      },
+    ]);
+    expect(patches).toEqual([
+      { key: "className", value: ["task-checkbox-input"] },
+    ]);
+  });
+
+  it("draws an unchecked task item's box as an outline", () => {
+    const { patches, insertions } = run("input", {
+      type: "checkbox",
+      disabled: true,
+    });
+
+    expect(insertions).toEqual([
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["task-checkbox"], ariaHidden: "true" },
+        children: [{ type: "raw", value: ICONS.checkBoxOutlineBlank }],
+      },
+    ]);
+    expect(patches).toEqual([
+      { key: "className", value: ["task-checkbox-input"] },
+    ]);
+  });
+
+  it("keeps a class the checkbox's input already carries", () => {
+    const { patches } = run("input", {
+      type: "checkbox",
+      className: ["gfm-checkbox"],
+    });
 
     expect(patches).toEqual([
-      { key: "className", value: ["form-check-input"] },
+      { key: "className", value: ["gfm-checkbox", "task-checkbox-input"] },
     ]);
   });
 
   it("leaves another kind of input alone", () => {
-    expect(run("input", { type: "text" }).patches).toEqual([]);
-    expect(run("input").patches).toEqual([]);
+    const text = run("input", { type: "text" });
+    const bare = run("input");
+
+    expect(text.patches).toEqual([]);
+    expect(text.insertions).toEqual([]);
+    expect(bare.patches).toEqual([]);
+    expect(bare.insertions).toEqual([]);
   });
 
   it("makes a code block focusable", () => {
@@ -561,6 +623,23 @@ describe("the rendered pipeline", () => {
     // `<svg>` tags are what proves the step ran before the parse.
     expect((barHtml.match(/<svg\b/g) ?? []).length).toBe(2);
     expect(html.slice(barEnd).trimStart().startsWith("<pre")).toBe(true);
+  });
+
+  it("draws a task item's box as a glyph and keeps the input", async () => {
+    const html = await render("- [x] done\n- [ ] todo\n", "en");
+
+    expect(html).toContain(
+      '<span class="task-checkbox is-checked" aria-hidden="true">' +
+        "<!-- Material Symbols: check_box (FILL=1) -->",
+    );
+    expect(html).toContain(
+      '<span class="task-checkbox" aria-hidden="true">' +
+        "<!-- Material Symbols: check_box_outline_blank -->",
+    );
+    // The input stays for the state a screen reader reads, and the class makes
+    // it take no room in the flow.
+    expect((html.match(/class="task-checkbox-input"/g) ?? []).length).toBe(2);
+    expect(html).toContain('<input type="checkbox" checked disabled');
   });
 });
 

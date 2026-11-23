@@ -259,49 +259,59 @@ a:active {
 .page-link:focus-visible,
 .form-control:focus-visible,
 .form-select:focus-visible,
-.form-check-input:focus-visible,
 .nav-link:focus-visible {
   outline: var(--shar-focus-ring-width) solid var(--bs-focus-ring-color);
   outline-offset: 2px;
 }
 
 /* --- Task list checkboxes ---
-   GFM emits a bare `<input type="checkbox" disabled>`, and the renderer's own
-   step gives it Bootstrap's `form-check-input` (see `src/markdown.ts`). Two of
-   Bootstrap's own values are restated here, because both are compiled literals
-   that neither the token bridge nor the zeroed radius tokens can reach:
-   `.form-check-input:checked` fills with `#0d6efd`, and
-   `.form-check-input[type="checkbox"]` rounds with `.25em`. */
+   GFM emits a bare `<input type="checkbox" disabled>`, which no stylesheet
+   draws: a browser's own checkbox keeps its shape and its accent, ignoring both
+   the theme and the accent scale. The renderer's step replaces the drawing with
+   a Material Symbols glyph and keeps the input, because the state it carries is
+   what a screen reader reads - the glyph is `aria-hidden` decoration. A task
+   item is not a bulleted item, so its marker goes. */
 
-.form-check-input:checked {
-  background-color: var(--bs-primary);
-  border-color: var(--bs-primary);
+.task-list-item {
+  list-style: none;
 }
 
-.form-check-input[type="checkbox"] {
-  border-radius: 0;
+/* With the marker gone, the marker's slot is all that is left of the inset
+   Bootstrap's reboot gives every list (`padding-left: 2rem`), and keeping it
+   would start the list a step further in than a bulleted one. The box takes the
+   marker's place instead: a bullet's slot is about an em wide. Only the
+   outermost list: a nested one begins at its parent item's content edge, and
+   the full inset is what makes its step the one a nested bulleted list has. */
+
+.article-body > .contains-task-list {
+  padding-inline-start: calc(2rem - 1.35em);
 }
 
-/* The check mark is a white stroke baked into Bootstrap's data URL, and the
-   dark theme's fill is a light step, so the foreground flips - which is the
-   accent rule for text on a filled accent, applied to the mark inside the
-   fill. */
+/* The glyph's box, at the size the font's own 3..21 inset leaves a 15px square
+   with a 1.7px ring against 16px prose. The offset sets the box on the text's
+   baseline; only the filled state takes the accent, and its mark is a hole in
+   that fill rather than a second color. */
 
-[data-bs-theme="dark"] .form-check-input:checked[type="checkbox"] {
-  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+.task-checkbox {
+  display: inline-flex;
+  vertical-align: -0.22em;
+  font-size: 1.25em;
+  color: var(--bs-secondary-color);
 }
 
-/* Every GFM checkbox carries `disabled`, so Bootstrap's own
-   `.form-check-input:disabled { opacity: .5 }` would apply to all of them.
-   Measured: at half opacity the light theme's white check composites to 2.01:1
-   against its own fill, below the 3:1 floor a graphic needs, and the mark is
-   the whole point of the box. It stays `disabled` - the attribute and the
-   `pointer-events: none` are what say it is not a control - but a rendered task
-   list is content, so it is not dimmed. A real control elsewhere keeps
-   Bootstrap's opacity: this is scoped to the article body. */
+.task-checkbox.is-checked {
+  color: var(--bs-primary);
+}
 
-.article-body .form-check-input:disabled {
-  opacity: 1;
+/* Zero-sized and transparent rather than `display: none`: it has to stay in the
+   accessibility tree, and a zero box in the flow takes no advance, so the
+   glyph's margin is the whole gap before the text. */
+
+.task-checkbox-input {
+  inline-size: 0;
+  block-size: 0;
+  margin: 0;
+  opacity: 0;
 }
 
 /* --- Blockquote ---

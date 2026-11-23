@@ -5,12 +5,12 @@
 //   1. Bootstrap's `table` class on every GFM table. Bootstrap attaches its
 //      table styles to the class, and a bare `<table>` gets only Reboot's
 //      `caption-side` and `border-collapse`.
-//   2. Bootstrap's `form-check-input` class on a task list's checkbox. GFM
-//      emits `<input type="checkbox" disabled>`, which no stylesheet draws: a
-//      browser's default checkbox keeps its own shape, size and accent, and it
-//      ignores both the theme and the accent scale. The class brings
-//      Bootstrap's control, and `base.scss` finishes the job - the filled state
-//      and the square corner, both of which Bootstrap compiles to literals.
+//   2. A task list's checkbox drawn as a Material Symbols glyph. GFM emits
+//      `<input type="checkbox" disabled>`, which no stylesheet draws: a
+//      browser's own checkbox keeps its shape and accent, and it ignores both
+//      the theme and the accent scale. The glyph is the drawing; the input
+//      stays - invisible, zero-sized, in the flow - because the state it
+//      carries is what a screen reader reads. See `markdownStep` below.
 //   3. `tabindex="0"` on every `<pre>`. A fenced block scrolls horizontally,
 //      and a scrollable box that cannot take focus cannot be scrolled by
 //      keyboard. Shiki's output carried the attribute; Prism's does not.
@@ -50,6 +50,13 @@ interface HastElement {
 /** The visitor's context, as much of it as this step uses. */
 interface HastVisitorContext {
   /**
+   * Inserts one node directly before another.
+   *
+   * @param node - The node the new one comes before.
+   * @param newNode - The node to insert.
+   */
+  insertBefore(node: Readonly<HastElement>, newNode: unknown): void;
+  /**
    * Sets one property on one node.
    *
    * @param node - The node to change.
@@ -72,20 +79,25 @@ function withClass(node: Readonly<HastElement>, name: string): string[] | null {
   return list.includes(name) ? null : [...list, name];
 }
 
+/** The checkbox wrapper's class, its filled state, and the input's own class. */
+const TASK_CHECKBOX = "task-checkbox";
+const TASK_CHECKBOX_CHECKED = "is-checked";
+const TASK_CHECKBOX_INPUT = "task-checkbox-input";
+
 /**
  * The hast visitor `astro.config.mjs` installs, by name and tag filter.
  *
- * The three changes share one visitor because they share one pass: a table and
- * a task list's checkbox get a class, and everything else in the filter - a
- * `<pre>` - is made focusable.
+ * The three changes share one visitor because they share one pass: a table gets
+ * a class, a task list's checkbox gets its glyph, and everything else in the
+ * filter - a `<pre>` - is made focusable.
  */
 export const markdownStep = {
   name: "articles/renderer-step",
   element: {
     filter: ["table", "input", "pre"],
     /**
-     * Adds a Bootstrap class or the `<pre>` tabindex, keeping any class the
-     * element already carries.
+     * Gives a matched element its class, its glyph or its focus, keeping any
+     * class the element already carries.
      *
      * @param node - The matched element.
      * @param context - The visitor's context.
@@ -95,9 +107,29 @@ export const markdownStep = {
         if (node.properties?.type !== "checkbox") {
           return;
         }
-        const classes = withClass(node, "form-check-input");
-        if (classes) {
-          context.setProperty(node, "className", classes);
+        // The state is already in the tree, so it becomes a class on the
+        // wrapper: the glyph comes before the input, and a checkbox has no
+        // state a stylesheet can read without a script.
+        const checked = node.properties?.checked === true;
+        context.insertBefore(node, {
+          type: "element",
+          tagName: "span",
+          properties: {
+            className: checked
+              ? [TASK_CHECKBOX, TASK_CHECKBOX_CHECKED]
+              : [TASK_CHECKBOX],
+            ariaHidden: "true",
+          },
+          children: [
+            {
+              type: "raw",
+              value: checked ? ICONS.checkBox : ICONS.checkBoxOutlineBlank,
+            },
+          ],
+        });
+        const inputClasses = withClass(node, TASK_CHECKBOX_INPUT);
+        if (inputClasses) {
+          context.setProperty(node, "className", inputClasses);
         }
         return;
       }
