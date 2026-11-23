@@ -14,7 +14,7 @@
   /* The backdrop filter that blurs a translucent decoration, matching the main
      site's small blur step. Read by the same four consumers; `none` in the same
      query, so a surface is not blurred to zero. */
-  --shar-backdrop-filter: blur(0.5rem);
+  --shar-backdrop-filter: blur(0.5rem) saturate(1.5);
 
   /* The fill a band's gradient sits on: transparent, so the gradient draws the
      surface; `Canvas` once forced colors drops the gradient. Read by the
