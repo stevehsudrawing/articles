@@ -28,7 +28,8 @@ export default {
   extends: ["@commitlint/config-conventional"],
   plugins: [bodyMaxLines],
   rules: {
-    // 2 = error, 0 = disabled.
+    // 2 = error, 0 = disabled. The list is the shared commit-message policy:
+    // the Link-Hub carries the same one, so a change here is a change there.
     "type-enum": [
       2,
       "always",
@@ -47,7 +48,7 @@ export default {
         "test",
       ],
     ],
-    "header-max-length": [2, "always", 200],
+    "header-max-length": [2, "always", 72],
     "body-max-line-length": [2, "always", 80],
     "body-max-lines": [2, "always", 3],
     "footer-max-line-length": [0],
