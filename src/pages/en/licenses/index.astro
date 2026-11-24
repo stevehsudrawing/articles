@@ -28,7 +28,7 @@ const alternates = locales.map((other) => ({
   <div class="col-12 col-lg-9">
     <ul class="list-unstyled">
       {rows.map((row) => (
-        <li class="mb-4">
+        <li class="mb-3">
           <a
             class="fw-medium"
             href={row.url}
@@ -39,6 +39,16 @@ const alternates = locales.map((other) => ({
           <p class="text-body-secondary my-1">{row.description}</p>
           <p class="text-body-secondary font-tnum mb-0 small">
             {licenseStamp(row)}
+            {row.locale !== row.sourceLocale && (
+              <>
+                {" · "}
+                {t(locale, "text-label-license-source")}
+                {": "}
+                <a href={row.sourceUrl} lang={getLocale(row.sourceLocale).tag}>
+                  {getLocale(row.sourceLocale).name}
+                </a>
+              </>
+            )}
           </p>
         </li>
       ))}

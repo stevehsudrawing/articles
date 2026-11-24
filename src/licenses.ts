@@ -166,12 +166,45 @@ function localeOf(id: string): Locale {
   return id.slice(id.lastIndexOf("/") + 1) as Locale;
 }
 
+/**
+ * The entry a document was written in.
+ *
+ * Every file of a document declares `sourceLocale`, and the files must agree:
+ * the catalog links the source only where the row shows a translation, so a
+ * disagreement would point a reader at the wrong text, and a declared locale
+ * with no file would point at a page that does not exist. The check runs where
+ * the files of one slug are grouped, because `getCollection()` is async and
+ * only a build can call it.
+ *
+ * @param slug - The document's slug, used in the message.
+ * @param held - The document's files.
+ * @throws When the files declare different source locales, or the declared one
+ *   holds no file.
+ */
+function assertSourceLocale(slug: string, held: License[]): void {
+  const declared = [...new Set(held.map((entry) => entry.data.sourceLocale))];
+  const [sourceLocale] = declared;
+  if (declared.length !== 1 || sourceLocale === undefined) {
+    throw new Error(
+      `The files of "${slug}" disagree about their source locale: ${declared.sort().join(", ")}.`,
+    );
+  }
+  const source = held.find((entry) => localeOf(entry.id) === sourceLocale);
+  if (!source) {
+    throw new Error(
+      `"${slug}" names "${sourceLocale}" as its source text, but it holds no ${sourceLocale} file.`,
+    );
+  }
+}
+
 /** One document, as the catalog and the inventory list it. */
 export interface LicenseRow {
   /** The document's slug, which is its URL's last segment. */
   slug: string;
   /** The locale holding the text this row describes. */
   locale: Locale;
+  /** The locale the text was written in, which may not be this row's. */
+  sourceLocale: Locale;
   /** The document's title, in its own language. */
   title: string;
   /** The document's description, in its own language. */
@@ -184,6 +217,8 @@ export interface LicenseRow {
   lastmod: string;
   /** The URL of the page holding the text, in {@link LicenseRow.locale}. */
   url: string;
+  /** The URL of the page holding the text, in {@link LicenseRow.sourceLocale}. */
+  sourceUrl: string;
 }
 
 /**
@@ -195,15 +230,18 @@ export interface LicenseRow {
 function row(entry: License): LicenseRow {
   const locale = localeOf(entry.id);
   const slug = licenseSlug(entry);
+  const sourceLocale = entry.data.sourceLocale as Locale;
   return {
     slug,
     locale,
+    sourceLocale,
     title: entry.data.title,
     description: entry.data.description,
     version: entry.data.version,
     effectiveDate: entry.data.effectiveDate,
     lastmod: entry.data.updated ?? entry.data.effectiveDate,
     url: licenseUrl(locale, slug),
+    sourceUrl: licenseUrl(sourceLocale, slug),
   };
 }
 
@@ -246,7 +284,8 @@ export async function licenseCatalog(
   }
 
   const rows: LicenseRow[] = [];
-  for (const held of bySlug.values()) {
+  for (const [slug, held] of bySlug) {
+    assertSourceLocale(slug, held);
     const preferred =
       held.find((entry) => localeOf(entry.id) === pageLocale) ??
       held.find((entry) => localeOf(entry.id) === defaultLocale) ??

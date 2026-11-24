@@ -297,8 +297,9 @@ export function articleSchema(locale: Locale) {
  * The schema every license document is validated against.
  *
  * One collection serves every locale, because a license's language is its file
- * name and its data states none. There is no `date`: a license is not a dated
- * post, and `effectiveDate` is the field that carries that meaning. There is
+ * name; `sourceLocale` names the language the text was written in, which the
+ * file name cannot tell. There is no `date`: a license is not a dated post, and
+ * `effectiveDate` is the field that carries that meaning. There is
  * no `draft` either - a published file is a published license, and an
  * unpublished one would put a catalog row in front of a page that does not
  * exist.
@@ -317,6 +318,12 @@ export function licenseSchema() {
         .regex(VERSION, 'Write the version as digits and dots, as "1.0".')
         .optional(),
       effectiveDate: z.string().regex(DATE, QUOTED_DATE),
+      sourceLocale: z
+        .string()
+        .refine(
+          (value) => (localeIdentities as readonly string[]).includes(value),
+          "Write a locale identity from src/i18n/locales.ts.",
+        ),
       updated: z.string().regex(DATE, QUOTED_DATE).optional(),
     });
 }

@@ -42,12 +42,14 @@ function licenseRow(slug: string, lastmod: string): LicenseRow {
   return {
     slug,
     locale: "zh-hans",
+    sourceLocale: "en",
     title: slug,
     description: "",
     version: "1.0",
     effectiveDate: lastmod,
     lastmod,
     url: `/articles/zh-hans/licenses/${slug}/`,
+    sourceUrl: `/articles/en/licenses/${slug}/`,
   };
 }
 
