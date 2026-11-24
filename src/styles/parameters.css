@@ -74,6 +74,12 @@
      where it is used, so one definition serves both themes. */
   --shar-border: var(--bs-border-width) var(--bs-border-style)
     var(--bs-border-color);
+
+  /* The hairline that separates chrome from content, kept translucent so the
+     row it paints takes the color of whatever passes beneath it. `--shar-border`
+     is the other role: a divider on an opaque surface, which must not follow
+     the backdrop. */
+  --shar-hairline-color: rgba(var(--bs-body-color-rgb), 0.2);
 }
 
 /* --- Accessibility preferences --- */
@@ -87,6 +93,7 @@
   :root {
     --shar-decoration-opacity: 1;
     --shar-backdrop-filter: none;
+    --shar-hairline-color: var(--bs-body-color);
   }
 }
 

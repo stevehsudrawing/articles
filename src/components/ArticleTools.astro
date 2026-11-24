@@ -186,6 +186,10 @@ const readingDefault = String(DEFAULT_READING_SCALE);
     z-index: var(--shar-z-tools);
     height: var(--shar-tools-height);
     background-color: var(--bs-body-bg);
+    /* The dock's separating rule is a border row, which lies outside the padding
+       box: the band stops at the padding edge so that row shows the page, and
+       the hairline composites over it instead of over our own surface. */
+    background-clip: padding-box;
   }
 
   /* Where each copy sits, in one place. The rail copy is the right rail's bar at
@@ -203,6 +207,10 @@ const readingDefault = String(DEFAULT_READING_SCALE);
   /* Only the dock copy carries the band: nothing passes beneath the rail copy,
      so it keeps the opaque base. */
   .article-tools--dock {
+    /* The rule comes from Bootstrap's `.border-top` utility, which paints with
+       `--bs-border-color` and marks the declaration `!important`; restating the
+       variable is what reaches it. */
+    --bs-border-color: var(--shar-hairline-color);
     background-color: var(--shar-band-background);
     background-image: linear-gradient(
       to top,

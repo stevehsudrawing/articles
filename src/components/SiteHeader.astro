@@ -18,7 +18,7 @@
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { listUrl } from "../articles";
 import mark from "../assets/brand/mark.svg?raw";
-import { locales, localeIdentities, type Locale } from "../i18n/locales";
+import { localeIdentities, locales, type Locale } from "../i18n/locales";
 import { t } from "../i18n/messages";
 import type { IconName } from "../icons";
 import { MAIN_SITE_URL } from "../site";
@@ -464,19 +464,15 @@ const currentLanguage =
   .site-header {
     height: var(--shar-header-height);
     z-index: var(--shar-z-header);
-
-    /* The seam under the bar is drawn once the page is scrolled. The border is
-       always there at its final width and only its color moves, so the bar's
-       height never changes and `--shar-header-height` stays the one number the
-       sticky offset, the contents' `max-height` and `scroll-padding-top` read. */
-    border-bottom: var(--bs-border-width) solid transparent;
   }
 
   /* The band is the header's surface, drawn behind its content. A filter on the
      header itself would become the fixed panels' containing block and their
      backdrop root, so a panel would collapse to the header's box and the page
-     behind the scrim would lose its blur. The pseudo stops at the padding box,
-     so the 1px scroll edge stays uncovered. */
+     behind the scrim would lose its blur. The scroll edge lives here for the
+     same reason: inside the filtered box its row composites over the blurred
+     page, and because the band stops at the padding box the row is not painted
+     over the gradient. */
   .site-header::before {
     content: "";
     position: absolute;
@@ -488,7 +484,12 @@ const currentLanguage =
       rgba(var(--bs-body-bg-rgb), 1),
       rgba(var(--bs-body-bg-rgb), var(--shar-decoration-opacity))
     );
+    background-clip: padding-box;
     backdrop-filter: var(--shar-backdrop-filter);
+    /* The width is always present and only the color moves, so the bar's height
+       never changes and `--shar-header-height` stays the one number the sticky
+       offset, the contents' `max-height` and `scroll-padding-top` read. */
+    border-bottom: var(--bs-border-width) solid transparent;
   }
 
   /* The wrapper and the name exist only below the breakpoint, where the wrapper
@@ -518,10 +519,10 @@ const currentLanguage =
 
   /* Without a timeline the seam would still be painted: `animation-duration:
      auto` resolves to 0s, and `fill: both` then holds the finished frame, which
-     leaves the border at `rgb(222, 226, 230)` from the top of every page. The
+     leaves the border at the hairline color from the top of every page. The
      gate is what keeps the seam a scroll effect. */
   @supports (animation-timeline: scroll()) {
-    .site-header {
+    .site-header::before {
       /* `animation-range: 0 1px` compresses the whole timeline into the page's
          first pixel, which makes "scrolled past the top" and "progress 100%" the
          same fact; `fill: both` holds it for the rest of the scroll. A 0s
@@ -620,7 +621,7 @@ const currentLanguage =
     }
 
     to {
-      border-bottom-color: var(--bs-border-color);
+      border-bottom-color: var(--shar-hairline-color);
     }
   }
 
