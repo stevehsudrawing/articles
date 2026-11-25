@@ -245,10 +245,6 @@ export function licenseMarkdown({
       : [`- Version: ${data.version}`, `- Effective: ${data.effectiveDate}`];
   const lines = [`# ${data.title}`, "", `> ${data.description}`, "", ...stamp];
 
-  if (data.updated && data.updated !== data.effectiveDate) {
-    lines.push(`- Updated: ${data.updated}`);
-  }
-
   lines.push(
     `- Canonical: ${absoluteUrl(licenseUrl(locale, licenseSlug(license)))}`,
     "",

@@ -36,7 +36,6 @@ interface Props {
 const { locale, license, rendered, languages } = Astro.props;
 const { Content, headings } = rendered;
 const slug = licenseSlug(license);
-const { effectiveDate, updated } = license.data;
 const sourceLocale = license.data.sourceLocale as Locale;
 
 // The trail and the alternate list, both the values the header and the graph
@@ -77,9 +76,6 @@ const alternates = languages.map((other) => ({
             dates are the frontmatter's own values. */}
         <p class="text-body-secondary small mb-3">
           <span class="font-tnum">{licenseStamp(license.data)}</span>
-          {updated && updated !== effectiveDate && (
-            <span class="font-tnum">{` · updated ${updated}`}</span>
-          )}
           {sourceLocale !== locale && (
             <>
               {" · "}

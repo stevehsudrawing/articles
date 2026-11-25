@@ -213,7 +213,7 @@ export interface LicenseRow {
   version?: string;
   /** The date the text took effect, `YYYY-MM-DD`. */
   effectiveDate: string;
-  /** The newest date the document carries: `updated`, else its effective date. */
+  /** The day the text took effect — the newest date the document carries. */
   lastmod: string;
   /** The URL of the page holding the text, in {@link LicenseRow.locale}. */
   url: string;
@@ -239,7 +239,7 @@ function row(entry: License): LicenseRow {
     description: entry.data.description,
     version: entry.data.version,
     effectiveDate: entry.data.effectiveDate,
-    lastmod: entry.data.updated ?? entry.data.effectiveDate,
+    lastmod: entry.data.effectiveDate,
     url: licenseUrl(locale, slug),
     sourceUrl: licenseUrl(sourceLocale, slug),
   };

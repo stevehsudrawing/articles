@@ -324,7 +324,6 @@ export function licenseSchema() {
           (value) => (localeIdentities as readonly string[]).includes(value),
           "Write a locale identity from src/i18n/locales.ts.",
         ),
-      updated: z.string().regex(DATE, QUOTED_DATE).optional(),
     });
 }
 
