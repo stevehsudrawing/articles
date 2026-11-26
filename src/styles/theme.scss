@@ -1,10 +1,13 @@
 /* ==========================================================================
    Colors - the accent scale and the bridge onto Bootstrap
 
-   One accent hue, expanded into nine steps. This file is where they become
-   `--shar-*` tokens, and from here every component refers to a token rather
-   than to a hex value.
+   One accent hue, expanded into nine steps. The values live in `_palette.scss`;
+   this file turns them into `--shar-*` tokens, and from here every component
+   refers to a token rather than to a hex value.
    ========================================================================== */
+
+/* The accent values and the two dark surfaces live in the palette partial. */
+@import "palette";
 
 /* The gray twins below read Bootstrap's own map, so the two partials that
    define it are imported here. `functions` must come first: `variables` uses
@@ -12,28 +15,22 @@
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 
-:root {
-  --shar-primary-100: #e1f5db;
-  --shar-primary-200: #b6e3a9;
-  --shar-primary-300: #87d170;
-  --shar-primary-400: #49bf00;
-  --shar-primary-500: #3da300;
-  --shar-primary-600: #318700;
-  --shar-primary-700: #266c00;
-  --shar-primary-800: #21520e;
-  --shar-primary-900: #1c3813;
+/* `to-rgb()` is Bootstrap's, so the loop lives in this module rather than in
+   the palette partial: a function has to be in scope where it is called. Two
+   passes, values then twins, keep the order this block has always emitted.
+   The twins serve the `rgba(var(--shar-primary-…-rgb), <alpha>)` form, which
+   CSS cannot compute from a hex at the call site. */
+@mixin accent-scale($scale) {
+  @each $step, $value in $scale {
+    --shar-primary-#{$step}: #{$value};
+  }
+  @each $step, $value in $scale {
+    --shar-primary-#{$step}-rgb: #{to-rgb($value)};
+  }
+}
 
-  /* RGB twins, for the `rgba(var(--shar-primary-…-rgb), <alpha>)` form that
-     CSS cannot compute from a hex at the call site. */
-  --shar-primary-100-rgb: 225, 245, 219;
-  --shar-primary-200-rgb: 182, 227, 169;
-  --shar-primary-300-rgb: 135, 209, 112;
-  --shar-primary-400-rgb: 73, 191, 0;
-  --shar-primary-500-rgb: 61, 163, 0;
-  --shar-primary-600-rgb: 49, 135, 0;
-  --shar-primary-700-rgb: 38, 108, 0;
-  --shar-primary-800-rgb: 33, 82, 14;
-  --shar-primary-900-rgb: 28, 56, 19;
+:root {
+  @include accent-scale($shar-accent);
 
   /* Bootstrap's gray scale as RGB twins. It ships `--bs-gray-*` as hex and no
      `-rgb` counterpart (read from `bootstrap.min.css` in 5.3.8), and the
@@ -116,10 +113,10 @@
      semantic alert families, so a tinted surface would put a fourth hue under
      all of them - and the two families are warm, which is what makes them the
      page's only warm color. */
-  --bs-body-bg: #222222;
-  --bs-body-bg-rgb: 34, 34, 34;
-  --bs-tertiary-bg: #2d2d2d;
-  --bs-tertiary-bg-rgb: 45, 45, 45;
+  --bs-body-bg: #{$shar-surface-dark};
+  --bs-body-bg-rgb: #{to-rgb($shar-surface-dark)};
+  --bs-tertiary-bg: #{$shar-raised-dark};
+  --bs-tertiary-bg-rgb: #{to-rgb($shar-raised-dark)};
 
   --bs-primary: var(--shar-primary-400);
   --bs-primary-rgb: var(--shar-primary-400-rgb);

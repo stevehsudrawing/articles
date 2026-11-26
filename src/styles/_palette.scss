@@ -1,0 +1,25 @@
+/* ==========================================================================
+   Palette - the accent scale and the two dark surfaces
+
+   Values only: no selector, no custom property, no CSS. `theme.scss` reads the
+   map and writes the tokens, so a color and its `-rgb` twin come from one
+   entry.
+   ========================================================================== */
+
+/* The accent hue, nine steps. An even OKLCH lightness ladder with the chroma
+   tapering at both ends and peaking in the middle; `-600` is the base green. */
+$shar-accent: (
+  100: #e1f5db,
+  200: #b6e3a9,
+  300: #87d170,
+  400: #49bf00,
+  500: #3da300,
+  600: #318700,
+  700: #266c00,
+  800: #21520e,
+  900: #1c3813,
+);
+
+/* The dark theme's two surfaces: pure gray, 11 apart in every channel. */
+$shar-surface-dark: #222222;
+$shar-raised-dark: #2d2d2d;
