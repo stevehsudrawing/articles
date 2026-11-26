@@ -65,15 +65,21 @@
    its `code, kbd, pre, samp` rule reads `--bs-font-monospace`, both on the root
    element, so a descendant selector (`html[lang="…"] :root`) would never
    re-substitute.
+
+   Each composed stack reads one slot per family - `--shar-font-sans-serif-cjk`
+   and `--shar-font-serif-cjk` - so a locale overrides those two declarations
+   and the stack itself is written once.
    ========================================================================== */
 
 /* Default: the Latin stack with the Japanese fallbacks behind it. */
 :root {
+  --shar-font-sans-serif-cjk: var(--shar-font-sans-serif-ja);
+  --shar-font-serif-cjk: var(--shar-font-serif-ja);
   --bs-font-sans-serif:
-    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-ja),
+    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-cjk),
     var(--shar-font-sans-serif-system), var(--shar-font-emoji);
   --bs-font-monospace:
-    var(--shar-font-monospace-en), var(--shar-font-sans-serif-ja),
+    var(--shar-font-monospace-en), var(--shar-font-sans-serif-cjk),
     var(--shar-font-monospace-system), var(--shar-font-sans-serif-en),
     var(--shar-font-sans-serif-system), var(--shar-font-emoji);
 
@@ -84,42 +90,24 @@
      it, and one that does not resolves `serif` to a face without CJK glyphs,
      which falls through per glyph. */
   --shar-font-serif:
-    var(--shar-font-serif-en), var(--shar-font-serif-ja),
+    var(--shar-font-serif-en), var(--shar-font-serif-cjk),
     var(--shar-font-serif-system), var(--bs-font-sans-serif);
 }
 
 /* Chinese (Simplified) */
 :root[lang="zh-Hans"] {
-  --bs-font-sans-serif:
-    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-zh-Hans),
-    var(--shar-font-sans-serif-ja), var(--shar-font-sans-serif-system),
-    var(--shar-font-emoji);
-  --bs-font-monospace:
-    var(--shar-font-monospace-en), var(--shar-font-sans-serif-zh-Hans),
-    var(--shar-font-sans-serif-ja), var(--shar-font-monospace-system),
-    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
-    var(--shar-font-emoji);
-  --shar-font-serif:
-    var(--shar-font-serif-en), var(--shar-font-serif-zh-Hans),
-    var(--shar-font-serif-ja), var(--shar-font-serif-system),
-    var(--bs-font-sans-serif);
+  --shar-font-sans-serif-cjk:
+    var(--shar-font-sans-serif-zh-Hans), var(--shar-font-sans-serif-ja);
+  --shar-font-serif-cjk:
+    var(--shar-font-serif-zh-Hans), var(--shar-font-serif-ja);
 }
 
 /* Chinese (Traditional) */
 :root[lang="zh-Hant"] {
-  --bs-font-sans-serif:
-    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-zh-Hant),
-    var(--shar-font-sans-serif-ja), var(--shar-font-sans-serif-system),
-    var(--shar-font-emoji);
-  --bs-font-monospace:
-    var(--shar-font-monospace-en), var(--shar-font-sans-serif-zh-Hant),
-    var(--shar-font-sans-serif-ja), var(--shar-font-monospace-system),
-    var(--shar-font-sans-serif-en), var(--shar-font-sans-serif-system),
-    var(--shar-font-emoji);
-  --shar-font-serif:
-    var(--shar-font-serif-en), var(--shar-font-serif-zh-Hant),
-    var(--shar-font-serif-ja), var(--shar-font-serif-system),
-    var(--bs-font-sans-serif);
+  --shar-font-sans-serif-cjk:
+    var(--shar-font-sans-serif-zh-Hant), var(--shar-font-sans-serif-ja);
+  --shar-font-serif-cjk:
+    var(--shar-font-serif-zh-Hant), var(--shar-font-serif-ja);
 }
 
 /* ==========================================================================
